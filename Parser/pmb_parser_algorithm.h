@@ -162,7 +162,7 @@ template <class _TVALUE, class _IT = iterator, class _OPRTABLE = operation_table
 class algorithm
 {
 public:
-	typedef class _SYMBOLS _tdSymbol;
+	typedef _SYMBOLS _tdSymbols;
 
 
 public:

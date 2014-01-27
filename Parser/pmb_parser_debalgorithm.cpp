@@ -13,8 +13,8 @@ namespace debug
 {
 
 
-algorithm::algorithm()
-	: _base(), _ai(_expr), _newNode(NULL), _newNodeUnknow(NULL)
+algorithm::algorithm(_base::_tdSymbols& symbols)
+	: _base(symbols), _ai(_expr), _newNode(NULL), _newNodeUnknow(NULL)
 {
 }
 

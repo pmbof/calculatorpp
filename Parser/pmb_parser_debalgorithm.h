@@ -322,7 +322,7 @@ public:
 	typedef parser::algorithm<value, iterator> _base;
 
 public:
-	algorithm();
+	algorithm(_base::_tdSymbols& symbols);
 	~algorithm();
 
 	const auto_iterator<0, iterator, value>* getIterators() const;

@@ -91,7 +91,7 @@ void CFileView::OnSize(UINT nType, int cx, int cy)
 
 void CFileView::FillFileView(WPARAM wParam)
 {
-	const pmb::parser::algorithm<value>::mapv* map = reinterpret_cast<const pmb::parser::algorithm<value>::mapv*>(wParam);
+	const pmb::parser::symbol<value>::_tpMap* map = reinterpret_cast<const pmb::parser::symbol<value>::_tpMap*>(wParam);
 
 	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Algorithm"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
@@ -99,7 +99,7 @@ void CFileView::FillFileView(WPARAM wParam)
 
 	HTREEITEM hSrc = m_wndFileView.InsertItem(_T("Variables"), 0, 0, hRoot);
 
-	for(pmb::parser::algorithm<value>::mapv::const_iterator i = map->begin(); i != map->end(); ++i)
+	for(pmb::parser::symbol<value>::_tpMap::const_iterator i = map->begin(); i != map->end(); ++i)
 	{
 		HTREEITEM hVar = m_wndFileView.InsertItem(CString(i->first.c_str()), 1, 1, hSrc);
 		CString str;

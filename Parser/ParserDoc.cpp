@@ -10,8 +10,10 @@
 #endif
 
 #include "ParserDoc.h"
+
 #include "pmb_parser_algorithm.cpp"
 #include "pmb_parser_operation.cpp"
+#include "pmb_parser_symbol.cpp"
 
 #include "pmb_parser_tree.cpp"
 #include "pmb_parser_nodes_calc.cpp"
@@ -34,8 +36,8 @@ END_MESSAGE_MAP()
 // CParserDoc construction/destruction
 
 CParserDoc::CParserDoc()
-	: m_parser(),
-		m_parser2()
+	: m_symbols(3), m_parser(m_symbols),
+		m_parser2(m_symbols)
 {
 
 }
@@ -85,7 +87,7 @@ BOOL CParserDoc::OnNewDocument()
 	m_expr = "c = (a + b)/2";
 	m_parser2.parser(m_expr);
 	GetSystemTime(&m_time_end);
-	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(&m_parser2.getVariables()));
+	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get(0)));
 	return TRUE;
 }
 

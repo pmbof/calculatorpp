@@ -2,17 +2,19 @@
 #include "pmb_calculator.h"
 #include "pmb_parser_algorithm.cpp"
 
+#include "pmb_parser_symbol.cpp"
+
 namespace pmb
 {
 
 
-calculator::calculator(void)
-	: _base()
+calculator::calculator(_base::_tdSymbols& symbols)
+	: _base(symbols)
 {
 }
 
 
-calculator::~calculator(void)
+calculator::~calculator()
 {
 }
 

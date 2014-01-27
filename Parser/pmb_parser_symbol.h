@@ -10,14 +10,20 @@ namespace parser
 {
 
 
-template<class _TVALUE, class _MAP = util::map<std::string, _TVALUE, item::string> >
+template<class _TVALUE, class _ITSTRING = item::string, class _MAP = util::map<std::string, _TVALUE, _ITSTRING> >
 class symbol
 {
+public:
+	typedef _MAP _tpMap;
+
+
 public:
 	symbol(int nMaps);
 	~symbol();
 
-	void get(_TVALUE& value, bool canCreate);
+	void find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
+
+	const _MAP* get(int index) const;
 
 protected:
 	_MAP* _map;

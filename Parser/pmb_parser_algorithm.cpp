@@ -228,13 +228,7 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::getValue(node<_TVALUE>* nd, _
 		value = _TVALUE::getNewValue(nd->getCharPtr(_expr), nd->len());
 		break;
 	case ndAlpha:
-		{
-			mapv::const_iterator i = _variable.find(nd->getString(_expr));
-			if(i != _variable.end())
-				value = const_cast<_TVALUE&>(i->second);
-			else if(canCreateVariable)
-				value = _variable[nd->getString(_expr).getString()];
-		}
+		_symbols.find(nd->getString(_expr), value, canCreateVariable);
 		break;
 	case ndParentheses:
 		value = static_cast<nodes::parentheses<_TVALUE>*>(nd)->getValue();

@@ -17,8 +17,8 @@ public:
 	typedef parser::algorithm<container> _base;
 
 public:
-	calculator(void);
-	~calculator(void);
+	calculator(_base::_tdSymbols& symbols);
+	~calculator();
 };
 
 

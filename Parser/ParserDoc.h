@@ -38,6 +38,7 @@ public:
 	const pmb::parser::node<value>* getNextUnknowNode(const pmb::parser::node<value>* nd) const;
 
 protected:
+	pmb::parser::symbol<value> m_symbols;
 	pmb::parser::debug::algorithm m_parser;
 	pmb::parser::algorithm<value> m_parser2;
 
