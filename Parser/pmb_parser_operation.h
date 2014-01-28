@@ -42,12 +42,10 @@ struct number
 		bool bDecimal = false;
 		_TYPE decimal = 1;
 		for(int i = ini; i < len; ++i) {
-			if(str[i] == '.') {
+			if(str[i] == '.')
 				bDecimal = true;
-				base = 1;
-			}
-			else if(!bDecimal)
-				_number = _number * base + (10 < base && 'A' <= str[i] ? str[i] < 'a' ? str[i] - 'A': str[i] - 'a': str[i] - '0') / decimal;
+			else
+				_number = _number * (bDecimal ? 1: base) + (10 < base && 'A' <= str[i] ? str[i] < 'a' ? str[i] - 'A': str[i] - 'a': str[i] - '0') / decimal;
 			if(bDecimal)
 				decimal = decimal * base;
 		}
