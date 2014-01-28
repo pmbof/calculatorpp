@@ -93,10 +93,8 @@ void CFileView::FillFileView(WPARAM wParam)
 {
 	const pmb::parser::symbol<value>::_tpMMap* map = reinterpret_cast<const pmb::parser::symbol<value>::_tpMMap*>(wParam);
 
-	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Algorithm"), 0, 0);
+	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Symbols"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-
-
 
 	for(pmb::parser::symbol<value>::_tpMMap::const_iterator i = map->begin(); i != map->end(); ++i)
 	{
@@ -113,6 +111,12 @@ void CFileView::FillFileView(WPARAM wParam)
 		m_wndFileView.Expand(hSrc, TVE_EXPAND);
 	}
 	m_wndFileView.Expand(hRoot, TVE_EXPAND);
+
+	hRoot = m_wndFileView.InsertItem(_T("Functions"), 0, 0);
+	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+
+	hRoot = m_wndFileView.InsertItem(_T("Operators"), 0, 0);
+	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 }
 
 
