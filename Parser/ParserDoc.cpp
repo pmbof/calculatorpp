@@ -12,6 +12,8 @@
 #include "ParserDoc.h"
 
 #include "pmb_parser_algorithm.cpp"
+#include "pmb_calculator.cpp"
+
 #include "pmb_parser_operation.cpp"
 #include "pmb_parser_symbol.cpp"
 
@@ -36,8 +38,8 @@ END_MESSAGE_MAP()
 // CParserDoc construction/destruction
 
 CParserDoc::CParserDoc()
-	: m_symbols(3), m_parser(m_symbols),
-		m_parser2(m_symbols)
+	: m_parser(m_symbols),
+		m_calculator(m_symbols)
 {
 
 }
@@ -68,7 +70,7 @@ BOOL CParserDoc::OnNewDocument()
 		return FALSE;
 	
 	m_parser.initialize();
-	m_parser2.initialize();
+	m_calculator.initialize();
 
 	m_iterators = m_parser.getIterators();
 	m_iterator = m_parser.getIterator();
@@ -79,15 +81,23 @@ BOOL CParserDoc::OnNewDocument()
 //	m_expr = "a acos(6x, -3y, z) = -5k";
 //	m_expr = "a acos (";
 
+	m_symbols.selectSearch("Constants");
+	m_calculator.parser("pi = 3.1415692");
+	m_calculator.parser("e = 2.7182");
+
+	m_symbols.selectSearch("Variables");
+
 	m_parser.parser(m_expr);
+
 	GetSystemTime(&m_time_ini);
-	m_parser2.parser(m_expr);
+	m_calculator.parser(m_expr);
 	m_expr = "b = 2 * a";
-	m_parser2.parser(m_expr);
+	m_calculator.parser(m_expr);
 	m_expr = "c = (a + b)/2";
-	m_parser2.parser(m_expr);
+	m_calculator.parser(m_expr);
 	GetSystemTime(&m_time_end);
-	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get(0)));
+
+	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 	return TRUE;
 }
 
@@ -117,7 +127,7 @@ const pmb::parser::node<value>* CParserDoc::getNextUnknowNode(const pmb::parser:
 {
 	if(!nd)
 	{
-		nd = m_parser2.getTree()->getRootNode();
+		nd = m_calculator.getTree()->getRootNode();
 		if(nd && nd->getType() == pmb::parser::ndUnknow)
 			//nd = nd->getFirstUnknowNode();
 			nd = ((pmb::parser::nodes::unknow<value>*)nd)->nextCalc();
@@ -134,7 +144,7 @@ const pmb::parser::node<value>* CParserDoc::getNextUnknowNode(const pmb::parser:
 
 const pmb::parser::tree<value>* CParserDoc::getTree2() const
 {
-	return m_parser2.getTree();
+	return m_calculator.getTree();
 }
 
 // CParserDoc serialization

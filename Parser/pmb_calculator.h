@@ -8,7 +8,8 @@ namespace pmb
 
 
 
-class calculator: public parser::algorithm<parser::value<parser::number<double> > >
+template <class _TVALUE>
+class calculator: public parser::algorithm<_TVALUE>
 {
 public:
 	typedef double value;

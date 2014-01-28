@@ -91,46 +91,30 @@ void CFileView::OnSize(UINT nType, int cx, int cy)
 
 void CFileView::FillFileView(WPARAM wParam)
 {
-	const pmb::parser::symbol<value>::_tpMap* map = reinterpret_cast<const pmb::parser::symbol<value>::_tpMap*>(wParam);
+	const pmb::parser::symbol<value>::_tpMMap* map = reinterpret_cast<const pmb::parser::symbol<value>::_tpMMap*>(wParam);
 
 	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Algorithm"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 
 
-	HTREEITEM hSrc = m_wndFileView.InsertItem(_T("Variables"), 0, 0, hRoot);
 
-	for(pmb::parser::symbol<value>::_tpMap::const_iterator i = map->begin(); i != map->end(); ++i)
+	for(pmb::parser::symbol<value>::_tpMMap::const_iterator i = map->begin(); i != map->end(); ++i)
 	{
-		HTREEITEM hVar = m_wndFileView.InsertItem(CString(i->first.c_str()), 1, 1, hSrc);
-		CString str;
-		str.Format(_T("%f"), i->second.get()->_number);
-		m_wndFileView.InsertItem(str, 2, 2, hVar);
-		str = i->second._getType();
-		m_wndFileView.InsertItem(str, 2, 2, hVar);
+		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(i->first.c_str()), 0, 0, hRoot);
+		for(pmb::parser::symbol<value>::_tpMap::const_iterator j = i->second->begin(); j != i->second->end(); ++j)
+		{
+			HTREEITEM hVar = m_wndFileView.InsertItem(CString(j->first.c_str()), 1, 1, hSrc);
+			CString str;
+			str.Format(_T("%f"), j->second.get()->_number);
+			m_wndFileView.InsertItem(str, 2, 2, hVar);
+			str = j->second._getType();
+			m_wndFileView.InsertItem(str, 2, 2, hVar);
+		}
+		m_wndFileView.Expand(hSrc, TVE_EXPAND);
 	}
-
-	HTREEITEM hInc = m_wndFileView.InsertItem(_T("Constants"), 0, 0, hRoot);
-
-/*	m_wndFileView.InsertItem(_T("FakeApp.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("FakeAppDoc.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("FakeAppView.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("Resource.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("MainFrm.h"), 2, 2, hInc);
-	m_wndFileView.InsertItem(_T("StdAfx.h"), 2, 2, hInc);
-	//*/
-
-	HTREEITEM hRes = m_wndFileView.InsertItem(_T("Units"), 0, 0, hRoot);
-
-/*	m_wndFileView.InsertItem(_T("FakeApp.ico"), 2, 2, hRes);
-	m_wndFileView.InsertItem(_T("FakeApp.rc2"), 2, 2, hRes);
-	m_wndFileView.InsertItem(_T("FakeAppDoc.ico"), 2, 2, hRes);
-	m_wndFileView.InsertItem(_T("FakeToolbar.bmp"), 2, 2, hRes);
-	//*/
-
 	m_wndFileView.Expand(hRoot, TVE_EXPAND);
-	m_wndFileView.Expand(hSrc, TVE_EXPAND);
-	m_wndFileView.Expand(hInc, TVE_EXPAND);
 }
+
 
 void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 {

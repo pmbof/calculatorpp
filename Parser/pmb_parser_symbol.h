@@ -2,6 +2,7 @@
 
 
 #include "pmb_util_map.h"
+#include <list>
 
 
 namespace pmb
@@ -15,19 +16,31 @@ class symbol
 {
 public:
 	typedef _MAP _tpMap;
-
+	typedef std::map<std::string, _MAP*> _tpMMap;
+	typedef std::list<_MAP*> _tpLstMap;
+	typedef std::pair<_MAP*, _tpLstMap> _tpPairDef;
+	typedef std::map<std::string, _tpPairDef> _tpMMapSearch;
+	typedef std::list<std::string> _tpList;
 
 public:
-	symbol(int nMaps);
+	symbol();
 	~symbol();
+
+	void addSetVariable(const std::string& set);
+	void addSetSearch(const std::string& set, const std::string& defaultInsert, const _tpList& lst);
+	
+	void selectSearch(const std::string& set) const;
 
 	void find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
 
-	const _MAP* get(int index) const;
+	const _tpMMap* get() const;
 
 protected:
-	_MAP* _map;
-	int _nMaps;
+	_tpMMap _map;
+	mutable _MAP* _defaultInsert;
+
+	_tpMMapSearch _setSearch;
+	mutable const _tpLstMap* _defaultSearch;
 };
 
 

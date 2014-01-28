@@ -6,6 +6,7 @@
 #pragma once
 
 #include "pmb_parser_debalgorithm.h"
+#include "pmb_calculator.h"
 //#include "pmb_parser_algorithm.cpp"
 
 typedef pmb::parser::value<pmb::parser::number<double> > value;
@@ -40,7 +41,7 @@ public:
 protected:
 	pmb::parser::symbol<value> m_symbols;
 	pmb::parser::debug::algorithm m_parser;
-	pmb::parser::algorithm<value> m_parser2;
+	pmb::calculator<value> m_calculator;
 
 // Operations
 public:
