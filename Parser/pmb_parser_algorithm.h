@@ -162,8 +162,8 @@ template <class _TVALUE, class _IT = iterator, class _OPRTABLE = operation_table
 class algorithm
 {
 public:
-	typedef _SYMBOLS _tdSymbols;
-
+	typedef typename _SYMBOLS _tdSymbols;
+	typedef typename _OPRTABLE _tdOprTable;
 
 public:
 	algorithm(_SYMBOLS& symbols);
@@ -187,10 +187,7 @@ protected:
 	tree<_TVALUE>* _tree;
 	_IT _expr;
 
-
-//	typedef typename _TVALUE::tpValuePtr tpValuePtr;
 	mutable _SYMBOLS&	_symbols;
-	std::map<std::string, tree<_TVALUE>*>	_function;
 };
 
 

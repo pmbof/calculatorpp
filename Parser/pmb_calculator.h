@@ -12,13 +12,12 @@ template <class _TVALUE>
 class calculator: public parser::algorithm<_TVALUE>
 {
 public:
-	typedef double value;
-	typedef parser::number<value> number;
-	typedef parser::value<number> container;
-	typedef parser::algorithm<container> _base;
+	typedef parser::algorithm<_TVALUE> _base;
+	typedef typename _base::_tdSymbols _tdSymbols;
+	typedef typename _base::_tdOprTable _tdOprTable;
 
 public:
-	calculator(_base::_tdSymbols& symbols);
+	calculator(_tdSymbols& symbols);
 	~calculator();
 };
 

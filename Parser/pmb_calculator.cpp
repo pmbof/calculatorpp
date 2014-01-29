@@ -9,7 +9,7 @@ namespace pmb
 
 
 template <class _TVALUE>
-calculator<_TVALUE>::calculator(_base::_tdSymbols& symbols)
+calculator<_TVALUE>::calculator(_tdSymbols& symbols)
 	: _base(symbols)
 {
 	_symbols.addSetVariable("Units");

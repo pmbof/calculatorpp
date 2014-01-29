@@ -1,7 +1,10 @@
 #include "StdAfx.h"
+
 #include "pmb_parser_node.h"
 #include "pmb_parser_operation.h"
+
 #include <string.h>
+
 
 namespace pmb
 {
@@ -46,6 +49,18 @@ const operation<_TVALUE>* operation_table<_TVALUE>::find(const node<_TVALUE>* nd
 	return NULL;
 }
 
+
+template<class _TVALUE>
+const operation<_TVALUE>* operation_table<_TVALUE>::get(int i) const
+{
+	return _opr + i;
+}
+
+template<class _TVALUE>
+int operation_table<_TVALUE>::size() const
+{
+	return _oprSize;
+}
 
 
 

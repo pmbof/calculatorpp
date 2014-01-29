@@ -527,6 +527,9 @@ public:
 
 	const operation<_TVALUE>* find(const node<_TVALUE>* nd, const char* expr) const;
 
+	const operation<_TVALUE>* get(int i) const;
+	int size() const;
+
 protected:
 	static const operation<_TVALUE> _opr[];
 	static const int _oprSize;

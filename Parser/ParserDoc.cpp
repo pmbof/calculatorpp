@@ -83,7 +83,7 @@ BOOL CParserDoc::OnNewDocument()
 
 	m_symbols.selectSearch("Constants");
 	m_calculator.parser("pi = 3.1415692");
-	m_calculator.parser("e = 2.7182");
+	m_calculator.parser( "e = 2.71828182");
 
 	m_symbols.selectSearch("Variables");
 

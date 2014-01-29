@@ -6,6 +6,8 @@
 #include "Parser.h"
 #include "ParserDoc.h"
 
+#include "pmb_parser_operation.cpp"
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -117,6 +119,26 @@ void CFileView::FillFileView(WPARAM wParam)
 
 	hRoot = m_wndFileView.InsertItem(_T("Operators"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+	pmb::calculator<value>::_tdOprTable oprTable;
+	for(int i = 0; i < oprTable.size(); ++i)
+	{
+		const pmb::parser::operation<value>* opr = oprTable.get(i);
+		CString str(opr->getSymbol());
+		str += CString(L" \'") + CString(opr->getName()) + L"\'";
+		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(str), 0, 0, hRoot);
+		str = L"Symbol: " + CString(opr->getSymbol());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str = L"Name: " + CString(opr->getName());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str = L"Description: " + CString(opr->getDescription());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str.Format(L"Precedence: %d", opr->getPrecedence());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str = L"Association: " + CString(opr->isLeftToRight() ? L"Left to right": L"Right to Left");
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str = L"Operator: " + CString(opr->isBinary() ? L"Binary": L"Mono");
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+	}
 }
 
 
