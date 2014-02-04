@@ -130,6 +130,7 @@
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="pmb_parser_function.h" />
     <ClInclude Include="pmb_parser_symbol.h" />
     <ClInclude Include="pmb_util_map.h" />
     <ClInclude Include="pmb_parser_nodes_calc.h" />
@@ -175,6 +176,7 @@
     <ClCompile Include="MainFrm.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="pmb_parser_function.cpp" />
     <ClCompile Include="pmb_parser_nodes_calc.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
