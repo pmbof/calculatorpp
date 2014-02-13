@@ -187,6 +187,14 @@ const node<_TVALUE>* node<_TVALUE>::getNextNode() const
 
 
 template <class _TVALUE>
+int node<_TVALUE>::nArguments(bool toRight) const
+{
+	const node<_TVALUE>* ret = toRight && _right ? _right: !toRight && _left ? _left: NULL;
+	return ret ? ret->_type != ndParentheses ? 1: reinterpret_cast<const nodes::parentheses<_TVALUE>*>(ret)->countListChildNodes(): 0;
+}
+
+
+template <class _TVALUE>
 node<_TVALUE>* node<_TVALUE>::getNextNode()
 {
 	node<_TVALUE>* ret = this && _right ? _right->getFirstLeftNode():

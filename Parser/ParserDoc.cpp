@@ -91,9 +91,17 @@ BOOL CParserDoc::OnNewDocument()
 
 	GetSystemTime(&m_time_ini);
 	m_calculator.parser(m_expr);
-	m_expr = "b = 2 * a";
+	m_expr = "b = 2 * pi";
 	m_calculator.parser(m_expr);
 	m_expr = "c = (a + b)/2";
+	m_calculator.parser(m_expr);
+	m_expr = "fac = 5!";
+	m_calculator.parser(m_expr);
+	m_expr = "sin = 2";
+	m_calculator.parser(m_expr);
+	m_expr = "x = 3";
+	m_calculator.parser(m_expr);
+	m_expr = "y = sin 5 x";
 	m_calculator.parser(m_expr);
 	GetSystemTime(&m_time_end);
 

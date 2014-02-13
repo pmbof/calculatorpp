@@ -56,6 +56,13 @@ struct number
 		_number = -_number;
 	}
 
+	void factorial() {
+		long res = 1;
+		for(int i = 2; i <= _number; ++i)
+			res *= i;
+		_number = res;
+	}
+
 	void multiplication(const number<_TYPE>& right) {
 		_number *= right._number;
 	}
@@ -195,6 +202,11 @@ public:
 	void negative(value<_TYPE>& right) {
 		copyFrom(right);
 		_ptr->negative();
+	}
+
+	void factorial(value<_TYPE>& left) {
+		copyFrom(left);
+		_ptr->factorial();
 	}
 
 	void multiplication(value<_TYPE>& left, value<_TYPE>& right) {
@@ -355,6 +367,10 @@ struct operations
 		result.negative(value);
 	}
 
+	void factorial(_TVALUE& result, _TVALUE& value) {
+		result.factorial(value);
+	}
+
 	void exponentiation(_TVALUE& result, _TVALUE& left, _TVALUE& right) {
 		result.exponentiation(left, right);
 	}
@@ -404,8 +420,9 @@ struct operation
 
 public:
 	operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description,
-						tpOprFunc2 oprFunc2)
-				: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _oprFunc2(oprFunc2), _canCreateLVariable(false), _canCreateRVariable(false) {
+						tpOprFunc2 oprFunc2, bool canCallFunction = false)
+				: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _oprFunc2(oprFunc2), _canCallFunction(canCallFunction), 
+					_canCreateLVariable(false), _canCreateRVariable(false) {
 		_symbol = new char[(_len = strlen(symbol)) + 1];
 		strcpy(_symbol, symbol);
 		_name = new char[strlen(name) + 1];
@@ -415,7 +432,7 @@ public:
 	}
 	operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description,
 						tpOprFunc2 oprFunc2, bool canCreateLVariable, bool canCreateRVariable)
-				: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _oprFunc2(oprFunc2), 
+				: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _oprFunc2(oprFunc2), _canCallFunction(false),
 					_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable) {
 		_symbol = new char[(_len = strlen(symbol)) + 1];
 		strcpy(_symbol, symbol);
@@ -426,7 +443,8 @@ public:
 	}
 	operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description,
 						tpOprFunc1 oprFunc1)
-				: _precedence(precedence), _leftToRight(leftToRight), _binary(false), _oprFunc1(oprFunc1), _canCreateLVariable(false), _canCreateRVariable(false)  {
+				: _precedence(precedence), _leftToRight(leftToRight), _binary(false), _oprFunc1(oprFunc1), _canCreateLVariable(false), _canCreateRVariable(false),
+					 _canCallFunction(false) {
 		_symbol = new char[(_len = strlen(symbol)) + 1];
 		strcpy(_symbol, symbol);
 		_name = new char[strlen(name) + 1];
@@ -460,6 +478,9 @@ public:
 		return _binary && !_leftToRight || !_binary && _leftToRight;
 	}
 
+	bool canCallFunction() const {
+		return _canCallFunction;
+	}
 
 
 	const char* getSymbol() const {
@@ -512,6 +533,7 @@ private:
 	int		_precedence;
 	bool	_leftToRight;
 	bool	_binary;
+	bool	_canCallFunction;
 	bool	_canCreateLVariable;
 	bool	_canCreateRVariable;
 	char*	_name;

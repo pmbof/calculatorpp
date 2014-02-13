@@ -12,6 +12,7 @@
 #include "pmb_parser_iterators_list.h"
 
 #include "pmb_parser_operation.h"
+#include "pmb_parser_function.h"
 #include "pmb_parser_symbol.h"
 
 
@@ -158,12 +159,13 @@ protected:
 
 
 
-template <class _TVALUE, class _IT = iterator, class _OPRTABLE = operation_table<_TVALUE>, class _SYMBOLS = symbol<_TVALUE> >
+template <class _TVALUE, class _IT = iterator, class _OPRTABLE = operation_table<_TVALUE>, class _FNCTABLE = function_table<_TVALUE>, class _SYMBOLS = symbol<_TVALUE> >
 class algorithm
 {
 public:
 	typedef typename _SYMBOLS _tdSymbols;
 	typedef typename _OPRTABLE _tdOprTable;
+	typedef typename _FNCTABLE _tdFncTable;
 
 public:
 	algorithm(_SYMBOLS& symbols);

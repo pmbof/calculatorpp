@@ -17,6 +17,9 @@
 #include "pmb_parser_nodes_unknow.h"
 #include "pmb_parser_nodes_unknow.cpp"
 
+#include "pmb_parser_function.cpp"
+
+
 
 namespace pmb
 {
@@ -25,20 +28,20 @@ namespace parser
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::algorithm(_SYMBOLS& symbols)
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::algorithm(_SYMBOLS& symbols)
 	: _tree(NULL), _symbols(symbols)
 {
 }
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::~algorithm()
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::~algorithm()
 {
 	clear();
 }
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::clear()
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::clear()
 {
 	if(_tree)
 	{
@@ -48,16 +51,16 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::clear()
 }
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::initialize()
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::initialize()
 {
 	clear();
 }
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::parser(const char* expr)
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::parser(const char* expr)
 {
 	if(!expr)
 		return;
@@ -73,8 +76,8 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::parser(const char* expr)
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::populate()
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::populate()
 {
 	auto_iterator<0, _IT, _TVALUE> ai(_expr);
 	while(_expr())
@@ -93,8 +96,8 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::populate()
 }
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::mapUnknow()
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::mapUnknow()
 {
 	node<_TVALUE>* nd;
 	_OPRTABLE oprTable;
@@ -122,10 +125,11 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::mapUnknow()
 }
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::calc()
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 {
 	node<_TVALUE>* nd = _tree->getRootNode();
+	_FNCTABLE fncTable;
 	for(; nd && nd->isCalcType(); )
 	{
 		nodes::calc<_TVALUE>* uc = static_cast<nodes::calc<_TVALUE>*>(nd);
@@ -139,6 +143,14 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::calc()
 				const operation<_TVALUE>* opr = uk->getOperation();
 				if(opr->isBinary())
 				{
+					if(opr->canCallFunction())
+					{
+						const function<_TVALUE>* fnc = fncTable.find(nd, _expr._expr, opr->isLeftToRight());
+						if(fnc)
+						{
+							AfxTrace(L"\t+ Function found: %s, nArgs = %d (%s)\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()));
+						}
+					}
 					_TVALUE lValue(0);
 					_TVALUE rValue(0);
 
@@ -219,8 +231,8 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::calc()
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::getValue(node<_TVALUE>* nd, _TVALUE& value, bool canCreateVariable) const
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::getValue(node<_TVALUE>* nd, _TVALUE& value, bool canCreateVariable) const
 {
 	switch(nd->getType())
 	{
@@ -248,8 +260,8 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::getValue(node<_TVALUE>* nd, _
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _SYMBOLS>
-const tree<_TVALUE>* algorithm<_TVALUE, _IT, _OPRTABLE, _SYMBOLS>::getTree() const
+template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
+const tree<_TVALUE>* algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::getTree() const
 {
 	return _tree;
 }

@@ -7,6 +7,8 @@
 #include "ParserDoc.h"
 
 #include "pmb_parser_operation.cpp"
+#include "pmb_parser_function.cpp"
+
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -116,6 +118,20 @@ void CFileView::FillFileView(WPARAM wParam)
 
 	hRoot = m_wndFileView.InsertItem(_T("Functions"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+	pmb::calculator<value>::_tdFncTable fncTable;
+	for(int i = 0; i < fncTable.size(); ++i)
+	{
+		const pmb::parser::function<value>* fnc = fncTable.get(i);
+		CString str(fnc->getName());
+		str += CString(L" \'") + CString(fnc->getDescription()) + L"\'";
+		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(str), 0, 0, hRoot);
+		str = L"Name: " + CString(fnc->getName());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str = L"Description: " + CString(fnc->getDescription());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		str.Format(L"Arguments: %d", fnc->getNArgs());
+		m_wndFileView.InsertItem(str, 1, 1, hSrc);
+	}
 
 	hRoot = m_wndFileView.InsertItem(_T("Operators"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
@@ -126,6 +142,11 @@ void CFileView::FillFileView(WPARAM wParam)
 		CString str(opr->getSymbol());
 		str += CString(L" \'") + CString(opr->getName()) + L"\'";
 		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(str), 0, 0, hRoot);
+		if(opr->canCallFunction())
+		{
+			str = L"Can Call function!";
+			m_wndFileView.InsertItem(str, 1, 1, hSrc);
+		}
 		str = L"Symbol: " + CString(opr->getSymbol());
 		m_wndFileView.InsertItem(str, 1, 1, hSrc);
 		str = L"Name: " + CString(opr->getName());

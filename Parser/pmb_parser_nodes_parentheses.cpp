@@ -27,8 +27,8 @@ parentheses<_TVALUE>::~parentheses()
 template<class _TVALUE>
 int parentheses<_TVALUE>::countListChildNodes() const
 {
-	int count = 0;
-	for(const parentheses<_TVALUE>* pList = _right; pList && pList->getType() == ndList; ++count, pList = pList->_right)
+	int count = _right ? 1: 0;
+	for(const node<_TVALUE>* pList = _right; pList && pList->getType() == ndList; ++count, pList = pList->getRight())
 		;
 	return count;
 }

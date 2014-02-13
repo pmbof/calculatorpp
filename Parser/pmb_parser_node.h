@@ -67,6 +67,8 @@ public:
 	node* getFirstLeftNode();
 	node* getNextNode();
 
+	int nArguments(bool toRight) const;
+
 	// For Debug:
 	int getMetricsNodes(int& size) const;
 	int getMetricsNodes(ndtype type, int& size) const;
