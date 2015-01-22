@@ -6,6 +6,8 @@
 #include "MainFrm.h"
 #include "Parser.h"
 #include "ParserDoc.h"
+#include "pmb_parser_transporter.cpp"
+#include "pmb_parser_operation.cpp"
 #include "pmb_parser_nodes_parentheses.h"
 
 #include "pmb_parser_nodes_unknow.h"
@@ -343,8 +345,8 @@ afx_msg LRESULT CPropertiesWnd::OnSetnode(WPARAM wParam, LPARAM lParam)
 
 CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM lParam, CMFCPropertyGridProperty* pNode) const
 {
-	const pmb::parser::node<value>* pNd = reinterpret_cast<pmb::parser::node<value>*>(wParam);
-	const pmb::parser::node<value>* pNdBase = reinterpret_cast<pmb::parser::node<value>*>(lParam);
+	const pmb::parser::node<transporter>* pNd = reinterpret_cast<pmb::parser::node<transporter>*>(wParam);
+	const pmb::parser::node<transporter>* pNdBase = reinterpret_cast<pmb::parser::node<transporter>*>(lParam);
 	if(!pNd)
 		return NULL;
 
@@ -387,7 +389,7 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	pNode->AddSubItem(pProp);
 	if(pNd->getType() == pmb::parser::ndParentheses)
 	{
-		const pmb::parser::nodes::parentheses<value>* pParen = static_cast<const pmb::parser::nodes::parentheses<value>*>(pNd);
+		const pmb::parser::nodes::parentheses<transporter>* pParen = static_cast<const pmb::parser::nodes::parentheses<transporter>*>(pNd);
 
 		pProp = new CMFCPropertyGridProperty( _T("Opened"), (_variant_t)(pParen->getOpened()), _T("Type of item"));
 		pNode->AddSubItem(pProp);
@@ -398,58 +400,64 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	}
 	else if(pNd->getType() == pmb::parser::ndUnknow)
 	{
-		const pmb::parser::nodes::unknow<value>* pUn = static_cast<const pmb::parser::nodes::unknow<value>*>(pNd);
+		const pmb::parser::nodes::unknow<transporter>* pUn = static_cast<const pmb::parser::nodes::unknow<transporter>*>(pNd);
 
 		if(pUn->getOperation())
 		{
 			CString descr(pUn->getOperation()->getDescription());
 			pProp = new CMFCPropertyGridProperty( _T("Operation"), (_variant_t)(pUn->getOperation()->getName()), descr);
+			pProp->Enable(false);
 			pNode->AddSubItem(pProp);
 			pProp = new CMFCPropertyGridProperty( _T("Binary"), (_variant_t)(pUn->getOperation()->isBinary()), _T("Operation binary"));
+			pProp->Enable(false);
 			pNode->AddSubItem(pProp);
 			pProp = new CMFCPropertyGridProperty( _T("Left to right"), (_variant_t)(pUn->getOperation()->isLeftToRight()), _T("Association order"));
+			pProp->Enable(false);
 			pNode->AddSubItem(pProp);
 			pProp = new CMFCPropertyGridProperty( _T("Priority"), (_variant_t)(pUn->getOperation()->getPrecedence()), _T("Precendence"));
+			pProp->Enable(false);
 			pNode->AddSubItem(pProp);
 			if(pUn->getOperation()->isBinary())
-				pProp = new CMFCPropertyGridProperty( _T("ptr function2"), (_variant_t)(pUn->getOperation()->getFunctor2()), _T("pointer to binary function"));
+				pProp = new CMFCPropertyGridHexProperty( _T("ptr function2"), (_variant_t)(pUn->getOperation()->getFunctor2()), _T("pointer to binary function"));
 			else
-				pProp = new CMFCPropertyGridProperty( _T("ptr function1"), (_variant_t)(pUn->getOperation()->getFunctor1()), _T("pointer to unitary function"));
-			pProp->m_strFormatULong = L"0x%08X";
+				pProp = new CMFCPropertyGridHexProperty( _T("ptr function1"), (_variant_t)(pUn->getOperation()->getFunctor1()), _T("pointer to unitary function"));
+			pProp->Enable(false);
 			pNode->AddSubItem(pProp);
 		}
 	}
 	if(pNd->isCalcType())
 	{
-		const value& val =	pNd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<value>*>(pNd)->getValue():
-							pNd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<value>*>(pNd)->getValue():
-							static_cast<const pmb::parser::nodes::list<value>*>(pNd)->getRValue();
+		const transporter& val =	pNd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<transporter>*>(pNd)->getValue():
+							pNd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<transporter>*>(pNd)->getValue():
+							static_cast<const pmb::parser::nodes::list<transporter>*>(pNd)->getRValue();
 		pProp = new CMFCPropertyGridProperty(pNd->getType() == pmb::parser::ndList ? _T("rValue"): _T("Value"), 0, true);
 		pNode->AddSubItem(pProp);
-		pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value Ptr"), (_variant_t)((UINT)val.get()), _T("Pointer to value")));
-		if(val.get())
+		pProp->AddSubItem(new CMFCPropertyGridHexProperty(_T("Value Ptr"), (_variant_t)((UINT)*val), _T("Pointer to value")));
+		if(*val)
 		{
-			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(val.get()->_number), _T("value")));
-			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(val._getType()), _T("Can delete this value")));
+			transporter val1;
+			val1->_number;
+			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(val->_number), _T("value")));
+			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(val._getState()), _T("Can delete this value")));
 		}
 		pProp->Expand();
 		if(pNd->getType() == pmb::parser::ndList)
 		{
-			const value& lVal = static_cast<const pmb::parser::nodes::list<value>*>(pNd)->getLValue();
+			const transporter& lVal = static_cast<const pmb::parser::nodes::list<transporter>*>(pNd)->getLValue();
 			pProp = new CMFCPropertyGridProperty(_T("lValue"), 0, true);
 			pNode->AddSubItem(pProp);
-			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value Ptr"), (_variant_t)((UINT)lVal.get()), _T("Pointer to left value")));
-			if(lVal.get())
+			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value Ptr"), (_variant_t)((UINT)*lVal), _T("Pointer to left value")));
+			if(*lVal)
 			{
-				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(lVal.get()->_number), _T("value")));
-				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(lVal._getType()), _T("Can delete this value")));
+				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(lVal->_number), _T("value")));
+				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(lVal._getState()), _T("Can delete this value")));
 			}
 			pProp->Expand();
 		}
 	}
-	if(pNd->isCalcType()	)
+	if(pNd->isCalcType())
 	{
-		const pmb::parser::nodes::calc<value>* pCalc = static_cast<const pmb::parser::nodes::calc<value>*>(pNd);
+		const pmb::parser::nodes::calc<transporter>* pCalc = static_cast<const pmb::parser::nodes::calc<transporter>*>(pNd);
 		pProp = new CMFCPropertyGridProperty( _T("is Calculated"), (_variant_t)(pCalc->isCalculated()), _T("Node calculated"));
 		pNode->AddSubItem(pProp);
 		pProp = new CMFCPropertyGridProperty( _T("is Variable dependent"), (_variant_t)(pCalc->isVariableDependent()), _T("Node variable dependent"));

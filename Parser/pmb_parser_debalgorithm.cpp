@@ -24,7 +24,7 @@ algorithm::~algorithm()
 }
 
 
-const auto_iterator<0, iterator, algorithm::value>* algorithm::getIterators() const
+const auto_iterator<0, iterator, algorithm::transporter>* algorithm::getIterators() const
 {
 	return &_ai;
 }
@@ -34,7 +34,7 @@ const iterator* algorithm::getIterator() const
 	return &_expr;
 }
 
-const tree<algorithm::value>* algorithm::getTree() const
+const tree<algorithm::transporter>* algorithm::getTree() const
 {
 	return _tree;
 }
@@ -45,13 +45,13 @@ void algorithm::populate()
 }
 
 
-const node<algorithm::value>* algorithm::getNewNode() const
+const node<algorithm::transporter>* algorithm::getNewNode() const
 {
 	return _newNode;
 }
 
 
-const node<algorithm::value>* algorithm::getNewNodeUnknow() const
+const node<algorithm::transporter>* algorithm::getNewNodeUnknow() const
 {
 	return _newNodeUnknow;
 }

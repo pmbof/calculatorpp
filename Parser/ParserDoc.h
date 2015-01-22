@@ -7,9 +7,11 @@
 
 #include "pmb_parser_debalgorithm.h"
 #include "pmb_calculator.h"
+#include "pmb_parser_transporter.h"
+
 //#include "pmb_parser_algorithm.cpp"
 
-typedef pmb::parser::value<pmb::parser::number<double> > value;
+typedef pmb::parser::transporter<pmb::parser::number<double> > transporter;
 
 
 class CParserDoc : public CDocument
@@ -28,20 +30,20 @@ public:
 	int	m_countIterators;
 
 	const char* m_expr;
-	const pmb::parser::debug::auto_iterator<0, pmb::parser::debug::iterator, value>* m_iterators;
+	const pmb::parser::debug::auto_iterator<0, pmb::parser::debug::iterator, transporter>* m_iterators;
 	const pmb::parser::debug::iterator* m_iterator;
-	const pmb::parser::node<value>* getNewNode() const;
-	const pmb::parser::node<value>* getNewNodeUnknow() const;
-	const pmb::parser::tree<value>* getTree() const;
-	const pmb::parser::tree<value>* getTree2() const;
+	const pmb::parser::node<transporter>* getNewNode() const;
+	const pmb::parser::node<transporter>* getNewNodeUnknow() const;
+	const pmb::parser::tree<transporter>* getTree() const;
+	const pmb::parser::tree<transporter>* getTree2() const;
 
 
-	const pmb::parser::node<value>* getNextUnknowNode(const pmb::parser::node<value>* nd) const;
+	const pmb::parser::node<transporter>* getNextUnknowNode(const pmb::parser::node<transporter>* nd) const;
 
 protected:
-	pmb::parser::symbol<value> m_symbols;
+	pmb::parser::symbol<transporter> m_symbols;
 	pmb::parser::debug::algorithm m_parser;
-	pmb::calculator<value> m_calculator;
+	pmb::calculator<transporter> m_calculator;
 
 // Operations
 public:

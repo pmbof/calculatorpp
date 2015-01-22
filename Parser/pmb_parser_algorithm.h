@@ -11,6 +11,7 @@
 #include "pmb_parser_iterators_parentheses.h"
 #include "pmb_parser_iterators_list.h"
 
+#include "pmb_parser_transporter.h"
 #include "pmb_parser_operation.h"
 #include "pmb_parser_function.h"
 #include "pmb_parser_symbol.h"
@@ -188,6 +189,7 @@ protected:
 protected:
 	tree<_TVALUE>* _tree;
 	_IT _expr;
+	bool _findFirstInFunction;
 
 	mutable _SYMBOLS&	_symbols;
 };

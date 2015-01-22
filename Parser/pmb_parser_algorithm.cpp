@@ -62,6 +62,7 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::initialize()
 template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
 void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::parser(const char* expr)
 {
+	AfxTrace(L"Paresing expression: \n\t\'%s\'\n", (LPCTSTR)CString(expr));
 	if(!expr)
 		return;
 	if(_tree)
@@ -101,13 +102,29 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::mapUnknow()
 {
 	node<_TVALUE>* nd;
 	_OPRTABLE oprTable;
+	_FNCTABLE fncTable;
 	for(nd = _tree->getRootNode()->getFirstUnknowNode(); nd; nd = nd->getNextUnknowNode())
 	{
 		const operation<_TVALUE>* opr = oprTable.find(nd, _expr._expr);
 		if(opr)
 		{
-			static_cast<nodes::unknow<_TVALUE>*>(nd)->setOperation(opr);
-			CString trace(L"Mapping operation: ");
+			const function<_TVALUE>* fnc = NULL;
+			if(opr->canCallFunction())
+			{
+				if(_findFirstInFunction)
+					fnc = fncTable.find(nd, _expr._expr, opr->isLeftToRight());
+				else
+				{
+					const node<_TVALUE>* child = nd->getChild(opr->isLeftToRight());
+					if(child && child->getType() == ndAlpha && !_symbols.find(child->getString(_expr)))
+						fnc = fncTable.find(nd, _expr._expr, opr->isLeftToRight());
+				}
+			}
+			if(fnc)
+				AfxTrace(L"\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()), _findFirstInFunction ? L"true": L"false");
+
+			static_cast<nodes::unknow<_TVALUE>*>(nd)->setOperation(opr, fnc);
+			CString trace(L"\t- Mapping operation: ");
 			trace += opr->getSymbol();
 			trace += "<";
 			trace += opr->getName();
@@ -120,7 +137,7 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::mapUnknow()
 			TRACE_NODE("], node: ", nd);
 		}
 		else
-			TRACE_NODE("No mapping for: ", nd);
+			TRACE_NODE("\t- No mapping for: ", nd);
 	}
 }
 
@@ -129,56 +146,70 @@ template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYM
 void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 {
 	node<_TVALUE>* nd = _tree->getRootNode();
-	_FNCTABLE fncTable;
-	for(; nd && nd->isCalcType(); )
+	_TVALUE lValue(true);
+	_TVALUE rValue(true);
+	for (; nd && nd->isCalcType();)
 	{
 		nodes::calc<_TVALUE>* uc = static_cast<nodes::calc<_TVALUE>*>(nd);
 		uc = uc->nextCalc();
 		if(uc)
 		{
-			TRACE_NODE("+ Calculating", uc);
+			TRACE_NODE("\t\t+ Calculating", uc);
 			if(uc->getType() == ndUnknow)
 			{
 				nodes::unknow<_TVALUE>* uk = static_cast<nodes::unknow<_TVALUE>*>(uc);
 				const operation<_TVALUE>* opr = uk->getOperation();
+				const function<_TVALUE>* fnc = uk->getFunction();
 				if(opr->isBinary())
 				{
-					if(opr->canCallFunction())
+					if((!fnc || !opr->isLeftToRight()))// && (!opr->canCallFunction() || !opr->isLeftToRight() || uk->nArguments(true) < 2))
 					{
-						const function<_TVALUE>* fnc = fncTable.find(nd, _expr._expr, opr->isLeftToRight());
-						if(fnc)
-						{
-							AfxTrace(L"\t+ Function found: %s, nArgs = %d (%s)\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()));
-						}
+						AfxTrace(L"\t\t\t* getting lValue: (right nArguments = %d)%s\n", uk->nArguments(true), opr->canCreateLVariable() ? L"[create Variable]": L"");
+						getValue(uk->getLeft(), lValue, opr->canCreateLVariable());
 					}
-					_TVALUE lValue(0);
-					_TVALUE rValue(0);
-
-					AfxTrace(L"\t* getting lValue:\n");
-					getValue(uk->getLeft(), lValue, opr->canCreateLVariable());
-					AfxTrace(L"\t* getting rValue:\n");
-					getValue(uk->getRight(), rValue, opr->canCreateRVariable());
+					else
+						AfxTrace(L"\t\t\t- skipping get lValue: is a call function, right nArguments = %d.\n", uk->nArguments(true));
+					if((!fnc ||  opr->isLeftToRight()))// && (!opr->canCallFunction() || opr->isLeftToRight() || uk->nArguments(false) < 2))
+					{
+						AfxTrace(L"\t\t\t* getting rValue: (left nArguments = %d)%s\n", uk->nArguments(false), opr->canCreateRVariable() ? L"[create Variable]": L"");
+						getValue(uk->getRight(), rValue, opr->canCreateRVariable());
+					}
+					else
+						AfxTrace(L"\t\t\t- skipping get rValue: is a call function, left nArguments = %d.\n", uk->nArguments(false));
 					if(!lValue)
-						TRACE_NODE("\t- not lValue for", uk->getLeft());
+						TRACE_NODE("\t\t\t- not lValue for", uk->getLeft());
 					if(!rValue)
-						TRACE_NODE("\t- not rValue for", uk->getRight());
-					if(!lValue && !opr->canCreateLVariable() || !rValue && !opr->canCreateRVariable())
-						break;
-					AfxTrace(L"\t* getting result:\n");
-					(*opr)(uk->getValue(), lValue, rValue);
+						TRACE_NODE("\t\t\t- not rValue for", uk->getRight());
+					if((!lValue && !opr->canCreateLVariable() || !rValue && !opr->canCreateRVariable())
+						 && (!fnc || !rValue && opr->isLeftToRight() || !lValue && !opr->isLeftToRight()))
+							break;
+					if(fnc)
+					{
+						AfxTrace(L"\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()), _findFirstInFunction ? L"true": L"false");
+						_TVALUE* args = uk->getArguments();
+						(*fnc)(uk->getValue(), fnc->getNArgs(), args);
+						getValue(uk->getRight(), uk->getValue(), opr->canCreateRVariable());
+					}
+					else
+					{
+						AfxTrace(L"\t\t\t* getting result:\n");
+						(*opr)(uk->getValue(), lValue, rValue);
+					}
+					lValue.release();
+					rValue.release();
 				}
 				else // opr is unitary
 				{
-					_TVALUE value(0);
-					AfxTrace(L"\t* getting value:\n");
-					getValue(opr->isLeftToRight() ? uk->getLeft(): uk->getRight(), value);
-					if(!value)
+					AfxTrace(L"\t\t\t* getting value:\n");
+					getValue(opr->isLeftToRight() ? uk->getLeft(): uk->getRight(), lValue);
+					if(!lValue)
 					{
-						TRACE_NODE("\t- not value for", opr->isLeftToRight() ? uk->getLeft(): uk->getRight());
+						TRACE_NODE("\t\t\t- not value for", opr->isLeftToRight() ? uk->getLeft(): uk->getRight());
 						break;
 					}
-					AfxTrace(L"\t* getting lValue:\n");
-					(*opr)(uk->getValue(), value);
+					AfxTrace(L"\t\t\t* getting result:\n");
+					(*opr)(uk->getValue(), lValue);
+					lValue.release();
 				}
 			}
 			else if(uc->getType() == ndParentheses)
@@ -186,14 +217,14 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 				nodes::parentheses<_TVALUE>* pr = static_cast<nodes::parentheses<_TVALUE>*>(uc);
 				if(pr->getRight()->getType() != ndList && pr->getRight()->getType() != ndParentheses)
 				{
-					AfxTrace(L"\t* getting value:\n");
+					AfxTrace(L"\t\t\t* getting value:\n");
 					getValue(pr->getRight(), pr->getValue());
 				}
 				else
-					AfxTrace(L"\t* skipping value\n");
+					AfxTrace(L"\t\t\t* skipping value\n");
 				if(!pr->getValue())
 				{
-					TRACE_NODE("\t- not value for", pr->getRight());
+					TRACE_NODE("\t\t\t- not value for", pr->getRight());
 //					break;
 				}
 			}
@@ -202,28 +233,28 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 				nodes::list<_TVALUE>* ls = static_cast<nodes::list<_TVALUE>*>(uc);
 				if(ls->getLeft()->getType() != ndList && ls->getLeft()->getType() != ndParentheses)
 				{
-					AfxTrace(L"\t* getting lValue:\n");
+					AfxTrace(L"\t\t\t* getting lValue:\n");
 					getValue(ls->getLeft(), ls->getLValue());
 				}
 				else
-					AfxTrace(L"\t* skipping lValue:\n");
+					AfxTrace(L"\t\t\t* skipping lValue:\n");
 				if(ls->getRight()->getType() != ndList && ls->getRight()->getType() != ndParentheses)
 				{
-					AfxTrace(L"\t* getting rValue:\n");
+					AfxTrace(L"\t\t\t* getting rValue:\n");
 					getValue(ls->getRight(), ls->getRValue());
 				}
 				else
-					AfxTrace(L"\t* skipping rValue\n");
+					AfxTrace(L"\t\t\t* skipping rValue\n");
 					
 				if(!ls->getLValue())
-					TRACE_NODE("\t- not lValue for", ls->getLeft());
+					TRACE_NODE("\t\t\t- not lValue for", ls->getLeft());
 				if(!ls->getRValue())
-					TRACE_NODE("\t- not rValue for", ls->getRight());
+					TRACE_NODE("\t\t\t- not rValue for", ls->getRight());
 //				if(!ls->getLValue() || !ls->getRValue())
 //					break;
 			}
 			uc->setCalculated();
-			TRACE_NODE("- Calculated", uc);
+			TRACE_NODE("\t\t- Calculated!!!", uc);
 		}
 		nd = uc;
 	}

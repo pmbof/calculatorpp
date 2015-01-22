@@ -28,11 +28,11 @@ protected:
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
 private:
-	pmb::parser::node<value>* m_pNdUnk;
-	pmb::parser::node<value>* m_pNd;
+	pmb::parser::node<transporter>* m_pNdUnk;
+	pmb::parser::node<transporter>* m_pNd;
 
 private:
-	void drawNode(CDC* pDC, const pmb::parser::node<value>* nd, int x0, int y0, int height, const CString& expr);
+	void drawNode(CDC* pDC, const pmb::parser::node<transporter>* nd, int x0, int y0, int height, const CString& expr);
 
 // Implementation
 public:

@@ -127,7 +127,7 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 		CString s1("   Size of " #TYPE  " node: %dB (%d x %dB = %dB) ");\
 		str.Format(s1, size ## TYPE, count ## TYPE, size ## TYPE, size ## TYPE * count ## TYPE);\
 		m_wndOutputStadistics.AddString(str);\
-		str.Format(_T("      size of node*: %dB (%d x %dB= %dB)"), sizeof(pmb::parser::node<value>*), 3, sizeof(pmb::parser::node<value>*), 3 * sizeof(pmb::parser::node<value>*));\
+		str.Format(_T("      size of node*: %dB (%d x %dB= %dB)"), sizeof(pmb::parser::node<transporter>*), 3, sizeof(pmb::parser::node<transporter>*), 3 * sizeof(pmb::parser::node<transporter>*));\
 		m_wndOutputStadistics.AddString(str);\
 		str.Format(_T("      size of item: %dB"), sizeof(pmb::parser::item));\
 		m_wndOutputStadistics.AddString(str);\
@@ -141,7 +141,7 @@ void COutputWnd::FillStadisticsWindow()
 	CParserDoc* pDoc = CParserDoc::getDocument(this);
 	if(!pDoc)
 		return;
-	const pmb::parser::node<value>* pNd = pDoc->getTree2()->getRootNode();
+	const pmb::parser::node<transporter>* pNd = pDoc->getTree2()->getRootNode();
 	int size = 0, 
 		count = pNd->getMetricsNodes(size);
 	CString str;

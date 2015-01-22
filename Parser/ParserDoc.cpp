@@ -14,6 +14,7 @@
 #include "pmb_parser_algorithm.cpp"
 #include "pmb_calculator.cpp"
 
+#include "pmb_parser_transporter.cpp"
 #include "pmb_parser_operation.cpp"
 #include "pmb_parser_symbol.cpp"
 
@@ -82,6 +83,7 @@ BOOL CParserDoc::OnNewDocument()
 //	m_expr = "a acos (";
 
 	m_symbols.selectSearch("Constants");
+	m_calculator.parser("k = 2 3");
 	m_calculator.parser("pi = 3.1415692");
 	m_calculator.parser( "e = 2.71828182");
 
@@ -101,7 +103,7 @@ BOOL CParserDoc::OnNewDocument()
 	m_calculator.parser(m_expr);
 	m_expr = "x = 3";
 	m_calculator.parser(m_expr);
-	m_expr = "y = sin 5 x";
+	m_expr = "y = sin 5x";
 	m_calculator.parser(m_expr);
 	GetSystemTime(&m_time_end);
 
@@ -115,42 +117,42 @@ bool CParserDoc::nextStep()
 	return m_parser.nextStep();
 }
 
-const pmb::parser::tree<value>* CParserDoc::getTree() const
+const pmb::parser::tree<transporter>* CParserDoc::getTree() const
 {
 	return m_parser.getTree();
 }
 
-const pmb::parser::node<value>* CParserDoc::getNewNode() const
+const pmb::parser::node<transporter>* CParserDoc::getNewNode() const
 {
 	return m_parser.getNewNode();
 }
 
-const pmb::parser::node<value>* CParserDoc::getNewNodeUnknow() const
+const pmb::parser::node<transporter>* CParserDoc::getNewNodeUnknow() const
 {
 	return m_parser.getNewNodeUnknow();
 }
 
 
-const pmb::parser::node<value>* CParserDoc::getNextUnknowNode(const pmb::parser::node<value>* nd) const
+const pmb::parser::node<transporter>* CParserDoc::getNextUnknowNode(const pmb::parser::node<transporter>* nd) const
 {
 	if(!nd)
 	{
 		nd = m_calculator.getTree()->getRootNode();
 		if(nd && nd->getType() == pmb::parser::ndUnknow)
 			//nd = nd->getFirstUnknowNode();
-			nd = ((pmb::parser::nodes::unknow<value>*)nd)->nextCalc();
+			nd = ((pmb::parser::nodes::unknow<transporter>*)nd)->nextCalc();
 	}
 	else if(nd->getType() == pmb::parser::ndUnknow)
 //		nd = nd->getNextUnknowNode();
-		nd = ((pmb::parser::nodes::unknow<value>*)nd)->nextCalc();
+		nd = ((pmb::parser::nodes::unknow<transporter>*)nd)->nextCalc();
 	if(nd && nd->getType() == pmb::parser::ndUnknow)
-		((pmb::parser::nodes::unknow<value>*)nd)->setCalculated();
+		((pmb::parser::nodes::unknow<transporter>*)nd)->setCalculated();
 	return nd;
 }
 
 
 
-const pmb::parser::tree<value>* CParserDoc::getTree2() const
+const pmb::parser::tree<transporter>* CParserDoc::getTree2() const
 {
 	return m_calculator.getTree();
 }

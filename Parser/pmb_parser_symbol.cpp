@@ -103,6 +103,30 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& va
 }
 
 
+template<class _TVALUE, class _ITSTRING, class _MAP>
+bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol) const
+{
+	if(!_defaultSearch)
+	{
+		for(_tpMMap::const_iterator it = _map.begin(); it != _map.end(); ++it)
+		{
+			_MAP::const_iterator i = it->second->find(symbol);
+			if(i != it->second->end())
+				return true;
+		}
+	}
+	else
+	{
+		for(_tpLstMap::const_iterator it = _defaultSearch->begin(); it != _defaultSearch->end(); ++it)
+		{
+			_MAP::const_iterator i = (*it)->find(symbol);
+			if(i != (*it)->end())
+				return true;
+		}
+	}
+	return false;
+}
+
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
 const typename symbol<_TVALUE, _ITSTRING, _MAP>::_tpMMap* symbol<_TVALUE, _ITSTRING, _MAP>::get() const

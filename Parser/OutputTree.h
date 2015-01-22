@@ -18,19 +18,19 @@ public:
 private:
 	struct node: CRect
 	{
-		node(const CRect& r, const pmb::parser::node<value>* nd)
+		node(const CRect& r, const pmb::parser::node<transporter>* nd)
 			: CRect(r), pNd(nd), bSelected(false)
 		{}
 
-		const pmb::parser::node<value>* pNd;
+		const pmb::parser::node<transporter>* pNd;
 		bool bSelected;
 	};
 
 	bool m_bDebug;
 	typedef std::list<node> lrect;
 	lrect m_cnd;
-	const pmb::parser::node<value>* m_pNd;
-	const pmb::parser::node<value>* m_pNdUnknow;
+	const pmb::parser::node<transporter>* m_pNd;
+	const pmb::parser::node<transporter>* m_pNdUnknow;
 	int m_cx;
 	int m_cy;
 
@@ -46,7 +46,7 @@ protected:
 		COutputTree* parent;
 		CDC* pDC;
 		const CString& expr;
-		const pmb::parser::node<value>* nd;
+		const pmb::parser::node<transporter>* nd;
 		int x0;
 		int x;
 		int y;

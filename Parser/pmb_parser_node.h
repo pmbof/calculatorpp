@@ -54,6 +54,8 @@ public:
 	const node* getParent() const;
 	const node* getLeft() const;
 	const node* getRight() const;
+	const node* getChild(bool bLeft) const;
+
 	char getType() const;
 	bool isCalcType() const;
 
@@ -150,9 +152,9 @@ void TRACE_NODE(const char* text, const pmb::parser::node<_TVALUE>* nd, bool isB
 					nd->getLeft(), nd->getRight());
 		}
 
-		val._print(nd->getType() != pmb::parser::ndList ? L" value": L" rValue", false, recursive);
+		val._print(nd->getType() != pmb::parser::ndList ? L" value": L" rValue", false);
 		if(nd->getType() == pmb::parser::ndList)
-			static_cast<const pmb::parser::nodes::list<_TVALUE>*>(nd)->getLValue()._print(L" | lValue", false, recursive);
+			static_cast<const pmb::parser::nodes::list<_TVALUE>*>(nd)->getLValue()._print(L" | lValue", false);
 		AfxTrace(_T("\n"));
 	}
 	else

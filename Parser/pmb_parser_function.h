@@ -125,6 +125,8 @@ public:
 	const char* getDescription() const;
 	int getNArgs() const;
 
+	void operator()(_TVALUE& result, int nArgs, _TVALUE* vals) const;
+
 private:
 	char* _name;
 	int _len;
@@ -140,11 +142,14 @@ template<class _TVALUE>
 class function_table 
 {
 public:
+	static int getPrecedence();
 
+public:
 	const function<_TVALUE>* find(const node<_TVALUE>* nd, const char* expr, bool toRight) const;
 
 	const function<_TVALUE>* get(int i) const;
 	int size() const;
+
 
 protected:
 	static const function<_TVALUE> _fnc[];

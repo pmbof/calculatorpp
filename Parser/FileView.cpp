@@ -6,6 +6,7 @@
 #include "Parser.h"
 #include "ParserDoc.h"
 
+#include "pmb_parser_transporter.cpp"
 #include "pmb_parser_operation.cpp"
 #include "pmb_parser_function.cpp"
 
@@ -95,21 +96,26 @@ void CFileView::OnSize(UINT nType, int cx, int cy)
 
 void CFileView::FillFileView(WPARAM wParam)
 {
-	const pmb::parser::symbol<value>::_tpMMap* map = reinterpret_cast<const pmb::parser::symbol<value>::_tpMMap*>(wParam);
+	const pmb::parser::symbol<transporter>::_tpMMap* map = reinterpret_cast<const pmb::parser::symbol<transporter>::_tpMMap*>(wParam);
 
 	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Symbols"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 
-	for(pmb::parser::symbol<value>::_tpMMap::const_iterator i = map->begin(); i != map->end(); ++i)
+	for(pmb::parser::symbol<transporter>::_tpMMap::const_iterator i = map->begin(); i != map->end(); ++i)
 	{
 		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(i->first.c_str()), 0, 0, hRoot);
-		for(pmb::parser::symbol<value>::_tpMap::const_iterator j = i->second->begin(); j != i->second->end(); ++j)
+		for(pmb::parser::symbol<transporter>::_tpMap::const_iterator j = i->second->begin(); j != i->second->end(); ++j)
 		{
-			HTREEITEM hVar = m_wndFileView.InsertItem(CString(j->first.c_str()), 1, 1, hSrc);
 			CString str;
-			str.Format(_T("%f"), j->second.get()->_number);
-			m_wndFileView.InsertItem(str, 2, 2, hVar);
-			str = j->second._getType();
+			str.Format(_T(" <0x%08X>"), *j->second);
+			str = CString(j->first.c_str()) + str;
+			HTREEITEM hVar = m_wndFileView.InsertItem(str, 1, 1, hSrc);
+			if (!j->second.isNull())
+			{
+				str.Format(_T("%f"), j->second->_number);
+				m_wndFileView.InsertItem(str, 2, 2, hVar);
+			}
+			str = j->second._getState();
 			m_wndFileView.InsertItem(str, 2, 2, hVar);
 		}
 		m_wndFileView.Expand(hSrc, TVE_EXPAND);
@@ -118,10 +124,10 @@ void CFileView::FillFileView(WPARAM wParam)
 
 	hRoot = m_wndFileView.InsertItem(_T("Functions"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-	pmb::calculator<value>::_tdFncTable fncTable;
+	pmb::calculator<transporter>::_tdFncTable fncTable;
 	for(int i = 0; i < fncTable.size(); ++i)
 	{
-		const pmb::parser::function<value>* fnc = fncTable.get(i);
+		const pmb::parser::function<transporter>* fnc = fncTable.get(i);
 		CString str(fnc->getName());
 		str += CString(L" \'") + CString(fnc->getDescription()) + L"\'";
 		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(str), 0, 0, hRoot);
@@ -135,10 +141,10 @@ void CFileView::FillFileView(WPARAM wParam)
 
 	hRoot = m_wndFileView.InsertItem(_T("Operators"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-	pmb::calculator<value>::_tdOprTable oprTable;
+	pmb::calculator<transporter>::_tdOprTable oprTable;
 	for(int i = 0; i < oprTable.size(); ++i)
 	{
-		const pmb::parser::operation<value>* opr = oprTable.get(i);
+		const pmb::parser::operation<transporter>* opr = oprTable.get(i);
 		CString str(opr->getSymbol());
 		str += CString(L" \'") + CString(opr->getName()) + L"\'";
 		HTREEITEM hSrc = m_wndFileView.InsertItem(CString(str), 0, 0, hRoot);

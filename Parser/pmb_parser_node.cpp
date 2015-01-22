@@ -229,6 +229,12 @@ node<_TVALUE>* node<_TVALUE>::getLeft()
 }
 
 template <class _TVALUE>
+const node<_TVALUE>* node<_TVALUE>::getChild(bool bLeft) const
+{
+	return bLeft ? _left: _right;
+}
+
+template <class _TVALUE>
 const node<_TVALUE>* node<_TVALUE>::getRight() const
 {
 	return _right;

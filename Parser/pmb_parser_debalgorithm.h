@@ -315,22 +315,22 @@ protected:
 
 
 // Class For Debug:
-class algorithm: public parser::algorithm<value<number<double> > , iterator>
+class algorithm: public parser::algorithm<transporter<number<double> >, iterator>
 {
 public:
-	typedef value<number<double> > value;
-	typedef parser::algorithm<value, iterator> _base;
+	typedef transporter<number<double> > transporter;
+	typedef parser::algorithm<transporter, iterator> _base;
 
 public:
 	algorithm(_base::_tdSymbols& symbols);
 	~algorithm();
 
-	const auto_iterator<0, iterator, value>* getIterators() const;
+	const auto_iterator<0, iterator, transporter>* getIterators() const;
 	const iterator* getIterator() const;
-	const tree<value>* getTree() const;
+	const tree<transporter>* getTree() const;
 
-	const node<value>* getNewNode() const;
-	const node<value>* getNewNodeUnknow() const;
+	const node<transporter>* getNewNode() const;
+	const node<transporter>* getNewNodeUnknow() const;
 
 	bool nextStep();
 
@@ -338,10 +338,10 @@ protected:
 	void populate();
 	void mapUnknow();
 
-	auto_iterator<0, iterator, value> _ai;
+	auto_iterator<0, iterator, transporter> _ai;
 
-	node<value>* _newNode;
-	node<value>* _newNodeUnknow;
+	node<transporter>* _newNode;
+	node<transporter>* _newNodeUnknow;
 };
 
 

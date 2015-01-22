@@ -114,7 +114,7 @@ void CParserView::OnDraw(CDC* pDC)
 
 }
 
-void CParserView::drawNode(CDC* pDC, const pmb::parser::node<value>* nd, int x0, int y0, int height, const CString& expr)
+void CParserView::drawNode(CDC* pDC, const pmb::parser::node<transporter>* nd, int x0, int y0, int height, const CString& expr)
 {
 	if(nd)
 	{
@@ -220,9 +220,9 @@ void CParserView::OnIterationMoveNext()
 afx_msg LRESULT CParserView::OnSetnode(WPARAM wParam, LPARAM lParam)
 {
 	if(lParam)
-		m_pNdUnk = reinterpret_cast<pmb::parser::node<value>*>(lParam);
+		m_pNdUnk = reinterpret_cast<pmb::parser::node<transporter>*>(lParam);
 	else
-		m_pNd = reinterpret_cast<pmb::parser::node<value>*>(wParam);
+		m_pNd = reinterpret_cast<pmb::parser::node<transporter>*>(wParam);
 	RedrawWindow();
 	return 0;
 }
