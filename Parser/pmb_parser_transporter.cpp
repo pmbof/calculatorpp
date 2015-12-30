@@ -23,19 +23,25 @@ transporter<_VALUE>::transporter(int)
 
 template <class _VALUE>
 transporter<_VALUE>::transporter()
-	: _state(tpsNULLNoTransferable)
+	: _state(tpsNULLNoTransferable), _next(NULL)
 {
 }
 
 template <class _VALUE>
 transporter<_VALUE>::transporter(bool)
-	: _state(tpsNULL)
+	: _state(tpsNULL), _next(NULL)
 {
 }
 
 template <class _VALUE>
 transporter<_VALUE>::transporter(_valuePtr value, bool transferable)
 	: _state(transferable ? tpsTransferable: tpsNoTransferable), _value(value), _next(NULL)
+{
+}
+
+template <class _VALUE>
+transporter<_VALUE>::transporter(_Myt* next)
+	: _state(tpsNULL), _next(next)
 {
 }
 
@@ -90,6 +96,19 @@ bool transporter<_VALUE>::isNoTransferable() const
 }
 
 template <class _VALUE>
+const transporter<_VALUE>* transporter<_VALUE>::getNext() const
+{
+	return _next;
+}
+
+template <class _VALUE>
+void transporter<_VALUE>::setNext(transporter<_VALUE>* rValue)
+{
+	_next = rValue;
+}
+
+
+template <class _VALUE>
 void transporter<_VALUE>::_release()
 {
 	for(_Myt* cursor = this; cursor && !cursor->isNull(); )
@@ -98,6 +117,8 @@ void transporter<_VALUE>::_release()
 			break;
 		if (!cursor->isNull() && cursor->_state != tpsTransferred && cursor->_value)
 			delete cursor->_value;
+		break;
+
 		_Myt* del = cursor;
 		cursor = cursor->_next;
 		if(del != this)
@@ -142,8 +163,9 @@ bool transporter<_VALUE>::copyFrom(const _Myt& src)
 		}
 		else if (st->_state == tpsTransferred || st->_state == tpsNoTransferable)
 			t->_value = new _VALUE(st->_value);
+		if (t->isNull() && !t->_next)
+			t->_next = st->_next;
 		t->_state = t->_state == tpsNULLNoTransferable ? tpsNoTransferable : tpsTransferable;
-		t->_next = st->_next;
 	}
 	else if (st->_state == tpsNULLNoTransferable)
 	{
@@ -177,10 +199,15 @@ transporter<_VALUE>& transporter<_VALUE>::operator=(const _valuePtr right)
 		{
 			target->_state = target->_state == tpsNULLNoTransferable ? tpsNoTransferable: tpsTransferable;
 			target->_value = right;
-			target->_next = NULL;
 		}
 	}
 	return *this;
+}
+
+template <class _VALUE>
+transporter<_VALUE>& transporter<_VALUE>::operator=(const _TypeV& right)
+{
+	return operator=(new VALUE(right));
 }
 
 
@@ -243,11 +270,10 @@ transporter<_VALUE>& transporter<_VALUE>::operator()(_valuePtr target, _Myt& lef
 template <class _VALUE>
 _VALUE* transporter<_VALUE>::operator[](int idx)
 {
-	int i = 0;
-	_Myt* cursor;
-	for(cursor = this; i < idx && cursor && cursor->isNull(); cursor = cursor->_next, ++i)
+	_Myt* cursor = this;
+	for(int i = 0; i < idx && cursor; cursor = cursor->_next, ++i)
 		;
-	return cursor && !cursor->isNull() && i == idx ? cursor->_value: NULL; 
+	return cursor ? cursor->_value: NULL; 
 }
 
 template <class _VALUE>
@@ -307,7 +333,7 @@ void transporter<_VALUE>::___print() const
 		for(const _Myt* cur = this; cur; cur = cur->_state == tpsTransporter ? cur->_pValue: cur->_next)
 		{
 			if(cur != this)
-				AfxTrace(L"; ");
+				AfxTrace(L" -> ");
 			if(cur->_value)
 				AfxTrace(L"0x%08X [%s]{0x%08X = %f}", this, _getState(), _value, *_value);
 			else

@@ -282,7 +282,7 @@ int COutputTree::graph_node::draw()
 	{
 		const transporter& val =	nd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<transporter>*>(nd)->getValue():
 							nd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<transporter>*>(nd)->getValue():
-							static_cast<const pmb::parser::nodes::list<transporter>*>(nd)->getRValue();
+							*static_cast<const pmb::parser::nodes::list<transporter>*>(nd)->getRValue();
 		CBrush brVal;
 		brVal.CreateSolidBrush(val._getStateColor());
 		CBrush* oBr = pDC->SelectObject(&brVal);

@@ -12,6 +12,7 @@ template<class _TYPE>
 struct number
 {
 public:
+	typename typedef _TYPE _TypeV;
 	typedef number<_TYPE> _MyT;
 
 public:

@@ -186,9 +186,18 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 					if(fnc)
 					{
 						AfxTrace(L"\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()), _findFirstInFunction ? L"true": L"false");
-						_TVALUE* args = uk->getArguments();
+						const _TVALUE* args = uk->getArguments();
+						if (!args && fnc->getNArgs() == 1)
+						{
+							getValue(uk->getRight(), uk->getValue(), opr->canCreateRVariable());
+							args = &uk->getValue();
+						}
+						else if (!args && fnc->getNArgs())
+						{
+							AfxTrace(L"\t\t\t- ERROR getting function arguments.\n");
+							break;
+						}
 						(*fnc)(uk->getValue(), fnc->getNArgs(), args);
-						getValue(uk->getRight(), uk->getValue(), opr->canCreateRVariable());
 					}
 					else
 					{
@@ -215,7 +224,7 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 			else if(uc->getType() == ndParentheses)
 			{
 				nodes::parentheses<_TVALUE>* pr = static_cast<nodes::parentheses<_TVALUE>*>(uc);
-				if(pr->getRight()->getType() != ndList && pr->getRight()->getType() != ndParentheses)
+				if (pr->getRight()->getType() == ndList || pr->getRight()->getType() != ndList && pr->getRight()->getType() != ndParentheses)
 				{
 					AfxTrace(L"\t\t\t* getting value:\n");
 					getValue(pr->getRight(), pr->getValue());
@@ -231,27 +240,17 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
 			else // uc->getType() == ndList
 			{
 				nodes::list<_TVALUE>* ls = static_cast<nodes::list<_TVALUE>*>(uc);
-				if(ls->getLeft()->getType() != ndList && ls->getLeft()->getType() != ndParentheses)
-				{
-					AfxTrace(L"\t\t\t* getting lValue:\n");
-					getValue(ls->getLeft(), ls->getLValue());
-				}
-				else
-					AfxTrace(L"\t\t\t* skipping lValue:\n");
-				if(ls->getRight()->getType() != ndList && ls->getRight()->getType() != ndParentheses)
-				{
-					AfxTrace(L"\t\t\t* getting rValue:\n");
-					getValue(ls->getRight(), ls->getRValue());
-				}
-				else
-					AfxTrace(L"\t\t\t* skipping rValue\n");
+				ls->updateNext();
+				_TVALUE* rVal = ls->getRValue();
+				getValue(ls->getLeft(), ls->getLValue());
+				getValue(ls->getRight(), *rVal);
 					
 				if(!ls->getLValue())
 					TRACE_NODE("\t\t\t- not lValue for", ls->getLeft());
-				if(!ls->getRValue())
+				if(!ls->getRValue() && !*ls->getRValue())
 					TRACE_NODE("\t\t\t- not rValue for", ls->getRight());
-//				if(!ls->getLValue() || !ls->getRValue())
-//					break;
+				if(!ls->getLValue() || !ls->getRValue())
+					break;
 			}
 			uc->setCalculated();
 			TRACE_NODE("\t\t- Calculated!!!", uc);
@@ -277,7 +276,7 @@ void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::getValue(node<_TVA
 		value = static_cast<nodes::parentheses<_TVALUE>*>(nd)->getValue();
 		break;
 	case ndList:
-		value = static_cast<nodes::list<_TVALUE>*>(nd)->getRValue();
+		value = static_cast<nodes::list<_TVALUE>*>(nd)->getValue();
 		break;
 	case ndString:
 		break;

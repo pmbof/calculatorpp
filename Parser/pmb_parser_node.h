@@ -131,7 +131,7 @@ void TRACE_NODE(const char* text, const pmb::parser::node<_TVALUE>* nd, bool isB
 	{
 		const _TVALUE& val =	nd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<_TVALUE>*>(nd)->getValue():
 								nd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<_TVALUE>*>(nd)->getValue():
-										static_cast<const pmb::parser::nodes::list<_TVALUE>*>(nd)->getRValue();
+										*static_cast<const pmb::parser::nodes::list<_TVALUE>*>(nd)->getRValue();
 		if(nd->getType() != pmb::parser::ndUnknow)
 			AfxTrace(_T("%s node %s: 0x%08X %c[%d, %d]{l0x%08X, r0x%08X}"), (LPCTSTR)CString(text),
 					nd->getType() == pmb::parser::ndList ? L"list": L"parentheses",

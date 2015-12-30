@@ -99,11 +99,11 @@ BOOL CParserDoc::OnNewDocument()
 	m_calculator.parser(m_expr);
 	m_expr = "fac = 5!";
 	m_calculator.parser(m_expr);
-	m_expr = "sin = 2";
+	m_expr = "pi4 = sin pi/4";
 	m_calculator.parser(m_expr);
-	m_expr = "x = 3";
+	m_expr = "x = 1";
 	m_calculator.parser(m_expr);
-	m_expr = "y = sin 5x";
+	m_expr = "y(x) = 4 asin(sin x, 1)";
 	m_calculator.parser(m_expr);
 	GetSystemTime(&m_time_end);
 

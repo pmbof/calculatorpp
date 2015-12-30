@@ -33,12 +33,11 @@ public:
 	const _TVALUE& getValue() const;
 	_TVALUE& getValue();
 
-	_TVALUE* getArguments() const;
+	const _TVALUE* getArguments() const;
 
 protected:
 	const operation<_TVALUE>* _opr;
 	const function<_TVALUE>* _fnc;
-//	_TVALUE _value;
 };
 
 

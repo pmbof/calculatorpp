@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "pmb_parser_nodes_unknow.h"
+#include "pmb_parser_nodes_parentheses.h"
 
 #pragma once
 
@@ -13,7 +14,7 @@ namespace nodes
 
 template<class _TVALUE>
 unknow<_TVALUE>::unknow(int ini, int end)
-	: calc(ndUnknow, ini, end), _opr(NULL), tvalue_type(0)//_value()
+	: calc(ndUnknow, ini, end), _opr(NULL), tvalue_type()//_value()
 {
 }
 
@@ -50,32 +51,27 @@ void unknow<_TVALUE>::setOperation(const operation<_TVALUE>* opr, const function
 	_opr = opr;
 	_fnc = fnc;
 	int precedence = getPrecedence();
-	for(unknow<_TVALUE>* parent = static_cast<unknow<_TVALUE>*>(_parent); _opr && parent && parent->_type == ndUnknow && parent->_opr &&
-					(precedence < parent->getPrecedence() || _opr->isLeftToRight() && !(parent->getPrecedence() < precedence)); 
-				parent = static_cast<unknow<_TVALUE>*>(_parent))
+	for(unknow<_TVALUE>* parent = static_cast<unknow<_TVALUE>*>(_parent);
+			_opr && parent && parent->_type == ndUnknow && parent->_opr &&
+					!_fnc && precedence < parent->getPrecedence();
+						//	|| !_fnc && _opr->isLeftToRight() && !(precedence < parent->getPrecedence() < precedence));
+			parent = static_cast<unknow<_TVALUE>*>(_parent))
 		switchToUpNode();
 }
 
 
 template<class _TVALUE>
-_TVALUE* unknow<_TVALUE>::getArguments() const
+const _TVALUE* unknow<_TVALUE>::getArguments() const
 {
 	if(!_fnc)
 		return NULL;
-	_TVALUE* args = new _TVALUE[_fnc->getNArgs()];
+	const _TVALUE* args;// = new _TVALUE[_fnc->getNArgs()];
 
 	node<_TVALUE>* ndArg = _opr->isLeftToRight() ? _right: _left;
-	for(int i = 0; ndArg; ndArg = ndArg->getRight())
-	{
-		if(ndArg->getType() == ndParentheses)
-		{
-//			if(...)
-			continue;
-		}
-//		if(ndArg->getType() == ndList)
-//			args[i++] = ndArg->getLeft();
-	}
-
+	if (ndArg->getType() == ndParentheses)
+		args = &static_cast<parentheses<_TVALUE>*>(ndArg)->getValue();
+	else
+		args = NULL;
 	return args;
 }
 
@@ -83,13 +79,13 @@ _TVALUE* unknow<_TVALUE>::getArguments() const
 template<class _TVALUE>
 _TVALUE& unknow<_TVALUE>::getValue()
 {
-	return *this;//_value;
+	return *this;
 }
 
 template<class _TVALUE>
 const _TVALUE& unknow<_TVALUE>::getValue() const
 {
-	return *this;//_value;
+	return *this;
 }
 
 

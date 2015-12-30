@@ -11,6 +11,7 @@ class transporter
 {
 public:
 	typedef typename _VALUE  VALUE;
+	typedef typename VALUE::_TypeV _TypeV;
 	typedef transporter<VALUE> _Myt;
 	typedef VALUE* _valuePtr;
 
@@ -28,11 +29,12 @@ public:
 	static _valuePtr getNewValue(const char* str, int len);
 
 protected:
-//	explicit transporter(int);
+	explicit transporter(_Myt* next);
 public:
 	explicit transporter();
 	explicit transporter(bool);
 	explicit transporter(_valuePtr value, bool transfeable);
+
 	~transporter();
 
 	void release();
@@ -41,11 +43,15 @@ public:
 
 	_Myt& operator=(const _Myt& right);
 	_Myt& operator=(const _valuePtr right);
+	_Myt& operator=(const _TypeV& right);
 
 	bool isNull() const;
 	bool operator!() const;
 	bool isTransferable() const;
 	bool isNoTransferable() const;
+	const _Myt* getNext() const;
+
+	void setNext(_Myt* rValue);
 
 	_valuePtr operator*();
 	_valuePtr const operator*() const;

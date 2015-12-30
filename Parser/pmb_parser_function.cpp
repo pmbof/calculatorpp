@@ -59,7 +59,7 @@ int function<_TVALUE>::getNArgs() const
 
 
 template<class _TVALUE>
-void function<_TVALUE>::operator()(_TVALUE& result, int nArgs, _TVALUE* vals) const {
+void function<_TVALUE>::operator()(_TVALUE& result, int nArgs, const _TVALUE* vals) const {
 	functions<_TVALUE> fnc;
 	(fnc.*_func)(result, nArgs, vals);
 }
@@ -87,6 +87,7 @@ const function<_TVALUE> function_table<_TVALUE>::_fnc[] = {
 	function<_TVALUE>("cosec", "cosecant", &functions<_TVALUE>::cosec),
 	function<_TVALUE>("cotg", "cotangent", &functions<_TVALUE>::cotg),
 	function<_TVALUE>("asin", "arc sine", &functions<_TVALUE>::asin),
+	function<_TVALUE>("asin", "arc sine", &functions<_TVALUE>::asin2, 2),
 	function<_TVALUE>("acos", "arc cosine", &functions<_TVALUE>::acos),
 	function<_TVALUE>("atg", "arc tangent", &functions<_TVALUE>::atg),
 	function<_TVALUE>("asec", "arc secant", &functions<_TVALUE>::asec),
@@ -103,7 +104,7 @@ const int function_table<_TVALUE>::_fncSize = 23;
 template<class _TVALUE>
 int function_table<_TVALUE>::getPrecedence()
 {
-	return 105;
+	return 100;
 }
 
 

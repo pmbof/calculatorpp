@@ -427,31 +427,28 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	}
 	if(pNd->isCalcType())
 	{
-		const transporter& val =	pNd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<transporter>*>(pNd)->getValue():
+		const transporter* pval = &(pNd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<transporter>*>(pNd)->getValue():
 							pNd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<transporter>*>(pNd)->getValue():
-							static_cast<const pmb::parser::nodes::list<transporter>*>(pNd)->getRValue();
-		pProp = new CMFCPropertyGridProperty(pNd->getType() == pmb::parser::ndList ? _T("rValue"): _T("Value"), 0, true);
-		pNode->AddSubItem(pProp);
-		pProp->AddSubItem(new CMFCPropertyGridHexProperty(_T("Value Ptr"), (_variant_t)((UINT)*val), _T("Pointer to value")));
-		if(*val)
+							static_cast<const pmb::parser::nodes::list<transporter>*>(pNd)->getLValue());
+		for (CMFCPropertyGridProperty* pVNode = pNode; pval; pval = pval->getNext(), pVNode = pProp)
 		{
-			transporter val1;
-			val1->_number;
-			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(val->_number), _T("value")));
-			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(val._getState()), _T("Can delete this value")));
-		}
-		pProp->Expand();
-		if(pNd->getType() == pmb::parser::ndList)
-		{
-			const transporter& lVal = static_cast<const pmb::parser::nodes::list<transporter>*>(pNd)->getLValue();
-			pProp = new CMFCPropertyGridProperty(_T("lValue"), 0, true);
-			pNode->AddSubItem(pProp);
-			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value Ptr"), (_variant_t)((UINT)*lVal), _T("Pointer to left value")));
-			if(*lVal)
+			const transporter& val = *pval;
+			CString svalue(pNd->getType() == pmb::parser::ndList ? _T("Value") : _T("Value"));
+			svalue += L" [" + CString(val._getState()) + L"]";
+			pProp = new CMFCPropertyGridProperty(svalue, 0, true);
+			pVNode->AddSubItem(pProp);
+			CString state(val._getState());
+			if (state == L"tpsTransporter")
+				pProp->AddSubItem(new CMFCPropertyGridHexProperty(_T("Value Ptr"), (_variant_t)((UINT)*val), _T("Pointer to value")));
+			if (*val)
 			{
-				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(lVal->_number), _T("value")));
-				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(lVal._getState()), _T("Can delete this value")));
+				transporter val1;
+				val1->_number;
+				pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Value"), (_variant_t)(val->_number), _T("value")));
 			}
+			pProp->AddSubItem(new CMFCPropertyGridProperty(_T("Type"), (_variant_t)(val._getState()), _T("Can delete this value")));
+			if (val.getNext())
+				pProp->AddSubItem(new CMFCPropertyGridHexProperty(_T("Next Ptr"), (_variant_t)((UINT)val.getNext()), _T("Pointer to next value")));
 			pProp->Expand();
 		}
 	}
