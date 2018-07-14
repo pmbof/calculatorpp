@@ -13,31 +13,40 @@ namespace nodes
 {
 
 
-template<class _TVALUE>
-class unknow: public calc<_TVALUE>, protected _TVALUE
+
+template<class _ITEM, class _NDTYPE>
+class unknown : public calc<_ITEM, _NDTYPE>
 {
 public:
-	typedef typename _TVALUE tvalue_type;
+	unknown(int ini, int end);
+	~unknown();
 
-public:
-	unknow(int ini, int end);
-	~unknow();
+	const void* pointer() const;
 
-	const operation<_TVALUE>* getOperation() const;
-	const function<_TVALUE>* getFunction() const;
+	void set(const void* opr, bool binary, bool isLeftToRight, int precedence, bool canCreateLVariable, bool canCreateRVariable, const void* buildInFnc, const void* userFnc);
 
-	int getPrecedence() const;
 
-	void setOperation(const operation<_TVALUE>* opr, const function<_TVALUE>* fnc);
+	bool isValid() const;
+	bool operator!() const;
 
-	const _TVALUE& getValue() const;
-	_TVALUE& getValue();
+	bool isFirstLeft() const;
+	bool isFirstRight() const;
+	int precedence() const;
 
-	const _TVALUE* getArguments() const;
+	bool isBinary() const;
+	bool isLeftToRight() const;
+
+	bool isCallFunction() const;
+	bool isCallBuildInFunction() const;
+	bool isCallUserDefFunction() const;
+	bool canCreateVariable() const;
+	bool canCreateLVariable() const;
+	bool canCreateRVariable() const;
 
 protected:
-	const operation<_TVALUE>* _opr;
-	const function<_TVALUE>* _fnc;
+	const void* _pointer;
+	unsigned char _flag;
+	int _precedence;
 };
 
 

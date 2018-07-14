@@ -11,56 +11,60 @@ namespace parser
 
 
 
-
+template <typename _CHAR, typename _SIZE>
 class item
 {
+public:
+	typedef typename _CHAR CHAR;
+	typedef const _CHAR* _CPTRCHAR;
+	typedef typename _SIZE SIZETP;
+
 public:
 	class string
 	{
 	public:
-		string() : _str(NULL) { }
-		string(const char* str, unsigned int size) : _str(str), _size(size) { }
+		string();
+		string(_CPTRCHAR str, SIZETP size);
 
-		char operator[] (unsigned int i) const {
-			return i < _size ? _str[i]: '\0';
-		}
-		operator const char*() const {
-			return _str;
-		}
-		operator int() const {
-			return _size;
-		}
-		string operator +(unsigned int right) const {
-			return string(_str + right, _size - right);
-		}
+		_CHAR operator[] (SIZETP i) const;
+		operator const _CHAR*() const;
+		operator _SIZE() const;
+		string operator+(SIZETP right) const;
 
-		std::string getString() const {
-			return std::string(_str, _size);
-		}
+		std::string getString() const;
+
+		bool operator <(const std::string& right) const;
+		bool operator >(const std::string& right) const;
+
+		void clear();
+		bool operator!() const;
+		operator bool() const;
+
 	private:
-		const char* _str;
-		unsigned int _size;
+		_CPTRCHAR _str;
+		SIZETP _size;
 
-		friend bool operator <(const string& left, const std::string& right);
-		friend bool operator <(const std::string& left, const string& right);
+		template <typename _CHAR, typename _SIZE>
+		friend inline bool operator <(const std::string& left, typename const item<_CHAR, _SIZE>::string& right);
 	};
 
 
 public:
-	item(int ini, int end);
+	item(_SIZE ini, _SIZE end);
 
-	int len() const;
+	_SIZE len() const;
 
-	string getString(const char* expr) const;
-	const char* getCharPtr(const char* expr) const;
+	string getString(_CPTRCHAR expr) const;
+	_CPTRCHAR getCharPtr(_CPTRCHAR expr) const;
 
-	int getIni() const;
-	int getEnd() const;
+	_SIZE getIni() const;
+	_SIZE getEnd() const;
 
 protected:
-	int _ini;
-	int _end;
+	_SIZE _ini;
+	_SIZE _end;
 };
+
 
 
 

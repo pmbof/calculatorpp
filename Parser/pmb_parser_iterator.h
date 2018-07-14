@@ -7,21 +7,26 @@ namespace pmb
 namespace parser
 {
 
+
 struct wrapper 
 {
 };
 
 
+template<typename _CHAR, typename _IDX>
 struct iterator
 {
-	const char* _expr;
-	int _i;
+	typedef const _CHAR* tdstring;
+	typedef _IDX idx;
 
-//	iterator(const char* expr): _expr(expr), _i(0) { }
+	tdstring _expr;
+	idx _i;
+
+//	iterator(tdstring expr): _expr(expr), _i(0) { }
 
 //	iterator(const iterator& it): _expr(it._expr + it._i), _i(0) { }
 
-	iterator& operator= (const char* str)
+	iterator& operator= (tdstring str)
 	{
 		_expr = str;
 		_i = 0;
@@ -32,12 +37,12 @@ struct iterator
 	{
 		return _expr[_i];
 	}
-	inline char operator()(int i) const
+	inline char operator()(idx i) const
 	{
 		return _expr[_i + i];
 	}
 
-	inline const char* operator+(int ini) const
+	inline tdstring operator+(idx ini) const
 	{
 		return _expr + ini;
 	}
@@ -52,26 +57,26 @@ struct iterator
 		--_i;
 		return *this;
 	}
-	inline iterator& operator+=(int i)
+	inline iterator& operator+=(idx i)
 	{
 		_i += i;
 		return *this;
 	}
-	inline iterator& operator-=(int i)
+	inline iterator& operator-=(idx i)
 	{
 		_i -= i;
 		return *this;
 	}
 
-	inline bool operator <(int i) const
+	inline bool operator <(idx i) const
 	{
 		return _i < i; 
 	}
-	inline bool operator >(int i) const
+	inline bool operator >(idx i) const
 	{
 		return _i > i;
 	}
-	inline bool operator ==(int i) const
+	inline bool operator ==(idx i) const
 	{
 		return _i == i;
 	}
@@ -81,12 +86,12 @@ struct iterator
 		return !_i;
 	}
 
-	inline operator int() const
+	inline explicit operator idx() const
 	{
 		return _i;
 	}
 
-	inline operator const char*() const
+	inline operator tdstring() const
 	{
 		return _expr;
 	}
@@ -104,21 +109,35 @@ struct iterator
 		return _expr[_i] == ' ' || _expr[_i] == '\t' || _expr[_i] == '\n';
 	}
 
-	friend inline bool operator <(int i, const iterator& expr);
-	friend inline bool operator >(int i, const iterator& expr);
-	friend inline bool operator ==(int i, const iterator& expr);
+
+//	Friends:
+	template<typename _CHAR, typename _IDX>
+	friend inline bool operator <(_IDX i, const iterator& expr);
+
+	template<typename _CHAR, typename _IDX>
+	friend inline bool operator >(_IDX i, const iterator& expr);
+	
+	template<typename _CHAR, typename _IDX>
+	friend inline bool operator ==(_IDX i, const iterator& expr);
 };
 
 
-bool operator <(int i, const iterator& expr)
+
+
+template<typename _CHAR, typename _IDX>
+bool operator <(_IDX i, const iterator<_CHAR, _IDX>& expr)
 {
 	return i < expr._i;
 }
-bool operator >(int i, const iterator& expr)
+
+template<typename _CHAR, typename _IDX>
+bool operator >(_IDX i, const iterator<_CHAR, _IDX>& expr)
 {
 	return i > expr._i;
 }
-bool operator ==(int i, const iterator& expr)
+
+template<typename _CHAR, typename _IDX>
+bool operator ==(_IDX i, const iterator<_CHAR, _IDX>& expr)
 {
 	return i == expr._i;
 }

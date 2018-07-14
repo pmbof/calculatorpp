@@ -10,15 +10,15 @@ namespace iterators
 {
 
 
-template <class _IT, class _baseIterator, class _TVALUE>
+template <class _IT, class _baseIterator, class _ITEM, typename _NDTYPE>
 struct list: public _baseIterator
 {
 	list(_IT& it): s(it) { }
 
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
-		return s() == ',' ? node<_TVALUE>::newNodeList(++s): NULL;
+		return s() == ',' ? node<_ITEM, _NDTYPE>::newNodeList((typename _IT::idx)++s) : NULL;
 	}
 
 

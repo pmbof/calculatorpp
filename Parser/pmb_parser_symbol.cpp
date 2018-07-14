@@ -72,7 +72,7 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::selectSearch(const std::string& set) cons
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-void symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate)
+bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate)
 {
 	if(!_defaultSearch)
 	{
@@ -82,7 +82,7 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& va
 			if(i != it->second->end())
 			{
 				value = const_cast<_TVALUE&>(i->second);
-				return;
+				return true;
 			}
 		}
 	}
@@ -94,12 +94,14 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& va
 			if(i != (*it)->end())
 			{
 				value = const_cast<_TVALUE&>(i->second);
-				return;
+				return true;
 			}
 		}
 	}
-	if(canCreate && _defaultInsert)
+	bool vret = canCreate && _defaultInsert;
+	if(vret)
 		value = (*_defaultInsert)[symbol.getString()];
+	return vret;
 }
 
 

@@ -213,8 +213,56 @@
     <ClInclude Include="pmb_parser_function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pmb_parser_transporter.h">
+    <ClInclude Include="pmb_parser_nodes_number.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_build_in_function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_block.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_block.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_functions.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_transporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_transporter.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_iterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_calc_iterator.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_parser_exception.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_calculate_number.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_calculate_number.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_calculate_magnitude.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_calculate_magnitude.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -314,7 +362,13 @@
     <ClCompile Include="pmb_parser_function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pmb_parser_transporter.cpp">
+    <ClCompile Include="pmb_parser_nodes_number.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pmb_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pmb_parser_calc_build_in_function.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -322,5 +376,8 @@
     <ResourceCompile Include="Parser.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\TODO.txt" />
   </ItemGroup>
 </Project>

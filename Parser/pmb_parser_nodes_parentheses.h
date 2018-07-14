@@ -9,37 +9,26 @@ namespace nodes
 {
 
 
-template<class _TVALUE>
-class parentheses: public calc<_TVALUE>
+template<class _ITEM, class _NDTYPE>
+class parentheses : public calc<_ITEM, _NDTYPE>
 {
 public:
 	parentheses(int ini, int end, char type, int opened);
 	~parentheses();
 
-	inline int getOpened() const {
-		return _opened;
-	}
+	inline short getOpened() const;
 
-	inline bool isThisType(const node* nd) const {
-		const parentheses* pr = static_cast<const parentheses*>(nd);
-		return nd && pr->_type == ndParentheses && pr->_prtype == _prtype;
-	}
+	inline bool isThisType(const node* nd) const;
 
-	inline char getClass() const {
-		return _prtype;
-	}
+	char getClass() const;
 
 	int countListChildNodes() const;
 
-
-	const _TVALUE& getValue() const;
-	_TVALUE& getValue();
+	parentheses* split(short count);
 
 protected:
 	char _prtype;
-	int _opened;
-
-	_TVALUE _value;
+	short _opened;
 };
 
 

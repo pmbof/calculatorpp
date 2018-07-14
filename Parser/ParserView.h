@@ -28,11 +28,33 @@ protected:
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
 private:
-	pmb::parser::node<transporter>* m_pNdUnk;
-	pmb::parser::node<transporter>* m_pNd;
+	tnode* m_pNdUnk;
+	tnode* m_pNd;
+	CRect m_error;
+	CMFCToolTipCtrl m_tooltip;
+	int m_tooltipId;
+
+	std::string m_expr;
+
+	struct style
+	{
+		CFont font[9];
+		int   height[9];
+
+		COLORREF color[9];
+		int maxHeight;
+		int lineHeight;
+		CPoint caretPos;
+		CPoint caretPos0;
+		int caret[2];
+	} m_style;
+
+	CPoint m_p0;
 
 private:
-	void drawNode(CDC* pDC, const pmb::parser::node<transporter>* nd, int x0, int y0, int height, const CString& expr);
+	void drawNode(CDC* pDC, const item* nd, const CString& expr, bool bError);
+
+	void draw(CDC* pDC, bool bCalc = false, int* x_pos = nullptr);
 
 // Implementation
 public:
@@ -56,6 +78,15 @@ protected:
 	afx_msg LRESULT OnSetnode(WPARAM wParam, LPARAM lParam);
 public:
 	afx_msg void OnNextunknow();
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	virtual void OnInitialUpdate();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 
 #ifndef _DEBUG  // debug version in ParserView.cpp

@@ -1,6 +1,10 @@
 #pragma once
 
 #include "pmb_parser_algorithm.h"
+#include "pmb_parser_calc_block.h"
+#include "pmb_parser_calc_transporter.hpp"
+#include "pmb_calculate_number.h"
+#include "pmb_calculate_magnitude.h"
 
 
 namespace pmb
@@ -11,10 +15,10 @@ namespace debug
 {
 
 
-struct iterator: parser::iterator
+struct iterator: parser::iterator<char, unsigned short>
 {
 	int _step0;
-	int _i0;
+	idx _i0;
 	int _subStep0;
 	int _subStep1;
 
@@ -40,14 +44,15 @@ struct iterator: parser::iterator
 	}
 };
 
-template <int i, class _IT, class _TVALUE>
+
+template <int i, class _IT, class _ITEM, typename _NDTYPE>
 struct auto_iterator
 {
 	auto_iterator(_IT& expr): _it(expr), _next(expr), _space(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
-		node<_TVALUE>* nd = NULL;
+		node<_ITEM, _NDTYPE>* nd = NULL;
 		switch(_it._step0) {
 		case -1:
 			_next.initLoop();
@@ -64,7 +69,7 @@ struct auto_iterator
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
 		return _next.release();
 	}
@@ -75,7 +80,7 @@ struct auto_iterator
 	}
 
 
-	const node<_TVALUE>* getUnknow() const
+	const node<_ITEM, _NDTYPE>* getUnknow() const
 	{
 		return _next.getUnknow();
 	}
@@ -88,19 +93,19 @@ struct auto_iterator
 
 protected:
 	_IT& _it;
-	auto_iterator<1, _IT, _TVALUE> _next;
-	iterators::space<_IT, wrapper, _TVALUE> _space;
+	auto_iterator<1, _IT, _ITEM, _NDTYPE> _next;
+	iterators::space<_IT, wrapper, _ITEM, _NDTYPE> _space;
 };
 
 
-template <class _IT, class _TVALUE>
-struct auto_iterator<6, _IT, _TVALUE>
+template <class _IT, class _ITEM, typename _NDTYPE>
+struct auto_iterator<6, _IT, _ITEM, _NDTYPE>
 {
-	auto_iterator(_IT& expr): _it(expr), _unknow(expr) { }
+	auto_iterator(_IT& expr): _it(expr), _unknown(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
-		node<_TVALUE>* nd = _it._step0 == 6 ? _unknow(): NULL;
+		node<_ITEM, _NDTYPE>* nd = _it._step0 == 6 ? _unknown() : NULL;
 		if(6 < _it._step0)
 			_it._step0 = -2;
 		return nd;
@@ -109,13 +114,13 @@ struct auto_iterator<6, _IT, _TVALUE>
 
 	void initLoop()
 	{
-		_unknow.initLoop();
+		_unknown.initLoop();
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
-		return _unknow.release();
+		return _unknown.release();
 	}
 
 
@@ -126,18 +131,18 @@ struct auto_iterator<6, _IT, _TVALUE>
 
 protected:
 	_IT& _it;
-	iterators::unknow<_IT, wrapper, _TVALUE> _unknow;
+	iterators::unknown<_IT, wrapper, _ITEM, _NDTYPE> _unknown;
 };
 
 
 
 
-template <class _IT, class _TVALUE>
-struct auto_iterator<5, _IT, _TVALUE>
+template <class _IT, class _ITEM, typename _NDTYPE>
+struct auto_iterator<5, _IT, _ITEM, _NDTYPE>
 {
 	auto_iterator(_IT& expr): _it(expr), _next(expr), _list(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
 		return _it._step0 == 5 ? _list(): _next();
 	}
@@ -149,7 +154,7 @@ struct auto_iterator<5, _IT, _TVALUE>
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
 		return _next.release();
 	}
@@ -162,19 +167,19 @@ struct auto_iterator<5, _IT, _TVALUE>
 
 protected:
 	_IT& _it;
-	auto_iterator<6, _IT, _TVALUE> _next;
-	iterators::list<_IT, wrapper, _TVALUE> _list;
+	auto_iterator<6, _IT, _ITEM, _NDTYPE> _next;
+	iterators::list<_IT, wrapper, _ITEM, _NDTYPE> _list;
 };
 
 
 
 
-template <class _IT, class _TVALUE>
-struct auto_iterator<4, _IT, _TVALUE>
+template <class _IT, class _ITEM, typename _NDTYPE>
+struct auto_iterator<4, _IT, _ITEM, _NDTYPE>
 {
 	auto_iterator(_IT& expr): _it(expr), _next(expr), _parentheses(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
 		return _it._step0 == 4 ? _parentheses(): _next();
 	}
@@ -186,7 +191,7 @@ struct auto_iterator<4, _IT, _TVALUE>
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
 		return _next.release();
 	}
@@ -199,18 +204,18 @@ struct auto_iterator<4, _IT, _TVALUE>
 
 protected:
 	_IT& _it;
-	auto_iterator<5, _IT, _TVALUE> _next;
-	iterators::parentheses<_IT, wrapper, _TVALUE> _parentheses;
+	auto_iterator<5, _IT, _ITEM, _NDTYPE> _next;
+	iterators::parentheses<_IT, wrapper, _ITEM, _NDTYPE> _parentheses;
 };
 
 
 
-template <class _IT, class _TVALUE>
-struct auto_iterator<3, _IT, _TVALUE>
+template <class _IT, class _ITEM, typename _NDTYPE>
+struct auto_iterator<3, _IT, _ITEM, _NDTYPE>
 {
 	auto_iterator(_IT& expr): _it(expr), _next(expr), _string(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
 		return _it._step0 == 3 ? _string(): _next();
 	}
@@ -222,7 +227,7 @@ struct auto_iterator<3, _IT, _TVALUE>
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
 		return _next.release();
 	}
@@ -234,18 +239,18 @@ struct auto_iterator<3, _IT, _TVALUE>
 
 protected:
 	_IT& _it;
-	auto_iterator<4, _IT, _TVALUE> _next;
-	iterators::string<_IT, '\\', wrapper, _TVALUE> _string;
+	auto_iterator<4, _IT, _ITEM, _NDTYPE> _next;
+	iterators::string<_IT, '\\', wrapper, _ITEM, _NDTYPE> _string;
 };
 
 
 
-template <class _IT, class _TVALUE>
-struct auto_iterator<2, _IT, _TVALUE>
+template <class _IT, class _ITEM, typename _NDTYPE>
+struct auto_iterator<2, _IT, _ITEM, _NDTYPE>
 {
 	auto_iterator(_IT& expr): _it(expr),  _next(expr), _number(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
 		return _it._step0 == 2 ? _number(): _next();
 	}
@@ -257,7 +262,7 @@ struct auto_iterator<2, _IT, _TVALUE>
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
 		return _next.release();
 	}
@@ -270,18 +275,18 @@ struct auto_iterator<2, _IT, _TVALUE>
 
 protected:
 	_IT& _it;
-	auto_iterator<3, _IT, _TVALUE> _next;
-	iterators::number<_IT, wrapper, _TVALUE> _number;
+	auto_iterator<3, _IT, _ITEM, _NDTYPE> _next;
+	iterators::number<_IT, wrapper, _ITEM, _NDTYPE> _number;
 };
 
 
 
-template <class _IT, class _TVALUE>
-struct auto_iterator<1, _IT, _TVALUE>
+template <class _IT, class _ITEM, typename _NDTYPE>
+struct auto_iterator<1, _IT, _ITEM, _NDTYPE>
 {
 	auto_iterator(_IT& expr): _it(expr), _next(expr), _alpha(expr) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
 		return _it._step0 == 1 ? _alpha(): _next();
 	}
@@ -293,7 +298,7 @@ struct auto_iterator<1, _IT, _TVALUE>
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
 		return _next.release();
 	}
@@ -306,42 +311,58 @@ struct auto_iterator<1, _IT, _TVALUE>
 
 protected:
 	_IT& _it;
-	auto_iterator<2, _IT, _TVALUE> _next;
-	iterators::alpha<_IT, wrapper, _TVALUE> _alpha;
+	auto_iterator<2, _IT, _ITEM, _NDTYPE> _next;
+	iterators::alpha<_IT, wrapper, _ITEM, _NDTYPE> _alpha;
 };
 
 
+typedef pmb::calculate::units::magnitude<double, unsigned short, char> number_double;
+//typedef calculate::number<double> number_double;
+typedef item<char, typename iterator::idx> citem;
+typedef tree<citem, ndtype> debug_tree;
+typedef debug_tree::cnode tnode; 
+typedef calc::transporter<number_double, unsigned short> transporter;
+typedef calc::transporter_args<transporter, unsigned char> transporter_args;
+typedef calc::build_in_function_table<calc::build_in_function<transporter_args, char, unsigned char>, unsigned short> build_in_function_table;
+typedef calc::iterator<transporter_args, debug_tree> citerator;
+typedef calc::block<citerator, build_in_function_table> block;
 
-
-
+typedef parser::operation<transporter_args> operation;
+typedef parser::operation_table<operation, tnode> operation_table;
 // Class For Debug:
-class algorithm: public parser::algorithm<transporter<number<double> >, iterator>
+
+class algorithm : public parser::algorithm<block, operation_table, iterator>
 {
 public:
-	typedef transporter<number<double> > transporter;
-	typedef parser::algorithm<transporter, iterator> _base;
+//	typedef transporter<number<double> > transporter;
+//	typedef calc::block<calc::transporter<number<double>, unsigned short>, item<char, short>, ndtype> block;
+	typedef typename block::cItem item;
+	typedef parser::algorithm<block, operation_table, iterator> _base;
+	typedef typename block::cNdType ndtype;
+	typedef typename _base::tptree tptree;
+	typedef typename _base::node node;
 
 public:
-	algorithm(_base::_tdSymbols& symbols);
+	algorithm(operation_table* opr_table, block* pBlock);
 	~algorithm();
 
-	const auto_iterator<0, iterator, transporter>* getIterators() const;
+	const auto_iterator<0, iterator, item, ndtype>* getIterators() const;
 	const iterator* getIterator() const;
-	const tree<transporter>* getTree() const;
+	const tptree* getTree() const;
 
-	const node<transporter>* getNewNode() const;
-	const node<transporter>* getNewNodeUnknow() const;
+	const node* getNewNode() const;
+	const node* getNewNodeUnknow() const;
 
 	bool nextStep();
 
 protected:
 	void populate();
-	void mapUnknow();
+	void mapUnknown();
 
-	auto_iterator<0, iterator, transporter> _ai;
+	auto_iterator<0, iterator, item, ndtype> _ai;
 
-	node<transporter>* _newNode;
-	node<transporter>* _newNodeUnknow;
+	node* _newNode;
+	node* _newNodeUnknown;
 };
 
 

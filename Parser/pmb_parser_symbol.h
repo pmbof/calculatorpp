@@ -11,7 +11,7 @@ namespace parser
 {
 
 
-template<class _TVALUE, class _ITSTRING = item::string, class _MAP = util::map<std::string, _TVALUE, _ITSTRING> >
+template<class _TVALUE, class _ITSTRING = item<char, short>::string, class _MAP = util::map<std::string, _TVALUE, _ITSTRING> >
 class symbol
 {
 public:
@@ -31,7 +31,7 @@ public:
 	
 	void selectSearch(const std::string& set) const;
 
-	void find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
+	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
 	bool find(const _ITSTRING& symbol) const;
 
 	const _tpMMap* get() const;

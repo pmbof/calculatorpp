@@ -1,7 +1,11 @@
 #pragma once
 
-#include "pmb_parser_item.h"
+#include "pmb_log.h"
 
+#include "pmb_parser_item.cpp"
+
+// Only for trace node:
+#include <iomanip>
 
 
 namespace pmb
@@ -17,28 +21,36 @@ enum ndtype: char
 	ndString		= 's',
 	ndList			= 'L',
 	ndParentheses	= 'P',
-	ndUnknow		= 'U'
+	ndUnknown		= 'U'
 };
 
 
 
 
-template <class _TVALUE>
-class node: public item
+template <class _ITEM, typename _NDTYPE>
+class node: public _ITEM
 {
+public:
+	typedef typename _ITEM cItem;
+	typedef typename _ITEM::SIZETP ISIZE;
+	typedef typename _ITEM::_CPTRCHAR CPTRCHAR;
+
+	typedef typename _NDTYPE cNdType;
+	typedef typename node<cItem, cNdType> cnode;
+
 protected:
-	node(ndtype type, int ini, int end);
+	node(cNdType type, ISIZE ini, ISIZE end);
 
 public:
 	~node();
 
-	static node* newNodeSpace(int ini, int end);
-	static node* newNodeAlpha(int ini, int end);
-	static node* newNodeNumber(int ini, int end);
-	static node* newNodeString(int ini, int end);
-	static node* newNodeParentheses(int ini, int end, char type, int opened);
-	static node* newNodeList(int end);
-	static node* newNodeUnknow(int ini, int end);
+	static node* newNodeSpace(ISIZE ini, ISIZE end);
+	static node* newNodeAlpha(ISIZE ini, ISIZE end);
+	static node* newNodeNumber(ISIZE ini, ISIZE end);
+	static node* newNodeString(ISIZE ini, ISIZE end);
+	static node* newNodeParentheses(ISIZE ini, ISIZE end, char type, int opened);
+	static node* newNodeList(ISIZE end);
+	static node* newNodeUnknown(ISIZE ini, ISIZE end);
 
 	node* insert(node* newNode);
 
@@ -48,8 +60,8 @@ public:
 	const node* getFirstNode() const;
 	const node* getNextNode() const;
 
-	const node* getFirstUnknowNode() const;
-	const node* getNextUnknowNode() const;
+	const node* getFirstUnknownNode() const;
+	const node* getNextUnknownNode() const;
 
 	const node* getParent() const;
 	const node* getLeft() const;
@@ -63,8 +75,8 @@ public:
 	node* getRight();
 
 	node* getRootNode();
-	node* getFirstUnknowNode();
-	node* getNextUnknowNode();
+	node* getFirstUnknownNode();
+	node* getNextUnknownNode();
 	node* getFirstNode();
 	node* getFirstLeftNode();
 	node* getNextNode();
@@ -73,25 +85,31 @@ public:
 
 	// For Debug:
 	int getMetricsNodes(int& size) const;
-	int getMetricsNodes(ndtype type, int& size) const;
-	static int getSizeofNode(ndtype type);
+	int getMetricsNodes(cNdType type, int& size) const;
+	static int getSizeofNode(cNdType type);
+	const char* getTypeL() const;
+
+	bool checkParentheses() const;
+
+	bool check() const;
 
 protected:
-	static node* newNodeUnknowEmpty(const node* parent, const node* newNode);
+	static node* newNodeUnknownEmpty(const cnode* parent, const cnode* newNode);
 
-	void insertToRight(node* newNode);
+	void insertInRight(cnode* newnode);
+	void insertToRight(cnode* newNode);
 	void insertToLeft(node* newNode);
 	void insertInThisRight(node* newNode);
 	void insertInThisNode(node* newNode);
-	node* insertEmptyUnknow(const node* newNode);
+	node* insertEmptyUnknown(const node* newNode);
 
 	node* deleteThisNode();
 	void replaceThisNode(node* newNode);
 	void upLeftToThisNode();
 	void insertWithLowPriority(node* newNode);
-	node* insertUnknowListInParentheses(node* newUnknow);
+	node* insertUnknownListInParentheses(node* newUnknown);
 
-	node* foundOpenParentheses();
+	node* foundOpenParentheses(short& closed, node*& lastParentOpened);
 
 	void switchToUpNode();
 
@@ -101,7 +119,7 @@ private:
 	node* insert_number(node* newNode);
 	node* insert_parentheses(node* newNode);
 	node* insert_list(node* newNode);
-	node* insert_unknow(node* newNode);
+	node* insert_unknown(node* newNode);
 	node* insert_string(node* newNode);
 
 
@@ -110,58 +128,59 @@ protected:
 	node* _parent;
 	node* _right;
 
-	ndtype _type;
+	cNdType _type;
 
-	template<class _TVALUE>
+	template<class cItem, class cNdType>
 	friend class tree;
 
 #ifdef _DEBUG
-	template<class _TVALUE>
-	friend void TRACE_NODE(const char* text, const pmb::parser::node<_TVALUE>* nd, bool isBaseClass, bool recursive);
+	template<class _ITEM, typename _NDTYPE>
+	friend void TRACE_NODE(pmb::log_type logType, typename _ITEM::_CPTRCHAR text, typename _ITEM::_CPTRCHAR expr, const pmb::parser::node<_ITEM, _NDTYPE>* nd, bool isBaseClass, bool recursive);
 #endif
 };
 
 
 
 #ifdef _DEBUG
-template<class _TVALUE>
-void TRACE_NODE(const char* text, const pmb::parser::node<_TVALUE>* nd, bool isBaseClass = false, bool recursive = true)
+template<class _ITEM, typename _NDTYPE>
+void TRACE_NODE(pmb::log_type logType, typename _ITEM::_CPTRCHAR text, typename _ITEM::_CPTRCHAR expr, const pmb::parser::node<_ITEM, _NDTYPE>* nd, bool isBaseClass = false, bool recursive = true)
 {
-	if(!isBaseClass && nd->isCalcType())
+	log* plg = log::instance(false);
+	*plg << text << " node " << nd->getTypeL() << ": 0x" << std::hex << std::setw(8) << std::setfill('0') << nd << " " << nd->getType();
+	std::stringstream sexpr;
+	sexpr << "[" << std::dec << nd->_ini << ", " << nd->_end;
+	if (expr)
+		sexpr << ", '" << std::string(expr + nd->_ini, nd->_end - nd->_ini) << "'";
+	if (!isBaseClass && nd->isCalcType())
 	{
-		const _TVALUE& val =	nd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<_TVALUE>*>(nd)->getValue():
-								nd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<_TVALUE>*>(nd)->getValue():
-										*static_cast<const pmb::parser::nodes::list<_TVALUE>*>(nd)->getRValue();
-		if(nd->getType() != pmb::parser::ndUnknow)
-			AfxTrace(_T("%s node %s: 0x%08X %c[%d, %d]{l0x%08X, r0x%08X}"), (LPCTSTR)CString(text),
-					nd->getType() == pmb::parser::ndList ? L"list": L"parentheses",
-				nd, nd->getType(), nd->_ini, nd->_end, 
-			nd->getLeft(), nd->getRight());
+		const pmb::parser::nodes::calc<_ITEM, _NDTYPE>* uc = static_cast<const pmb::parser::nodes::calc<_ITEM, _NDTYPE>*>(nd);
+//		const _TVALUE& val = nd->getType() == pmb::parser::ndUnknown ? static_cast<const pmb::parser::nodes::unknown<_TVALUE, _ITEM, _NDTYPE>*>(nd)->getValue() :
+//			nd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<_TVALUE, _ITEM, _NDTYPE>*>(nd)->getValue() :
+//			*static_cast<const pmb::parser::nodes::list<_TVALUE, _ITEM, _NDTYPE>*>(nd)->getRValue();
+
+		if (nd->getType() != pmb::parser::ndUnknown)
+			*plg << sexpr.str() << "]{0x" << std::hex << nd->getLeft() << ", 0x" << nd->getRight() << "}  ->  " << std::dec;
 		else {
-			const pmb::parser::nodes::unknow<_TVALUE>* uk = static_cast<const pmb::parser::nodes::unknow<_TVALUE>*>(nd);
-			if(uk->getOperation())
-				AfxTrace(_T("%s node unknow: 0x%08X %c'%s'[%c,%c,%d][%d, %d]{l0x%08X, r0x%08X}"), (LPCTSTR)CString(text),
-					nd, nd->getType(), 
-					(LPCTSTR)CString(uk->getOperation()->getSymbol()), uk->getOperation()->isBinary() ? 'b': 'u',
-					uk->getOperation()->isLeftToRight() ? 'L': 'R', uk->getOperation()->getPrecedence(),
-					nd->_ini, nd->_end, 
-					nd->getLeft(), nd->getRight());
+			const pmb::parser::nodes::unknown<_ITEM, _NDTYPE>* uk = static_cast<const pmb::parser::nodes::unknown<_ITEM, _NDTYPE>*>(nd);
+			if (uk->isValid())
+				*plg << " " << (uk->isCallBuildInFunction() ? "Call build in function" : uk->isCallUserDefFunction() ? "Call user defined function" : "Operation") << ": [" << (uk->isBinary() ? 'b' : 'u') << "," << (uk->isLeftToRight() ? 'L' : 'R')
+					<< "," << std::dec << uk->precedence() << "]"
+					<< sexpr.str() << "]{0x" << std::hex << nd->getLeft() << ", 0x" << nd->getRight() << "}  ->  " << std::dec;
 			else
-				AfxTrace(_T("%s node unknow: 0x%08X %c'Operation not found'[%d, %d]{l0x%08X, r0x%08X}"), (LPCTSTR)CString(text),
-					nd, nd->getType(), nd->_ini, nd->_end, 
-					nd->getLeft(), nd->getRight());
+				*plg << " 'Operation not found' "
+					<< sexpr.str() << "]{0x" << std::hex << nd->getLeft() << ", 0x" << nd->getRight() << "}  ->  " << std::dec;
 		}
 
-		val._print(nd->getType() != pmb::parser::ndList ? L" value": L" rValue", false);
-		if(nd->getType() == pmb::parser::ndList)
-			static_cast<const pmb::parser::nodes::list<_TVALUE>*>(nd)->getLValue()._print(L" | lValue", false);
-		AfxTrace(_T("\n"));
+//		val._print(logType, nd->getType() != pmb::parser::ndList ? " value": " rValue", false);
+//		if(nd->getType() == pmb::parser::ndList)
+//			static_cast<const pmb::parser::nodes::list<_ITEM, _NDTYPE>*>(nd)->getLValue()._print(logType, " | lValue", false);
+		*plg << "\n";
 	}
 	else
-		AfxTrace(_T("%s node: 0x%08X %c[%d, %d]{l0x%08X, r0x%08X}\n"), (LPCTSTR)CString(text), nd, (nd)->getType(), (nd)->_ini, (nd)->_end, (nd)->getLeft(), (nd)->getRight());
+		*plg << sexpr.str() << "]{0x" << std::hex << nd->getLeft() << ", 0x" << nd->getRight() << "}\n" << std::dec;
 }
 #else
-#define TRACE_NODE(text, nd)	
+#define TRACE_NODE(logType, text, nd) 
 #endif
 
 

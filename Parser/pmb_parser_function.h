@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pmb_parser_node.h"
-
+#include "pmb_util_map.h"
 
 namespace pmb
 {
@@ -140,24 +140,54 @@ private:
 };
 
 
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+struct pair_ffnc
+{
+	typedef tree<_ITEM, _NDTYPE> tptree;
+
+	pair_ffnc();
+	pair_ffnc(tptree* pTree);
+	pair_ffnc(const function<_TVALUE>* pFnc);
+
+	bool operator!() const;
+	operator bool() const;
+
+	tptree* ptree;
+	const function<_TVALUE>* pFunc;
+};
 
 
-template<class _TVALUE>
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
 class function_table 
 {
+	typedef typename _ITEM::string sitem;
+	typedef tree<_ITEM, _NDTYPE> tptree;
+	typedef util::map<std::string, _TVALUE, sitem> argmap;
+	typedef std::pair <argmap, tptree*> pair_arg_tree;
+
+	typedef std::map<int, pair_arg_tree> map_nargs_pair_arg_tree;
+	typedef util::map<std::string, map_nargs_pair_arg_tree, sitem> mapfnc;
+public:
+	typedef pair_ffnc<_TVALUE, _ITEM, _NDTYPE> pair_ffnc;
+
 public:
 	static int getPrecedence();
 
 public:
-	const function<_TVALUE>* find(const node<_TVALUE>* nd, const char* expr, bool toRight) const;
+	~function_table();
+
+	pair_ffnc find(const node<_ITEM, _NDTYPE>* nd, const char* expr, bool toRight) const;
 
 	const function<_TVALUE>* get(int i) const;
 	int size() const;
 
+	void insert(const sitem& fncName, const argmap& args, tptree* tree);
 
 protected:
 	static const function<_TVALUE> _fnc[];
 	static const int _fncSize;
+
+	mapfnc _functions;
 };
 
 

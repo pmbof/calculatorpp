@@ -1,0 +1,11 @@
+TODO:
+
+- Call functions:
+	en la funcion calc de algorithm, hacer como una especie de stack para poder llamar a las funciones definidas por el usuario.
+
+- Exception:
+	Crear y manejar.
+
+- Number:
+	- Manejo de unidades
+	- Matrices

@@ -10,56 +10,56 @@ namespace nodes
 {
 
 
-template<class _TVALUE>
-list<_TVALUE>::list(int ini)
-	: unknow(ini - 1, ini)
+template<class _ITEM, class _NDTYPE>
+list<_ITEM, _NDTYPE>::list(int ini)
+	: unknown(ini - 1, ini)
 {
 	_type = ndList;
-	_fnc = NULL;
-	_TVALUE::setNext(&_rValue);
+///	_TVALUE::setNext(&_rValue);
 }
 
 
-template<class _TVALUE>
-list<_TVALUE>::~list()
+template<class _ITEM, class _NDTYPE>
+list<_ITEM, _NDTYPE>::~list()
 {
 }
 
-
-template<class _TVALUE>
-_TVALUE& list<_TVALUE>::getLValue()
+/*
+template<class _ITEM, class _NDTYPE>
+_TVALUE& list<_ITEM, _NDTYPE>::getLValue()
 {
-	return _classbase::getValue();
+	return cunknow::getValue();
 }
 
-template<class _TVALUE>
-const _TVALUE& list<_TVALUE>::getLValue() const
+template<class _ITEM, class _NDTYPE>
+const _TVALUE& list<_ITEM, _NDTYPE>::getLValue() const
 {
-	return _classbase::getValue();
+	return cunknow::getValue();
 }
 
 
-template<class _TVALUE>
-_TVALUE* list<_TVALUE>::getRValue()
-{
-	return &_rValue;
-}
-
-template<class _TVALUE>
-const _TVALUE* list<_TVALUE>::getRValue() const
+template<class _ITEM, class _NDTYPE>
+_TVALUE* list<_ITEM, _NDTYPE>::getRValue()
 {
 	return &_rValue;
 }
 
-template<class _TVALUE>
-void list<_TVALUE>::updateNext()
+template<class _ITEM, class _NDTYPE>
+const _TVALUE* list<_ITEM, _NDTYPE>::getRValue() const
+{
+	return &_rValue;
+}
+*/
+
+template<class _ITEM, class _NDTYPE>
+void list<_ITEM, _NDTYPE>::updateNext()
 {
 	if (_right)
 	{
-		if (_right->getType() == ndUnknow)
-			setNext(static_cast<unknow<_TVALUE>*>(_right));
+		if (_right->getType() == ndUnknown)
+			setNext(static_cast<cunknow*>(_right));
 		else if (_right->getType() == ndList)
-			setNext(static_cast<list<_TVALUE>*>(_right));
+			setNext(static_cast<list<_ITEM, _NDTYPE>*>(_right));
 	}
 }
 

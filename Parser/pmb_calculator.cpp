@@ -8,37 +8,37 @@ namespace pmb
 {
 
 
-template <class _TVALUE>
-calculator<_TVALUE>::calculator(_tdSymbols& symbols)
-	: _base(symbols)
+template <class _BLOCK, class _OPRTABLE>
+calculator<_BLOCK, _OPRTABLE>::calculator(_tdOprTable* operation_table, _BLOCK* pBlock)///_tdSymbols* symbols)
+	: _base(operation_table, pBlock)
 {
-	_symbols.addSetVariable("Units");
-	_symbols.addSetVariable("Constants");
-	_symbols.addSetVariable("Variables");
+/*	_symbols->addSetVariable("Units");
+	_symbols->addSetVariable("Constants");
+	_symbols->addSetVariable("Variables");
 
 	_base::_tdSymbols::_tpList lst;
 	lst.push_back("Units");
 	lst.push_back("Constants");
 	lst.push_back("Variables");
-	_symbols.addSetSearch("Units", "Units", lst);
+	_symbols->addSetSearch("Units", "Units", lst);
 
 	lst.clear();
 	lst.push_back("Constants");
 	lst.push_back("Units");
 	lst.push_back("Variables");
-	_symbols.addSetSearch("Constants", "Constants", lst);
+	_symbols->addSetSearch("Constants", "Constants", lst);
 
 	lst.clear();
 	lst.push_back("Variables");
 	lst.push_back("Constants");
 	lst.push_back("Units");
-	_symbols.addSetSearch("Variables", "Variables", lst);
+	_symbols->addSetSearch("Variables", "Variables", lst);*/
 }
 
 
 
-template <class _TVALUE>
-calculator<_TVALUE>::~calculator()
+template <class _BLOCK, class _OPRTABLE>
+calculator<_BLOCK, _OPRTABLE>::~calculator()
 {
 }
 

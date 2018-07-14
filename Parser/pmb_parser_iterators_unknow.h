@@ -11,13 +11,13 @@ namespace iterators
 
 
 
-template <class _IT, class _baseIterator, class _TVALUE>
-struct unknow: public _baseIterator
+template <class _IT, class _baseIterator, class _ITEM, typename _NDTYPE>
+struct unknown: public _baseIterator
 {
-	unknow(_IT& it): s(it), _valid(false) { }
+	unknown(_IT& it): s(it), _valid(false) { }
 
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
 		if(_i0 == s && s())
 		{
@@ -34,13 +34,13 @@ struct unknow: public _baseIterator
 
 	void initLoop()
 	{
-		_i0 = s;
+		_i0 = (typename _IT::idx)s;
 	}
 
 
-	node<_TVALUE>* release()
+	node<_ITEM, _NDTYPE>* release()
 	{
-		node<_TVALUE>* nd = _valid ? node<_TVALUE>::newNodeUnknow(_ini, _i0): NULL;
+		node<_ITEM, _NDTYPE>* nd = _valid ? node<_ITEM, _NDTYPE>::newNodeUnknown(_ini, _i0) : NULL;
 		_valid = false;
 		return nd;
 	}
@@ -48,7 +48,7 @@ struct unknow: public _baseIterator
 
 protected:
 	bool _valid;
-	int _i0, _ini;
+	typename _IT::idx _i0, _ini;
 	_IT& s;
 };
 

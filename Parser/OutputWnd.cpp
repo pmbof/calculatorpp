@@ -127,9 +127,9 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 		CString s1("   Size of " #TYPE  " node: %dB (%d x %dB = %dB) ");\
 		str.Format(s1, size ## TYPE, count ## TYPE, size ## TYPE, size ## TYPE * count ## TYPE);\
 		m_wndOutputStadistics.AddString(str);\
-		str.Format(_T("      size of node*: %dB (%d x %dB= %dB)"), sizeof(pmb::parser::node<transporter>*), 3, sizeof(pmb::parser::node<transporter>*), 3 * sizeof(pmb::parser::node<transporter>*));\
+		str.Format(_T("      size of node*: %dB (%d x %dB= %dB)"), sizeof(pmb::parser::node<item, ndtype>*), 3, sizeof(pmb::parser::node<item, ndtype>*), 3 * sizeof(pmb::parser::node<item, ndtype>*));\
 		m_wndOutputStadistics.AddString(str);\
-		str.Format(_T("      size of item: %dB"), sizeof(pmb::parser::item));\
+		str.Format(_T("      size of item: %dB"), sizeof(item));\
 		m_wndOutputStadistics.AddString(str);\
 		str.Format(_T("      size of ndType: %dB"), sizeof(pmb::parser::ndtype));\
 		m_wndOutputStadistics.AddString(str);\
@@ -139,9 +139,9 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 void COutputWnd::FillStadisticsWindow()
 {
 	CParserDoc* pDoc = CParserDoc::getDocument(this);
-	if(!pDoc)
+	if(!pDoc || !pDoc->getTree2())
 		return;
-	const pmb::parser::node<transporter>* pNd = pDoc->getTree2()->getRootNode();
+	const pmb::parser::node<item, ndtype>* pNd = pDoc->getTree2()->getRootNode();
 	int size = 0, 
 		count = pNd->getMetricsNodes(size);
 	CString str;
@@ -171,15 +171,15 @@ void COutputWnd::FillStadisticsWindow()
 	m_wndOutputStadistics.AddString(str);
 	str.Format(_T("      size of _isVariableDependent: %dB"), sizeof(bool));
 	m_wndOutputStadistics.AddString(str);
-	MY_MACRO_SIZECOUNT(Unknow);
+	MY_MACRO_SIZECOUNT(Unknown);
 	str.Format(_T("      size of _bCalculated: %dB"), sizeof(bool));
 	m_wndOutputStadistics.AddString(str);
 	str.Format(_T("      size of _isVariableDependent: %dB"), sizeof(bool));
 	m_wndOutputStadistics.AddString(str);
 	str.Format(_T("      size of operation<_TVALUE>*: %dB"), sizeof(void*));
 	m_wndOutputStadistics.AddString(str);
-	int ccount = countSpace + countAlpha + countNumber + countParentheses + countList + countUnknow;
-	int csize = countSpace * sizeSpace + countAlpha * sizeAlpha + countNumber * sizeNumber + countParentheses * sizeParentheses + countList * sizeList + countUnknow * sizeUnknow;
+	int ccount = countSpace + countAlpha + countNumber + countParentheses + countList + countUnknown;
+	int csize = countSpace * sizeSpace + countAlpha * sizeAlpha + countNumber * sizeNumber + countParentheses * sizeParentheses + countList * sizeList + countUnknown * sizeUnknown;
 	str.Format(_T("Total of nodes: %d, size %dB = %.2fkB"), ccount, csize, csize / 1024.0);
 	m_wndOutputStadistics.AddString(str);
 

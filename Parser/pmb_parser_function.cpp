@@ -65,9 +65,39 @@ void function<_TVALUE>::operator()(_TVALUE& result, int nArgs, const _TVALUE* va
 }
 
 
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::pair_ffnc()
+	: ptree(NULL), pFunc(NULL)
+{
+}
 
-template<class _TVALUE>
-const function<_TVALUE> function_table<_TVALUE>::_fnc[] = {
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::pair_ffnc(tptree* pTree)
+	: ptree(pTree), pFunc(NULL)
+{
+}
+
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::pair_ffnc(const function<_TVALUE>* pFnc)
+	: pFunc(pFnc), ptree(NULL)
+{
+}
+
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+bool pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::operator!() const
+{
+	return !ptree && !pFunc;
+}
+
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::operator bool () const
+{
+	return ptree || pFunc;
+}
+
+
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+const function<_TVALUE> function_table<_TVALUE, _ITEM, _NDTYPE>::_fnc[] = {
 	function<_TVALUE>("abs", "absolute value", &functions<_TVALUE>::abs),
 	function<_TVALUE>("sgn", "sign", &functions<_TVALUE>::sgn),
 	function<_TVALUE>("rnd", "random", &functions<_TVALUE>::rnd),
@@ -97,41 +127,66 @@ const function<_TVALUE> function_table<_TVALUE>::_fnc[] = {
 	function<_TVALUE>("if", "conditional function", &functions<_TVALUE>::_if, 3)
 };
 
-template<class _TVALUE>
-const int function_table<_TVALUE>::_fncSize = 23;
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+const int function_table<_TVALUE, _ITEM, _NDTYPE>::_fncSize = 23;
 
 
-template<class _TVALUE>
-int function_table<_TVALUE>::getPrecedence()
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+function_table<_TVALUE, _ITEM, _NDTYPE>::~function_table()
+{
+	for (mapfnc::const_iterator f = _functions.begin(); f != _functions.end(); ++f)
+		for (map_nargs_pair_arg_tree::const_iterator fa = f->second.begin(); fa != f->second.end(); ++fa)
+			delete fa->second.second;
+}
+
+
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+int function_table<_TVALUE, _ITEM, _NDTYPE>::getPrecedence()
 {
 	return 100;
 }
 
 
-template<class _TVALUE>
-const function<_TVALUE>* function_table<_TVALUE>::find(const node<_TVALUE>*nd, const char* expr, bool toRight) const
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+void function_table<_TVALUE, _ITEM, _NDTYPE>::insert(const sitem& fncName, const argmap& args, tptree* tree)
 {
-	const node<_TVALUE>* chFnc = toRight ? nd->getLeft(): nd->getRight();
-	if(chFnc)
-	{
-		for(int i = 0; i < _fncSize; ++i)
-		{
-			if(_fnc[i].compare(chFnc->getCharPtr(expr), chFnc->len(), nd->nArguments(toRight)))
-				return _fnc + i;
-		}
-	}
-	return NULL;
+	_functions[fncName.getString()][args.size()] = pair_arg_tree(args, tree);
 }
 
 
-template<class _TVALUE>
-const function<_TVALUE>* function_table<_TVALUE>::get(int i) const
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+pair_ffnc<_TVALUE, _ITEM, _NDTYPE>
+	function_table<_TVALUE, _ITEM, _NDTYPE>::find(const node<_ITEM, _NDTYPE>*nd, const char* expr, bool toRight) const
+{
+	const node<_ITEM, _NDTYPE>* chFnc = toRight ? nd->getLeft() : nd->getRight();
+	if(chFnc)
+	{
+		int args = nd->nArguments(toRight);
+		mapfnc::const_iterator cif = _functions.find(chFnc->getString(expr));
+		if (cif != _functions.end())
+		{
+			map_nargs_pair_arg_tree::const_iterator ciff = cif->second.find(args);
+			if (ciff != cif->second.end())
+				return pair_ffnc(ciff->second.second);
+		}
+		for (int i = 0; i < _fncSize; ++i)
+		{
+			if (_fnc[i].compare(chFnc->getCharPtr(expr), chFnc->len(), args))
+				return pair_ffnc(_fnc + i);
+		}
+	}
+	return pair_ffnc();
+}
+
+
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+const function<_TVALUE>* function_table<_TVALUE, _ITEM, _NDTYPE>::get(int i) const
 {
 	return _fnc + i;
 }
 
-template<class _TVALUE>
-int function_table<_TVALUE>::size() const
+template<class _TVALUE, class _ITEM, typename _NDTYPE>
+int function_table<_TVALUE, _ITEM, _NDTYPE>::size() const
 {
 	return _fncSize;
 }

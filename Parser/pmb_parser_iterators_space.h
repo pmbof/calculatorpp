@@ -10,21 +10,21 @@ namespace iterators
 {
 
 
-template <class _IT, class _baseIterator, class _TVALUE>
+template <class _IT, class _baseIterator, class _ITEM, typename _NDTYPE>
 struct space: public _baseIterator
 {
 	space(_IT& it): s(it), _ini(0), _end(0) { }
 
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
-		_ini = s;
+		_ini = (typename _IT::idx)s;
 		for( ; s.isSpace(); ++s)
 			;
-		_end = s;
+		_end = (typename _IT::idx)s;
 		return NULL;
 
-//		return is < s && is != 0 && s() ? node<_TVALUE>::newNodeSpace(is, s): NULL;
+//		return is < s && is != 0 && s() ? node<_ITEM, _NDTYPE>::newNodeSpace(is, s): NULL;
 	}
 
 
@@ -38,8 +38,8 @@ struct space: public _baseIterator
 
 protected:
 	_IT& s;
-	int _ini;
-	int _end;
+	typename _IT::idx _ini;
+	typename _IT::idx _end;
 };
 
 

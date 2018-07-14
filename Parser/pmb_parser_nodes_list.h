@@ -15,25 +15,22 @@ namespace nodes
 
 
 
-template<class _TVALUE>
-class list: public unknow<_TVALUE>
+template<class _ITEM, class _NDTYPE>
+class list : public unknown<_ITEM, _NDTYPE>
 {
 public:
-	typename typedef unknow<_TVALUE> _classbase;
+	typename typedef unknown<_ITEM, _NDTYPE> cunknow;
 
 public:
 	list(int ini);
 	~list();
 
-	const _TVALUE& getLValue() const;
-	_TVALUE& getLValue();
-	const _TVALUE* getRValue() const;
-	_TVALUE* getRValue();
+//	const _TVALUE& getLValue() const;
+//	_TVALUE& getLValue();
+//	const _TVALUE* getRValue() const;
+//	_TVALUE* getRValue();
 
 	void updateNext();
-
-protected:
-	_TVALUE _rValue;
 };
 
 

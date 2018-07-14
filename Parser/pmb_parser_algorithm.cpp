@@ -28,270 +28,250 @@ namespace parser
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::algorithm(_SYMBOLS& symbols)
-	: _tree(NULL), _symbols(symbols)
+template <class _BLOCK, class _OPRTABLE, class _IT>
+algorithm<_BLOCK, _OPRTABLE, _IT>::algorithm(_tdOprTable* operation_table, _BLOCK* pBlock)
+	: _oprTable(operation_table), _pBlock(pBlock), _tree(nullptr)
 {
 }
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::~algorithm()
+template <class _BLOCK, class _OPRTABLE, class _IT>
+algorithm<_BLOCK, _OPRTABLE, _IT>::~algorithm()
 {
 	clear();
 }
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::clear()
+template <class _BLOCK, class _OPRTABLE, class _IT>
+void algorithm<_BLOCK, _OPRTABLE, _IT>::clear()
 {
 	if(_tree)
 	{
 		delete _tree;
-		_tree = NULL;
+		_tree = nullptr;
 	}
 }
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::initialize()
+template <class _BLOCK, class _OPRTABLE, class _IT>
+void algorithm<_BLOCK, _OPRTABLE, _IT>::initialize()
 {
 	clear();
 }
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::parser(const char* expr)
+template <class _BLOCK, class _OPRTABLE, class _IT>
+void algorithm<_BLOCK, _OPRTABLE, _IT>::parser(const char* expr)
 {
-	AfxTrace(L"Paresing expression: \n\t\'%s\'\n", (LPCTSTR)CString(expr));
-	if(!expr)
+	log* pLg = log::beginFunction(pmb::logDebug, "pmb::parser::algorithm::parser");
+	if (!expr)
+	{
+		pLg->trace(logError, "expression is NULL").endFunction(logError);
 		return;
+	}
+
 	if(_tree)
 		delete _tree;
 	_expr = expr;
-	_tree = new tree<_TVALUE>;
+	_tree = new tptree;
 
+	pLg->trace(logDebug, "Populating: '%s'\n", expr).trace(logDebug, "");
+	pLg->traceN(         "             ", strlen(expr), "\n");
 	populate();
-	mapUnknow();
-	calc();
+	_tree->trace(_expr);
+
+	pLg->trace(logDebug, "Mapping: '%s'\n", expr).trace(logDebug, "");
+	pLg->traceN(         "          ", strlen(expr), "\n");
+	mapUnknown();
+	_tree->trace(_expr);
+
+	pLg->trace(logDebug, "Calculating: '%s'\n", expr).trace(logDebug, "");
+	pLg->traceN(         "              ", strlen(expr), "\n");
+	calculate();
+	_tree->trace(_expr);
+
+	pLg->endFunction(logDebug);
 }
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::populate()
+template <class _BLOCK, class _OPRTABLE, class _IT>
+void algorithm<_BLOCK, _OPRTABLE, _IT>::populate()
 {
-	auto_iterator<0, _IT, _TVALUE> ai(_expr);
+	auto_iterator<0, _IT, cItem, cNdType> ai(_expr);
 	while(_expr())
 	{
-		node<_TVALUE>* newNode = ai();
+		node* newNode = ai();
 		if(newNode || ai.space())
 		{
-			node<_TVALUE>* ndUnknow = ai.release();
-			_tree->insert(ndUnknow);
+			node* ndUnknown = ai.release();
+			_tree->insert(ndUnknown);
 			_tree->insert(newNode);
 		}
 	}
 	ai.initLoop();
-	node<_TVALUE>* ndUnknow = ai.release();
-	_tree->insert(ndUnknow);
+	node* ndUnknown = ai.release();
+	_tree->insert(ndUnknown);
+	_tree->check();
 }
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::mapUnknow()
+template <class _BLOCK, class _OPRTABLE, class _IT>
+void algorithm<_BLOCK, _OPRTABLE, _IT>::mapUnknown()
 {
-	node<_TVALUE>* nd;
-	_OPRTABLE oprTable;
-	_FNCTABLE fncTable;
-	for(nd = _tree->getRootNode()->getFirstUnknowNode(); nd; nd = nd->getNextUnknowNode())
+	typedef nodes::unknown<cItem, cNdType> node_unknown;
+
+	log* plg = log::beginFunction(logDebug, "pmb::parser::algorithm::mapUnknown");
+	node* nd;
+	for(nd = _tree->getRootNode()->getFirstUnknownNode(); nd; nd = nd->getNextUnknownNode())
 	{
-		const operation<_TVALUE>* opr = oprTable.find(nd, _expr._expr);
+		const operation* opr = _oprTable->find(nd, _expr._expr);
 		if(opr)
 		{
-			const function<_TVALUE>* fnc = NULL;
+			const tptree* fncTree = NULL;
+			typename _BLOCK::pair_function fnc;
 			if(opr->canCallFunction())
-			{
-				if(_findFirstInFunction)
-					fnc = fncTable.find(nd, _expr._expr, opr->isLeftToRight());
-				else
-				{
-					const node<_TVALUE>* child = nd->getChild(opr->isLeftToRight());
-					if(child && child->getType() == ndAlpha && !_symbols.find(child->getString(_expr)))
-						fnc = fncTable.find(nd, _expr._expr, opr->isLeftToRight());
-				}
-			}
-			if(fnc)
-				AfxTrace(L"\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()), _findFirstInFunction ? L"true": L"false");
+				fnc = _pBlock->find_function(nd, _expr._expr, opr->isLeftToRight(), _findFirstInFunction);
+			if (fnc._userDef)
+				plg->trace(logDebug, "\t\t\t+ user function found. _findFirstInFunction = %s\n", _findFirstInFunction ? "true" : "false");
+			if (fnc._buildin)
+				plg->trace(logDebug, "\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", fnc._buildin->getName(), fnc._buildin->getNArgs(), fnc._buildin->getDescription(), _findFirstInFunction ? "true": "false");
 
-			static_cast<nodes::unknow<_TVALUE>*>(nd)->setOperation(opr, fnc);
-			CString trace(L"\t- Mapping operation: ");
-			trace += opr->getSymbol();
-			trace += "<";
-			trace += opr->getName();
-			trace += ", ";
-			trace += opr->getDescription();
-			trace += ">[";
-			trace += opr->isBinary() ? "True, ": "FALSE, ";
-			trace += opr->isLeftToRight() ? "True": "FALSE";
-			AfxTrace(trace);
-			TRACE_NODE("], node: ", nd);
+			static_cast<node_unknown*>(nd)->set(
+				reinterpret_cast<const void*>(opr), opr->isBinary(), opr->isLeftToRight(), opr->getPrecedence(), opr->canCreateLVariable(), opr->canCreateRVariable(),
+				reinterpret_cast<const void*>(fnc._buildin),
+				reinterpret_cast<void*>(fnc._userDef));
+			plg->trace(logDebug, "\t- Mapping operation: ");
+			if (fnc._userDef)
+				*plg << "(call user function) ";
+			if (fnc._buildin)
+				*plg << "(call build-in function) ";
+			*plg << "'" << opr->getSymbol() << "'"
+				<< " <" << opr->getName() << ", " << opr->getDescription() << ">["
+				<< (opr->isBinary() ? "b": "u") << "," << (opr->isLeftToRight() ? "L": "R") << "," << opr->getPrecedence() << "]";
+			TRACE_NODE(logDebug, ",", _expr, nd);
 		}
 		else
-			TRACE_NODE("\t- No mapping for: ", nd);
+			TRACE_NODE(logWarning, "\t- No mapping for: ", _expr, nd);
 	}
+	plg->endFunction();
 }
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::calc()
+
+
+
+template<class _BLOCK, class _IT, class _OPRTABLE>
+inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 {
-	node<_TVALUE>* nd = _tree->getRootNode();
-	_TVALUE lValue(true);
-	_TVALUE rValue(true);
-	for (; nd && nd->isCalcType();)
+	typedef nodes::calc<cItem, cNdType> node_calc;
+	typedef nodes::unknown<cItem, cNdType> node_unknown;
+	log* plg = log::beginFunction(logDebug, "pmb::parser::algorithm::calculate");
+	_BLOCK& block = *_pBlock;
+
+	for (block.init(_tree); block; block.next())
 	{
-		nodes::calc<_TVALUE>* uc = static_cast<nodes::calc<_TVALUE>*>(nd);
-		uc = uc->nextCalc();
-		if(uc)
+		typename _BLOCK::iterator* it_calc = block.begin(_expr);
+
+		for (it_calc->begin(); *it_calc; ++(*it_calc))
 		{
-			TRACE_NODE("\t\t+ Calculating", uc);
-			if(uc->getType() == ndUnknow)
+			const typename node_calc* uc = static_cast<const typename node_calc*>(it_calc->node());
+			if (uc && uc->isCalcType())
 			{
-				nodes::unknow<_TVALUE>* uk = static_cast<nodes::unknow<_TVALUE>*>(uc);
-				const operation<_TVALUE>* opr = uk->getOperation();
-				const function<_TVALUE>* fnc = uk->getFunction();
-				if(opr->isBinary())
+				if (block.insert_function())
 				{
-					if((!fnc || !opr->isLeftToRight()))// && (!opr->canCallFunction() || !opr->isLeftToRight() || uk->nArguments(true) < 2))
-					{
-						AfxTrace(L"\t\t\t* getting lValue: (right nArguments = %d)%s\n", uk->nArguments(true), opr->canCreateLVariable() ? L"[create Variable]": L"");
-						getValue(uk->getLeft(), lValue, opr->canCreateLVariable());
-					}
-					else
-						AfxTrace(L"\t\t\t- skipping get lValue: is a call function, right nArguments = %d.\n", uk->nArguments(true));
-					if((!fnc ||  opr->isLeftToRight()))// && (!opr->canCallFunction() || opr->isLeftToRight() || uk->nArguments(false) < 2))
-					{
-						AfxTrace(L"\t\t\t* getting rValue: (left nArguments = %d)%s\n", uk->nArguments(false), opr->canCreateRVariable() ? L"[create Variable]": L"");
-						getValue(uk->getRight(), rValue, opr->canCreateRVariable());
-					}
-					else
-						AfxTrace(L"\t\t\t- skipping get rValue: is a call function, left nArguments = %d.\n", uk->nArguments(false));
-					if(!lValue)
-						TRACE_NODE("\t\t\t- not lValue for", uk->getLeft());
-					if(!rValue)
-						TRACE_NODE("\t\t\t- not rValue for", uk->getRight());
-					if((!lValue && !opr->canCreateLVariable() || !rValue && !opr->canCreateRVariable())
-						 && (!fnc || !rValue && opr->isLeftToRight() || !lValue && !opr->isLeftToRight()))
-							break;
-					if(fnc)
-					{
-						AfxTrace(L"\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", (LPCTSTR)CString(fnc->getName()), fnc->getNArgs(), (LPCTSTR)CString(fnc->getDescription()), _findFirstInFunction ? L"true": L"false");
-						const _TVALUE* args = uk->getArguments();
-						if (!args && fnc->getNArgs() == 1)
-						{
-							getValue(uk->getRight(), uk->getValue(), opr->canCreateRVariable());
-							args = &uk->getValue();
-						}
-						else if (!args && fnc->getNArgs())
-						{
-							AfxTrace(L"\t\t\t- ERROR getting function arguments.\n");
-							break;
-						}
-						(*fnc)(uk->getValue(), fnc->getNArgs(), args);
-					}
-					else
-					{
-						AfxTrace(L"\t\t\t* getting result:\n");
-						(*opr)(uk->getValue(), lValue, rValue);
-					}
-					lValue.release();
-					rValue.release();
+					_tree->trace(_expr);
+					_tree = NULL;
+					plg->trace(logDebug, "\t\t\t. End calculate. Function definition!\n");
+					break;
 				}
-				else // opr is unitary
+				TRACE_NODE(logDebug, "\t\t+ Calculating:", _expr, uc);
+
+				if (uc->getType() == ndUnknown)
 				{
-					AfxTrace(L"\t\t\t* getting value:\n");
-					getValue(opr->isLeftToRight() ? uk->getLeft(): uk->getRight(), lValue);
-					if(!lValue)
+					const nodes::unknown<cItem, cNdType>* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uc);
+					if (uk->isValid())
 					{
-						TRACE_NODE("\t\t\t- not value for", opr->isLeftToRight() ? uk->getLeft(): uk->getRight());
-						break;
+						transporter_args& args = block.getValues();
+						if (!it_calc->is_varDependent() || !block.is_functionDef())
+						{
+							if (uk->isCallFunction())
+							{
+								if (uk->isCallBuildInFunction())
+								{
+									try
+									{
+										const build_in_function* function = reinterpret_cast<const build_in_function*>(uk->pointer());
+										(*function)(args);
+										args.removeRights();
+										it_calc->calculated();
+									}
+									catch (build_in_function::exception& ex)
+									{
+										throw exception<cItem>(uc, ex.message());
+									}
+								}
+								else
+								{
+									try
+									{
+										user_def_function* function = const_cast<user_def_function*>(reinterpret_cast<const user_def_function*>(uk->pointer()));
+										it_calc = block.call_function(function, args);
+										continue;
+										args.removeRights();
+										it_calc->calculated();
+									}
+									catch (exception<cItem>& ex)
+									{
+										throw exception<cItem>(uc, ex.message(_expr).c_str());
+									}
+								}
+							}
+							else
+							{
+								try
+								{
+									const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
+									(*opr)(args);
+									it_calc->calculated();
+								}
+								catch (operation::exception& ex)
+								{
+									throw exception<cItem>(uc, ex.message());
+								}
+							}
+						}
 					}
-					AfxTrace(L"\t\t\t* getting result:\n");
-					(*opr)(uk->getValue(), lValue);
-					lValue.release();
+					else
+						throw exception<cItem>(uc, "Unknown, no matching symbol %item");
 				}
-			}
-			else if(uc->getType() == ndParentheses)
-			{
-				nodes::parentheses<_TVALUE>* pr = static_cast<nodes::parentheses<_TVALUE>*>(uc);
-				if (pr->getRight()->getType() == ndList || pr->getRight()->getType() != ndList && pr->getRight()->getType() != ndParentheses)
+				else if (uc->getType() == ndList)
 				{
-					AfxTrace(L"\t\t\t* getting value:\n");
-					getValue(pr->getRight(), pr->getValue());
+					block.getValues();
+					it_calc->calculated();
+				}
+				else if (uc->getType() == ndParentheses)
+				{
+					transporter_args& args = block.getValues();
+					if (uc->getRight() && uc->getRight()->getType() != ndList)
+						args.removeLefts();
+					it_calc->calculated();
 				}
 				else
-					AfxTrace(L"\t\t\t* skipping value\n");
-				if(!pr->getValue())
-				{
-					TRACE_NODE("\t\t\t- not value for", pr->getRight());
-//					break;
-				}
+					throw exception<cItem>(uc, "unknown symbol %item");
+				TRACE_NODE(logDebug, "\t\t- Calculated finale status:", _expr, uc);
 			}
-			else // uc->getType() == ndList
-			{
-				nodes::list<_TVALUE>* ls = static_cast<nodes::list<_TVALUE>*>(uc);
-				ls->updateNext();
-				_TVALUE* rVal = ls->getRValue();
-				getValue(ls->getLeft(), ls->getLValue());
-				getValue(ls->getRight(), *rVal);
-					
-				if(!ls->getLValue())
-					TRACE_NODE("\t\t\t- not lValue for", ls->getLeft());
-				if(!ls->getRValue() && !*ls->getRValue())
-					TRACE_NODE("\t\t\t- not rValue for", ls->getRight());
-				if(!ls->getLValue() || !ls->getRValue())
-					break;
-			}
-			uc->setCalculated();
-			TRACE_NODE("\t\t- Calculated!!!", uc);
 		}
-		nd = uc;
 	}
+	plg->endFunction(logDebug);
+	return false;
 }
 
 
 
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-void algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::getValue(node<_TVALUE>* nd, _TVALUE& value, bool canCreateVariable) const
-{
-	switch(nd->getType())
-	{
-	case ndNumber:
-		value = _TVALUE::getNewValue(nd->getCharPtr(_expr), nd->len());
-		break;
-	case ndAlpha:
-		_symbols.find(nd->getString(_expr), value, canCreateVariable);
-		break;
-	case ndParentheses:
-		value = static_cast<nodes::parentheses<_TVALUE>*>(nd)->getValue();
-		break;
-	case ndList:
-		value = static_cast<nodes::list<_TVALUE>*>(nd)->getValue();
-		break;
-	case ndString:
-		break;
-	case ndUnknow:
-		value = static_cast<nodes::unknow<_TVALUE>*>(nd)->getValue();
-		break;
-	default:
-		break;
-	}
-}
 
-
-
-template <class _TVALUE, class _IT, class _OPRTABLE, class _FNCTABLE, class _SYMBOLS>
-const tree<_TVALUE>* algorithm<_TVALUE, _IT, _OPRTABLE, _FNCTABLE, _SYMBOLS>::getTree() const
+template <class _BLOCK, class _OPRTABLE, class _IT>
+const typename algorithm<_BLOCK, _OPRTABLE, _IT>::tptree*
+	algorithm<_BLOCK, _OPRTABLE, _IT>::getTree() const
 {
 	return _tree;
 }

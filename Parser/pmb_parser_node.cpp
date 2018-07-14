@@ -1,10 +1,16 @@
 #include "StdAfx.h"
 #include "pmb_parser_node.h"
+#include "pmb_parser_nodes_number.h"
+#include "pmb_parser_nodes_number.cpp"
 #include "pmb_parser_nodes_parentheses.h"
+#include "pmb_parser_nodes_parentheses.cpp"
 #include "pmb_parser_nodes_unknow.h"
 #include "pmb_parser_nodes_unknow.cpp"
 #include "pmb_parser_nodes_list.h"
 #include "pmb_parser_nodes_list.cpp"
+
+#include "pmb_parser_exception.h"
+
 
 
 namespace pmb
@@ -14,195 +20,195 @@ namespace parser
 
 
 
-template <class _TVALUE>
-node<_TVALUE>::node(ndtype type, int ini, int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>::node(cNdType type, ISIZE ini, ISIZE end)
 	: item(ini, end), _parent(NULL), _left(NULL), _right(NULL), _type(type)
 {
-	TRACE_NODE("New", this, true);
+	TRACE_NODE(logDebug, "New", nullptr, this, true);
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>::~node()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>::~node()
 {
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeSpace(int ini, int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeSpace(ISIZE ini, ISIZE end)
 {
-	return new node<_TVALUE>(ndSpace, ini, end);
+	return new cnode(ndSpace, ini, end);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeAlpha(int ini, int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeAlpha(ISIZE ini, ISIZE end)
 {
-	return new node<_TVALUE>(ndAlpha, ini, end);
+	return new cnode(ndAlpha, ini, end);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeNumber(int ini, int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeNumber(ISIZE ini, ISIZE end)
 {
-	return new node<_TVALUE>(ndNumber, ini, end);
+	return new nodes::number<_ITEM, _NDTYPE>(ini, end);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeString(int ini, int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeString(ISIZE ini, ISIZE end)
 {
-	return new node<_TVALUE>(ndString, ini, end);
+	return new cnode(ndString, ini, end);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeParentheses(int ini, int end, char type, int opened)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeParentheses(ISIZE ini, ISIZE end, char type, int opened)
 {
-	return new nodes::parentheses<_TVALUE>(ini, end, type, opened);
+	return new nodes::parentheses<_ITEM, _NDTYPE>(ini, end, type, opened);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeList(int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeList(ISIZE end)
 {
-	return new nodes::list<_TVALUE>(end);
+	return new nodes::list<_ITEM, _NDTYPE>(end);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeUnknow(int ini, int end)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeUnknown(ISIZE ini, ISIZE end)
 {
-	return new nodes::unknow<_TVALUE>(ini, end);
+	return new nodes::unknown<_ITEM, _NDTYPE>(ini, end);
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::newNodeUnknowEmpty(const node<_TVALUE>* parent, const node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::newNodeUnknownEmpty(const cnode* parent, const cnode* newNode)
 {
-	return 	node<_TVALUE>::newNodeUnknow(1 < newNode->_ini - parent->_end ? newNode->_ini - 1: parent->_end, newNode->_ini);
+	return 	cnode::newNodeUnknown(1 < newNode->_ini - parent->_end ? newNode->_ini - 1: parent->_end, newNode->_ini);
 }
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getRootNode() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getRootNode() const
 {
-	const node<_TVALUE>* rt;
+	const cnode* rt;
 	for(rt = this; rt && rt->_parent; rt = rt->_parent)
 		;
 	return rt;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getRootNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getRootNode()
 {
-	node<_TVALUE>* rt;
+	cnode* rt;
 	for(rt = this; rt && rt->_parent; rt = rt->_parent)
-		;
+		rt->check();
 	return rt;
 }
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getFirstLeftNode() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstLeftNode() const
 {
-	const node<_TVALUE>* lf;
+	const cnode* lf;
 	for(lf = this; lf && lf->_left; lf = lf->_left)
-		;
+		lf->check();
 	return lf;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getFirstLeftNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstLeftNode()
 {
-	node<_TVALUE>* lf;
+	cnode* lf;
 	for(lf = this; lf && lf->_left; lf = lf->_left)
-		;
+		lf->check();
 	return lf;
 }
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getFirstUnknowNode() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstUnknownNode() const
 {
-	const node<_TVALUE>* nd = getFirstNode();
-	if(nd && nd->_type != ndUnknow)
-		nd = nd->getNextUnknowNode();
+	const cnode* nd = getFirstNode();
+	if(nd && nd->_type != ndUnknown)
+		nd = nd->getNextUnknownNode();
 	return nd;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getFirstUnknowNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstUnknownNode()
 {
-	node<_TVALUE>* nd = getFirstNode();
-	if(nd && nd->_type != ndUnknow)
-		nd = nd->getNextUnknowNode();
+	cnode* nd = getFirstNode();
+	if(nd && nd->_type != ndUnknown)
+		nd = nd->getNextUnknownNode();
 	return nd;
 }
 
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getNextUnknowNode() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextUnknownNode() const
 {
-	const node<_TVALUE>* ret;
-	for(ret = getNextNode(); ret && ret->_type != ndUnknow; ret = ret->getNextNode())
+	const cnode* ret;
+	for(ret = getNextNode(); ret && ret->_type != ndUnknown; ret = ret->getNextNode())
 		;
 	return ret;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getNextUnknowNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextUnknownNode()
 {
-	node<_TVALUE>* ret;
-	for(ret = getNextNode(); ret && ret->_type != ndUnknow; ret = ret->getNextNode())
+	cnode* ret;
+	for(ret = getNextNode(); ret && ret->_type != ndUnknown; ret = ret->getNextNode())
 		;
 	return ret;
 }
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getFirstNode() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstNode() const
 {
 	return getRootNode()->getFirstLeftNode();
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getFirstNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstNode()
 {
 	return getRootNode()->getFirstLeftNode();
 }
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getNextNode() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextNode() const
 {
-	const node<_TVALUE>* ret = this && _right ? _right->getFirstLeftNode():
+	const cnode* ret = this && _right ? _right->getFirstLeftNode():
 		this && _parent && _parent->_left == this ? _parent: NULL;
 	if(!ret && this && _parent)
 	{
 		ret = _parent;
-		for(const node<_TVALUE>* right = this; ret && ret->_right == right; ret = ret->_parent)
+		for(const cnode* right = this; ret && ret->_right == right; ret = ret->_parent)
 			right = ret;
 	}
 	return ret;
 }
 
 
-template <class _TVALUE>
-int node<_TVALUE>::nArguments(bool toRight) const
+template <class _ITEM, class _NDTYPE>
+int node<_ITEM, _NDTYPE>::nArguments(bool toRight) const
 {
-	const node<_TVALUE>* ret = toRight && _right ? _right: !toRight && _left ? _left: NULL;
-	return ret ? ret->_type != ndParentheses ? 1: reinterpret_cast<const nodes::parentheses<_TVALUE>*>(ret)->countListChildNodes(): 0;
+	const cnode* ret = toRight && _right ? _right : !toRight && _left ? _left : NULL;
+	return ret ? ret->_type != ndParentheses ? 1 : reinterpret_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(ret)->countListChildNodes() : 0;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getNextNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextNode()
 {
-	node<_TVALUE>* ret = this && _right ? _right->getFirstLeftNode():
+	cnode* ret = this && _right ? _right->getFirstLeftNode():
 		this && _parent && _parent->_left == this ? _parent: NULL;
 	if(!ret && this && _parent)
 	{
 		ret = _parent;
-		for(node<_TVALUE>* right = this; ret && ret->_right == right; ret = ret->_parent)
+		for (cnode* right = this; ret && ret->_right == right; ret = ret->_parent)
 			right = ret;
 	}
 	return ret;
@@ -210,92 +216,108 @@ node<_TVALUE>* node<_TVALUE>::getNextNode()
 
 
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getParent() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getParent() const
 {
 	return _parent;
 }
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getLeft() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getLeft() const
 {
 	return _left;
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getLeft()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getLeft()
 {
 	return _left;
 }
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getChild(bool bLeft) const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getChild(bool bLeft) const
 {
 	return bLeft ? _left: _right;
 }
 
-template <class _TVALUE>
-const node<_TVALUE>* node<_TVALUE>::getRight() const
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getRight() const
 {
 	return _right;
 }
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::getRight()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getRight()
 {
 	return _right;
 }
 
 
-template <class _TVALUE>
-char node<_TVALUE>::getType() const
+template <class _ITEM, class _NDTYPE>
+char node<_ITEM, _NDTYPE>::getType() const
 {
 	return _type;
 }
 
 
-template <class _TVALUE>
-bool node<_TVALUE>::isCalcType() const
+template <class _ITEM, class _NDTYPE>
+bool node<_ITEM, _NDTYPE>::isCalcType() const
 {
-	return _type == ndUnknow || _type == ndParentheses || _type == ndList;
+	return _type == ndUnknown || _type == ndParentheses || _type == ndList;
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::insertToRight(node<_TVALUE>* newNode)
+template<class _ITEM, typename _NDTYPE>
+void node<_ITEM, _NDTYPE>::insertInRight(cnode* newnode)
 {
-	AfxTrace(L"node::insertToRight\n");
+	node* right = _right;
+	_right = newnode;
+	newnode->_parent = this;
+	newnode->_right = right;
+	if (right)
+		right->_parent = newnode;
+}
 
-	node<_TVALUE>* ndR;
+
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::insertToRight(cnode* newNode)
+{
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::insertToRight");
+
+	cnode* ndR;
 	for(ndR = this; ndR->_right; ndR = ndR->_right)
 		;
 	ndR->_right = newNode;
 	ndR->_right->_parent = this;
+
+	pLg->endFunction();
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::insertToLeft(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::insertToLeft(node<_ITEM, _NDTYPE>* newNode)
 {
-	AfxTrace(L"node::insertToLeft\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::insertToLeft");
 
-	node<_TVALUE>* ndL;
+	cnode* ndL;
 	for(ndL = this; ndL->_left; ndL = ndL->_left)
 		;
 	ndL->_left = newNode;
 	ndL->_left->_parent = this;
+
+	pLg->endFunction();
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::insertInThisRight(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::insertInThisRight(node<_ITEM, _NDTYPE>* newNode)
 {
-	AfxTrace(L"node::insertInThisRight\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::insertInThisRight");
 
-	node<_TVALUE>* nd;
+	node<_ITEM, _NDTYPE>* nd;
 	for(nd = this; nd->_right; nd = nd->_right)
 		;
-	node<_TVALUE>* p = nd->_parent;
+	node<_ITEM, _NDTYPE>* p = nd->_parent;
 	nd->_parent = newNode;
 	newNode->_left = nd;
 	newNode->_parent = p;
@@ -306,16 +328,18 @@ void node<_TVALUE>::insertInThisRight(node<_TVALUE>* newNode)
 		else // p->_left == nd
 			p->_left = newNode;
 	}
+
+	pLg->endFunction();
 }
 
 
 
-template <class _TVALUE>
-void node<_TVALUE>::insertInThisNode(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::insertInThisNode(node<_ITEM, _NDTYPE>* newNode)
 {
-	AfxTrace(L"node::insertInThisNode\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::insertInThisNode");
 
-	node<_TVALUE>* tmpParent = _parent;
+	cnode* tmpParent = _parent;
 	_parent = newNode;
 	newNode->_left = this;
 	newNode->_parent = tmpParent;
@@ -327,25 +351,29 @@ void node<_TVALUE>::insertInThisNode(node<_TVALUE>* newNode)
 		else // tmpParent->_left == nd
 			tmpParent->_left = newNode;
 	}
+
+	pLg->endFunction();
 }
 
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insertEmptyUnknow(const node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insertEmptyUnknown(const node<_ITEM, _NDTYPE>* newNode)
 {
-	AfxTrace(L"node::insertEmptyUnknow\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::insertEmptyUnknown");
 
-	node<_TVALUE>* emptyOperator = node<_TVALUE>::newNodeUnknowEmpty(this, newNode);
+	node<_ITEM, _NDTYPE>* emptyOperator = node<_ITEM, _NDTYPE>::newNodeUnknownEmpty(this, newNode);
 	insertInThisNode(emptyOperator);
+
+	pLg->endFunction();
 	return emptyOperator;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::deleteThisNode()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::deleteThisNode()
 {
-	AfxTrace(L"node::deleteThisNode ANDA MAL!!!\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::deleteThisNode");
 	ASSERT(!_right);
 
 	if(_parent)
@@ -358,16 +386,17 @@ node<_TVALUE>* node<_TVALUE>::deleteThisNode()
 	if(_left)
 		_left->_parent = _parent;
 
-	node<_TVALUE>* parent = _parent ? _parent: _left;
+	node<_ITEM, _NDTYPE>* parent = _parent ? _parent : _left;
 	delete this;
+	pLg->endFunction();
 	return parent;
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::replaceThisNode(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::replaceThisNode(node<_ITEM, _NDTYPE>* newNode)
 {
-	AfxTrace(L"node::replaceThisNode\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::replaceThisNode");
 
 	if(newNode->_parent = _parent)
 	{
@@ -381,15 +410,16 @@ void node<_TVALUE>::replaceThisNode(node<_TVALUE>* newNode)
 	if(newNode->_right = _right)
 		newNode->_right->_parent = newNode;
 
-	TRACE_NODE("deleting for replace",  this);
+	TRACE_NODE(logDebug, "deleting for replace", nullptr,  this);
 	delete this;
+	pLg->endFunction();
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::upLeftToThisNode()
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::upLeftToThisNode()
 {
-	AfxTrace(L"node::upLeftToThisNode\n");
+	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::node::upLeftToThisNode");
 
 	if(_left->_parent = _parent)
 	{
@@ -398,17 +428,18 @@ void node<_TVALUE>::upLeftToThisNode()
 		else
 			_parent->_right = _left;
 	}
-	TRACE_NODE("deleting for up left to this",  this);
+	TRACE_NODE(logDebug, "deleting for up left to this",  this);
 	if(_right)
-		TRACE_NODE("Memory leak in up left to this", _right);
+		TRACE_NODE(logError, "Memory leak in up left to this", _right);
 	delete(this);
+	pLg->endFunction();
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::switchToUpNode()
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::switchToUpNode()
 {
-	AfxTrace(L"node::switchToUpNode\n");
+	pmb::log* pLg = pmb::log::beginFunction(pmb::logDebug, "pmb::parser::node::switchToUpNode");
 	
 	if(_parent)
 	{
@@ -422,13 +453,13 @@ void node<_TVALUE>::switchToUpNode()
 				_parent->_parent->_right = this;
 			}
 		}
-		node<_TVALUE>* oldParent = _parent;
+		node<_ITEM, _NDTYPE>* oldParent = _parent;
 		_parent = _parent->_parent;
 		oldParent->_parent = this;
 
 		if(oldParent->_right == this)
 		{
-			node<_TVALUE>* oldLeft = _left;
+			node<_ITEM, _NDTYPE>* oldLeft = _left;
 			_left = oldParent;
 			if(oldLeft)
 				oldLeft->_parent = oldParent;
@@ -437,20 +468,21 @@ void node<_TVALUE>::switchToUpNode()
 		else // oldParent->_left == this
 		{
 			ASSERT(oldParent->_left == this);
-			node<_TVALUE>* oldRight = _right;
+			node<_ITEM, _NDTYPE>* oldRight = _right;
 			_right = oldParent;
 			if(oldRight)
 				oldRight->_parent = oldParent;
 			oldParent->_left = oldRight;
 		}
 	}
+	pLg->endFunction(pmb::logDebug);
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert(node<_ITEM, _NDTYPE>* newNode)
 {
-	node<_TVALUE>* ndRet;
+	cnode* ndRet;
 	switch(newNode->_type)
 	{
 	case ndSpace:
@@ -471,8 +503,8 @@ node<_TVALUE>* node<_TVALUE>::insert(node<_TVALUE>* newNode)
 	case ndList:
 		ndRet = insert_list(newNode);
 		break;
-	case ndUnknow:
-		ndRet = insert_unknow(newNode);
+	case ndUnknown:
+		ndRet = insert_unknown(newNode);
 		break;
 	default:
 		ndRet = NULL;
@@ -482,40 +514,40 @@ node<_TVALUE>* node<_TVALUE>::insert(node<_TVALUE>* newNode)
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_alpha(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_alpha(node<_ITEM, _NDTYPE>* newNode)
 {
-	node<_TVALUE>* ndRet = NULL;
+	cnode* ndRet = NULL;
 	switch(_type)
 	{
 	case ndAlpha:
 	case ndNumber:
 	case ndString:
-		insertEmptyUnknow(newNode)->insertToRight(ndRet = newNode);
+		insertEmptyUnknown(newNode)->insertToRight(ndRet = newNode);
 		break;
 	case ndParentheses:
-		if(static_cast<nodes::parentheses<_TVALUE>*>(this)->getOpened() < 0)
+		if (static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(this)->getOpened() < 0)
 		{
-			node<_TVALUE>* emptyUnknow = insertUnknowListInParentheses(node<_TVALUE>::newNodeUnknowEmpty(this, newNode));
-			if(emptyUnknow)
-				emptyUnknow->insertToRight(ndRet = newNode);
+			node<_ITEM, _NDTYPE>* emptyUnknown = insertUnknownListInParentheses(node<_ITEM, _NDTYPE>::newNodeUnknownEmpty(this, newNode));
+			if(emptyUnknown)
+				emptyUnknown->insertToRight(ndRet = newNode);
 		}
 		else
 			insertToRight(ndRet = newNode);
 		break;
-	case ndUnknow:
+	case ndUnknown:
 	case ndList:
 		insertToRight(ndRet = newNode);
 		break;
 	case ndSpace:
 		if(_left)
 		{
-			_type = ndUnknow;
+			_type = ndUnknown;
 			insertToRight(ndRet = newNode);
 		}
 		else
 		{
-			node<_TVALUE>* parent = deleteThisNode();
+			node<_ITEM, _NDTYPE>* parent = deleteThisNode();
 			if(parent)
 				parent->insertToRight(ndRet = newNode);
 			else
@@ -523,31 +555,31 @@ node<_TVALUE>* node<_TVALUE>::insert_alpha(node<_TVALUE>* newNode)
 		}
 		break;
 	default:
-		TRACE_NODE("Memory leak in node::insert_alpha", newNode);
+		TRACE_NODE(logError, "Memory leak in node::insert_alpha", nullptr, newNode);
 		break;
 	}
 	return ndRet;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_number(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_number(node<_ITEM, _NDTYPE>* newNode)
 {
 	return insert_alpha(newNode);
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_string(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_string(node<_ITEM, _NDTYPE>* newNode)
 {
 	return insert_alpha(newNode);
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_space(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_space(node<_ITEM, _NDTYPE>* newNode)
 {
-	node<_TVALUE>* ndRet = NULL;
+	node<_ITEM, _NDTYPE>* ndRet = NULL;
 	switch(_type)
 	{
 	case ndAlpha:
@@ -558,34 +590,35 @@ node<_TVALUE>* node<_TVALUE>::insert_space(node<_TVALUE>* newNode)
 	case ndParentheses:
 		insertToRight(ndRet = newNode);
 		break;
-	case ndUnknow:
+	case ndUnknown:
 	case ndList:
-		TRACE_NODE("deleting space for List", newNode);
+		TRACE_NODE(logDebug, "deleting space for List", nullptr, newNode);
 		delete newNode;
 		ndRet = this;
 		break;
 	default:
-		TRACE_NODE("Memory leak in node::insert_alpha", newNode);
+		TRACE_NODE(logError, "Memory leak in node::insert_alpha", nullptr, newNode);
 		break;
 	}
 	return ndRet;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_parentheses(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_parentheses(node<_ITEM, _NDTYPE>* newNode)
 {
+	short newOpened = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(newNode)->getOpened();
 	switch(_type)
 	{
 	case ndParentheses:
 		{
-			nodes::parentheses<_TVALUE>* thisPa = static_cast<nodes::parentheses<_TVALUE>*>(this),
-							  * newPa  = static_cast<nodes::parentheses<_TVALUE>*>(newNode);
-			if(thisPa->getOpened() <= 0 && 0 <= newPa->getOpened())
+			nodes::parentheses<_ITEM, _NDTYPE>* thisPa = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(this),
+				*newPa = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(newNode);
+			if(thisPa->getOpened() <= 0 && 0 <= newOpened)
 			{
-				node<_TVALUE>* unknow = node<_TVALUE>::newNodeUnknowEmpty(thisPa, newPa);
-				unknow = insert_unknow(unknow);
-				unknow->insertToRight(newNode);
+				cnode* unknown = node<_ITEM, _NDTYPE>::newNodeUnknownEmpty(thisPa, newPa);
+				unknown = insert_unknown(unknown);
+				unknown->insertToRight(newNode);
 			}
 			else
 				insertToRight(newNode);
@@ -594,17 +627,16 @@ node<_TVALUE>* node<_TVALUE>::insert_parentheses(node<_TVALUE>* newNode)
 	case ndAlpha:
 	case ndNumber:
 	case ndString:
-		if((_type != ndParentheses || static_cast<nodes::parentheses<_TVALUE>*>(this)->getOpened() < 0) 
-					&& 0 <= static_cast<nodes::parentheses<_TVALUE>*>(newNode)->getOpened())
-			insertEmptyUnknow(newNode)->insertToRight(newNode);
+		if (0 <= newOpened)
+			insertEmptyUnknown(newNode)->insertToRight(newNode);
 		else
 			insertToRight(newNode);
 		break;
 	case ndSpace:
 		{
-			_type = ndUnknow;
+			_type = ndUnknown;
 			insertToRight(newNode);
-//			node<_TVALUE>* parent = deleteThisNode();
+//			cnode* parent = deleteThisNode();
 //			if(parent)
 //				parent->insertToRight(newNode);
 		}
@@ -613,16 +645,28 @@ node<_TVALUE>* node<_TVALUE>::insert_parentheses(node<_TVALUE>* newNode)
 		insertToRight(newNode);
 		break;
 	}
+
+	if (newOpened < 0)
+	{
+		short closed;
+		node* lastParentOpened;
+		cnode* rpar = newNode->foundOpenParentheses(closed, lastParentOpened);
+		if (!rpar)
+		{
+			TRACE_NODE(logError, "Error: too many parentheses closed.", nullptr, newNode);
+			throw exception<_ITEM>(newNode, "too many parentheses closed");
+		}
+	}
 	return newNode;
 }
 
 
-template <class _TVALUE>
-void node<_TVALUE>::insertWithLowPriority(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+void node<_ITEM, _NDTYPE>::insertWithLowPriority(node<_ITEM, _NDTYPE>* newNode)
 {
-	node<_TVALUE>* top;
+	node<_ITEM, _NDTYPE>* top;
 	for(top = this; top && top->_parent && 
-			(top->_parent->_type == ndUnknow || top->_parent->_type == ndAlpha || top->_parent->_type == ndNumber 
+			(top->_parent->_type == ndUnknown || top->_parent->_type == ndAlpha || top->_parent->_type == ndNumber 
 				|| top->_parent->_type == ndString || top->_parent->_type == ndSpace); top = top->_parent)
 		;
 	if(top)
@@ -630,15 +674,15 @@ void node<_TVALUE>::insertWithLowPriority(node<_TVALUE>* newNode)
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_list(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_list(cnode* newNode)
 {
-	node<_TVALUE>* ndRet = NULL;
+	node<_ITEM, _NDTYPE>* ndRet = NULL;
 	switch(_type)
 	{
 	case ndSpace:
 		{
-			node<_TVALUE>* parent = deleteThisNode();
+			node<_ITEM, _NDTYPE>* parent = deleteThisNode();
 			if(parent)
 				parent->insertWithLowPriority(ndRet = newNode);
 			else
@@ -648,15 +692,17 @@ node<_TVALUE>* node<_TVALUE>::insert_list(node<_TVALUE>* newNode)
 	case ndAlpha:
 	case ndNumber:
 	case ndString:
-	case ndUnknow:
+	case ndUnknown:
 		insertWithLowPriority(ndRet = newNode);
+		if (newNode->getType() == ndList && newNode->_parent->getType() == ndList)
+			newNode->switchToUpNode();
 		break;
 	case ndList:
 	case ndParentheses:
-		ndRet = insertUnknowListInParentheses(newNode);
+		ndRet = insertUnknownListInParentheses(newNode);
 		break;
 	default:
-		TRACE_NODE("Memory leak in node::insert_alpha", newNode);
+		TRACE_NODE(logError, "Memory leak in node::insert_alpha", nullptr, newNode);
 		break;
 	}
 	return ndRet;
@@ -664,10 +710,10 @@ node<_TVALUE>* node<_TVALUE>::insert_list(node<_TVALUE>* newNode)
 
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insert_unknow(node<_TVALUE>* newNode)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_unknown(cnode* newNode)
 {
-	node<_TVALUE>* ndRet;
+	cnode* ndRet;
 	switch(_type)
 	{
 	case ndSpace:
@@ -679,14 +725,15 @@ node<_TVALUE>* node<_TVALUE>::insert_unknow(node<_TVALUE>* newNode)
 		insertInThisRight(ndRet = newNode);
 		break;
 	case ndList:
-	case ndUnknow:
+	case ndUnknown:
 		insertToRight(ndRet = newNode);
 		break;
 	case ndParentheses:
-		ndRet = insertUnknowListInParentheses(newNode);
+		ndRet = insertUnknownListInParentheses(newNode);
 		break;
 	default:
-		TRACE_NODE("Memory leak in node::insert_unknow", newNode);
+		TRACE_NODE(logError, "Error node::insert_unknown", nullptr, newNode);
+		throw exception<_ITEM>(newNode, "insert unknown", true);
 		break;
 	}
 	return ndRet;
@@ -694,49 +741,68 @@ node<_TVALUE>* node<_TVALUE>::insert_unknow(node<_TVALUE>* newNode)
 
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::insertUnknowListInParentheses(node<_TVALUE>* newUnknow)
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insertUnknownListInParentheses(cnode* newUnknown)
 {
-	if(_type != ndParentheses || (newUnknow->_type != ndUnknow && newUnknow->_type != ndList))
-		return NULL;
+	if(_type != ndParentheses || (newUnknown->_type != ndUnknown && newUnknown->_type != ndList))
+		return nullptr;
 
-	if(0 <= static_cast<nodes::parentheses<_TVALUE>*>(this)->getOpened())
-		insertToRight(newUnknow);
+	if (0 <= static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(this)->getOpened())
+		insertToRight(newUnknown);
 	else
 	{
-		node<_TVALUE>* rpar = foundOpenParentheses();
+		short closed;
+		node* lastParentOpened;
+		cnode* rpar = foundOpenParentheses(closed, lastParentOpened);
 		if(!rpar)
 		{
-			TRACE_NODE("Error: parentheses close very much. Memory leak", newUnknow);
-			return NULL;
+			TRACE_NODE(logError, "Error: too many parentheses closed.", nullptr, newUnknown);
+			throw exception<_ITEM>(newUnknown, "too many parentheses closed.", true);
 		}
-		if(newUnknow->_type == ndList)
-			rpar->insertWithLowPriority(newUnknow);
+		if (lastParentOpened)
+		{
+			if (lastParentOpened->getType() != ndParentheses)
+				throw exception<_ITEM>(this, "parent node not is parentheses %item");
+			rpar = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(lastParentOpened)->split(closed);
+		}
+		if (newUnknown->_type == ndList)
+			rpar->insertWithLowPriority(newUnknown);
 		else
-			rpar->insertInThisNode(newUnknow);
+			rpar->insertInThisNode(newUnknown);
 	}
-	return newUnknow;
+	return newUnknown;
 }
 
 
-template <class _TVALUE>
-node<_TVALUE>* node<_TVALUE>::foundOpenParentheses()
+template <class _ITEM, class _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::foundOpenParentheses(short& closed, node*& lastParentOpened)
 {
+	lastParentOpened = nullptr;
 	if(_type != ndParentheses)
-		return NULL;
-	nodes::parentheses<_TVALUE>* parentheses = static_cast<nodes::parentheses<_TVALUE>*>(this);
-	int count = parentheses->getOpened();
-	node<_TVALUE>* nd;
-	for(nd = _parent; nd && count < 0; nd = count < 0 ? nd->_parent: nd)
-		if(parentheses->isThisType(nd))
-			count += static_cast<nodes::parentheses<_TVALUE>*>(nd)->getOpened();
-	return count < 0 ? NULL: nd;
+		return nullptr;
+	nodes::parentheses<_ITEM, _NDTYPE>* parentheses = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(this);
+	short count = closed = parentheses->getOpened();
+	closed *= -1;
+	cnode* nd;
+	for (nd = _parent; nd && count < 0; nd = count < 0 ? nd->_parent : nd)
+	{
+		if (parentheses->isThisType(nd))
+		{
+			short opened = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(lastParentOpened = nd)->getOpened();
+			count += opened;
+			if (opened < closed)
+				closed -= opened;
+		}
+	}
+	if (count < 1)
+		lastParentOpened = nullptr;
+	return count < 0 ? nullptr: nd;
 }
 
 
 
-template <class _TVALUE>
-int node<_TVALUE>::getMetricsNodes(int& size) const
+template <class _ITEM, class _NDTYPE>
+int node<_ITEM, _NDTYPE>::getMetricsNodes(int& size) const
 {
 	int vRet = 0;
 	if(this)
@@ -748,8 +814,8 @@ int node<_TVALUE>::getMetricsNodes(int& size) const
 }
 
 
-template <class _TVALUE>
-int node<_TVALUE>::getMetricsNodes(ndtype type, int& size) const
+template <class _ITEM, class _NDTYPE>
+int node<_ITEM, _NDTYPE>::getMetricsNodes(cNdType type, int& size) const
 {
 	int vRet = 0;
 	if(this)
@@ -759,13 +825,71 @@ int node<_TVALUE>::getMetricsNodes(ndtype type, int& size) const
 }
 
 
-template <class _TVALUE>
-int node<_TVALUE>::getSizeofNode(ndtype type)
+template <class _ITEM, class _NDTYPE>
+int node<_ITEM, _NDTYPE>::getSizeofNode(cNdType type)
 {
-	return type == ndList ? sizeof(nodes::calc<_TVALUE>): 
-		type == ndParentheses ? sizeof(nodes::parentheses<_TVALUE>):
-		type == ndUnknow ? sizeof(nodes::unknow<_TVALUE>): sizeof(node<_TVALUE>);
+	return type == ndList ? sizeof(nodes::calc<_ITEM, _NDTYPE>) :
+		type == ndParentheses ? sizeof(nodes::parentheses<_ITEM, _NDTYPE>) :
+		type == ndUnknown ? sizeof(nodes::unknown<_ITEM, _NDTYPE>) : sizeof(node<_ITEM, _NDTYPE>);
 }
+
+
+template <class _ITEM, class _NDTYPE>
+const char* node<_ITEM, _NDTYPE>::getTypeL() const
+{
+	return _type == ndList ? "ndList" :
+		_type == ndParentheses ? "ndParentheses" :
+		_type == ndUnknown ? "ndUnknown" : 
+		_type == ndSpace ? "ndSpace" :
+		_type == ndAlpha ? "ndAlpha" :
+		_type == ndNumber ? "ndNumber" :
+		_type == ndString ? "ndString" : "<nd error>";
+}
+
+
+template<class _ITEM, typename _NDTYPE>
+bool node<_ITEM, _NDTYPE>::checkParentheses() const
+{
+	short opened = 0;
+
+	const cnode* open = nullptr;
+	const cnode* close = nullptr;
+	for (const cnode* right = getRootNode(); right; right = right->_right)
+	{
+		if (right->getType() == ndParentheses)
+		{
+			short o = static_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(right)->getOpened();
+			if (o < 0)
+				close = right;
+			else if (0 < o)
+				open = right;
+			opened += o;
+		}
+	}
+	if (opened)
+	{
+		if (opened < 0)
+			throw exception<_ITEM>(close, "too many closed parentheses");
+		throw exception<_ITEM>(open, "missing close parentheses");
+	}
+	return true;
+}
+
+
+template<class _ITEM, typename _NDTYPE>
+bool node<_ITEM, _NDTYPE>::check() const
+{
+	if (_parent && _parent->_left != this && _parent->_right != this)
+		throw exception<_ITEM>(this, "Error in node parent for %item");
+	if (_left && _left == _right)
+		throw exception<_ITEM>(this, "Error childs are equals for %item");
+	if (_left && _left->_parent != this)
+		throw exception<_ITEM>(this, "Error in node left for %item");
+	if (_right && _right->_parent != this)
+		throw exception<_ITEM>(this, "Error in node right for %item");
+	return true;
+}
+
 
 
 

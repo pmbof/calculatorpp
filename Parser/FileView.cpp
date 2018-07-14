@@ -6,7 +6,7 @@
 #include "Parser.h"
 #include "ParserDoc.h"
 
-#include "pmb_parser_transporter.cpp"
+
 #include "pmb_parser_operation.cpp"
 #include "pmb_parser_function.cpp"
 
@@ -115,7 +115,7 @@ void CFileView::FillFileView(WPARAM wParam)
 				str.Format(_T("%f"), j->second->_number);
 				m_wndFileView.InsertItem(str, 2, 2, hVar);
 			}
-			str = j->second._getState();
+			str = "j->second._getState()";
 			m_wndFileView.InsertItem(str, 2, 2, hVar);
 		}
 		m_wndFileView.Expand(hSrc, TVE_EXPAND);
@@ -124,7 +124,7 @@ void CFileView::FillFileView(WPARAM wParam)
 
 	hRoot = m_wndFileView.InsertItem(_T("Functions"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-	pmb::calculator<transporter>::_tdFncTable fncTable;
+/*	pmb::calculator<block>::_tdFncTable fncTable;
 	for(int i = 0; i < fncTable.size(); ++i)
 	{
 		const pmb::parser::function<transporter>* fnc = fncTable.get(i);
@@ -137,11 +137,11 @@ void CFileView::FillFileView(WPARAM wParam)
 		m_wndFileView.InsertItem(str, 1, 1, hSrc);
 		str.Format(L"Arguments: %d", fnc->getNArgs());
 		m_wndFileView.InsertItem(str, 1, 1, hSrc);
-	}
+	}//*/
 
 	hRoot = m_wndFileView.InsertItem(_T("Operators"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-	pmb::calculator<transporter>::_tdOprTable oprTable;
+/*	pmb::calculator<block, operation_table>::_tdOprTable* oprTable = ;
 	for(int i = 0; i < oprTable.size(); ++i)
 	{
 		const pmb::parser::operation<transporter>* opr = oprTable.get(i);
@@ -165,7 +165,7 @@ void CFileView::FillFileView(WPARAM wParam)
 		m_wndFileView.InsertItem(str, 1, 1, hSrc);
 		str = L"Operator: " + CString(opr->isBinary() ? L"Binary": L"Mono");
 		m_wndFileView.InsertItem(str, 1, 1, hSrc);
-	}
+	}//*/
 }
 
 

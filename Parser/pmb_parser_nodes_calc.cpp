@@ -11,111 +11,100 @@ namespace nodes
 
 
 
-template<class _TVALUE>
-calc<_TVALUE>::calc(ndtype type, int ini, int end)
-	: node<_TVALUE>(type, ini, end), _bCalculated(false), _isVariableDependent(false)
+template<class _ITEM, class _NDTYPE>
+calc<_ITEM, _NDTYPE>::calc(typename cnode::cNdType type, int ini, int end)
+	: node<_ITEM, _NDTYPE>(type, ini, end)
 {
 }
 
 
-template<class _TVALUE>
-calc<_TVALUE>::~calc()
+template<class _ITEM, class _NDTYPE>
+calc<_ITEM, _NDTYPE>::~calc()
 {
-}
-
-
-template<class _TVALUE>
-void calc<_TVALUE>::setCalculated(bool bCalculated)
-{
-	_bCalculated = bCalculated;
-}
-
-
-template<class _TVALUE>
-void calc<_TVALUE>::setVariableDependent(bool isVariableDependet)
-{
-	_isVariableDependent = isVariableDependet;
-}
-
-
-template<class _TVALUE>
-bool calc<_TVALUE>::isCalculated() const
-{
-	return _bCalculated;
-}
-
-
-template<class _TVALUE>
-bool calc<_TVALUE>::isVariableDependent() const
-{
-	return _isVariableDependent;
-}
-
-
-template<class _TVALUE>
-bool calc<_TVALUE>::isNotCalculated(const node<_TVALUE>* nd)
-{
-	return nd && nd->isCalcType() && !static_cast<const calc*>(nd)->_bCalculated;
 }
 
 
 
 
-template<class _TVALUE>
-calc<_TVALUE>* calc<_TVALUE>::nextCalc()
+template<class _ITEM, class _NDTYPE>
+const calc<_ITEM, _NDTYPE>* calc<_ITEM, _NDTYPE>::firstCalc() const
 {
-	AfxTrace(_T("calc<_TVALUE>::nextCalc()\n"));
-	calc<_TVALUE>* c,
-					* nc;
-	for(c = this, nc = this; c && nc; )
+	const calc<_ITEM, _NDTYPE>* c,
+		*nc;
+	for (c = this, nc = this; c && nc; )
 	{
-		nc = NULL;
-		if(c->_type == ndUnknow)
+		nc = nullptr;
+		if (c->_type == ndUnknown)
 		{
-			unknow<_TVALUE>* uk = static_cast<unknow<_TVALUE>*>(c);
-			if(uk->getOperation())
+			const unknown<_ITEM, _NDTYPE>* uk = static_cast<const unknown<_ITEM, _NDTYPE>*>(c);
+			if (!uk->isValid() || uk->isFirstLeft())
 			{
-				if(uk->getOperation()->isFirstLeft())
-				{
-					if(isNotCalculated(uk->_left))
-						nc = static_cast<calc<_TVALUE>*>(uk->_left);
-					if(!nc && isNotCalculated(uk->_right))
-						nc = static_cast<calc<_TVALUE>*>(uk->_right);
-				}
-				if(!nc && uk->getOperation()->isFirstRight())
-				{
-					if(isNotCalculated(uk->_right))
-						nc = static_cast<calc<_TVALUE>*>(uk->_right);
-					if(!nc && isNotCalculated(uk->_left))
-						nc = static_cast<calc<_TVALUE>*>(uk->_left);
-				}
-				if(!nc)
-				{
-					if(uk->_bCalculated)
-						nc = static_cast<calc<_TVALUE>*>(uk->_parent);
-				}
-				else if(!nc)
-					TRACE_NODE("ERROR: Condition not match", uk);
+				if (uk->_left && uk->_left->isCalcType())
+					nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_left);
+				else if (uk->_right && uk->_right->isCalcType())
+					nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_right);
+			}
+			else
+			{
+				if (uk->_right && uk->_right->isCalcType())
+					nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_right);
+				else if (uk->_left && uk->_left->isCalcType())
+					nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_left);
 			}
 		}
-		else //if(c->_type == ndParentheses || c->_type == ndList)
+		else if (c->isCalcType())
 		{
-			if(isNotCalculated(c->_left))
-				nc = static_cast<calc<_TVALUE>*>(c->_left);
-			if(!nc && isNotCalculated(c->_right))
-				nc = static_cast<calc<_TVALUE>*>(c->_right);
-			if(!nc)
-			{
-//				if(!c->_bCalculated)
-//					c->_bCalculated = true;
-				if(c->_bCalculated)
-					nc = static_cast<calc<_TVALUE>*>(c->_parent);
-			}
+			if (c->_left && c->_left->isCalcType())
+				nc = static_cast<calc<_ITEM, _NDTYPE>*>(c->_left);
+			else if (c->_right && c->_right->isCalcType())
+				nc = static_cast<calc<_ITEM, _NDTYPE>*>(c->_right);
 		}
-		if(nc)
+		if (nc)
 			c = nc;
 	}
-	return !nc && c ? c->_bCalculated ? NULL: c: nc;
+	return !nc ? c : nc;
+}
+
+
+
+
+template<class _ITEM, class _NDTYPE>
+const calc<_ITEM, _NDTYPE>* calc<_ITEM, _NDTYPE>::nextCalc() const
+{
+	const calc<_ITEM, _NDTYPE>* nc;
+
+	if (_parent && _parent->isCalcType())
+	{
+		const calc<_ITEM, _NDTYPE>* parent = static_cast<const calc<_ITEM, _NDTYPE>*>(_parent);
+		if (parent->getType() == ndUnknown)
+		{
+			const unknown<_ITEM, _NDTYPE>* parent_uk = static_cast<const unknown<_ITEM, _NDTYPE>*>(parent);
+			if (parent_uk->isValid())
+			{
+				if (parent_uk->isFirstLeft() && parent_uk->_left == this)
+					nc = static_cast<const calc<_ITEM, _NDTYPE>*>(parent->_right && parent->_right->isCalcType() ? parent->_right : parent);
+				else if (parent_uk->isFirstRight() && parent_uk->_right == this)
+					nc = static_cast<const calc<_ITEM, _NDTYPE>*>(parent->_left && parent->_left->isCalcType() ? parent->_left : parent);
+				else
+					nc = parent;
+			}
+			else
+				nc = parent;
+		}
+		else if (parent->getType() == ndList)
+		{
+			if (parent->_left == this)
+				nc = static_cast<const calc<_ITEM, _NDTYPE>*>(parent->_right && parent->_right->isCalcType() ? parent->_right : parent);
+			else
+				nc = parent;
+		}
+		else
+			nc = parent;
+	}
+	else
+		nc = nullptr;
+	
+	return nc == _parent || !nc ? nc : nc->firstCalc();
 }
 
 

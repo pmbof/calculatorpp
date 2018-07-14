@@ -12,19 +12,16 @@ namespace nodes
 
 
 template<class _ITEM, class _NDTYPE>
-class calc: public node<_ITEM, _NDTYPE>
+class number: public node<_ITEM, _NDTYPE>
 {
 public:
 	typedef typename node<_ITEM, _NDTYPE> cnode;
 
-protected:
-	calc(typename cnode::cNdType type, int ini, int end);
-
 public:
-	~calc();
+	number(int ini, int end);
+	~number();
 
-	const calc* firstCalc() const;
-	const calc* nextCalc() const;
+protected:
 };
 
 

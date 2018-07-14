@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -14,6 +14,7 @@
     <ProjectGuid>{7BECC70C-CE22-44C9-AD2C-1101BF925053}</ProjectGuid>
     <RootNamespace>Parser</RootNamespace>
     <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -21,7 +22,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -29,7 +30,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -132,9 +133,25 @@
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="pmb_calculate_magnitude.h" />
+    <ClInclude Include="pmb_calculate_magnitude.hpp" />
+    <ClInclude Include="pmb_calculate_number.hpp" />
+    <ClInclude Include="pmb_calculate_number.h" />
+    <ClInclude Include="pmb_log.h" />
+    <ClInclude Include="pmb_parser_calc_block.h" />
+    <ClInclude Include="pmb_parser_calc_block.hpp" />
+    <ClInclude Include="pmb_parser_calc_build_in_function.h" />
+    <ClInclude Include="pmb_parser_calc_functions.h" />
+    <ClInclude Include="pmb_parser_calc_functions.hpp" />
+    <ClInclude Include="pmb_parser_calc_iterator.h" />
+    <ClInclude Include="pmb_parser_calc_iterator.hpp" />
+    <ClInclude Include="pmb_parser_calc_transporter.h" />
+    <ClInclude Include="pmb_parser_calc_transporter.hpp" />
+    <ClInclude Include="pmb_parser_exception.h" />
+    <ClInclude Include="pmb_parser_exception.hpp" />
     <ClInclude Include="pmb_parser_function.h" />
+    <ClInclude Include="pmb_parser_nodes_number.h" />
     <ClInclude Include="pmb_parser_symbol.h" />
-    <ClInclude Include="pmb_parser_transporter.h" />
     <ClInclude Include="pmb_util_map.h" />
     <ClInclude Include="pmb_parser_nodes_calc.h" />
     <ClInclude Include="pmb_parser_nodes_list.h" />
@@ -179,11 +196,14 @@
     <ClCompile Include="MainFrm.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="pmb_log.cpp" />
+    <ClCompile Include="pmb_parser_calc_build_in_function.hpp" />
     <ClCompile Include="pmb_parser_function.cpp" />
     <ClCompile Include="pmb_parser_nodes_calc.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
     <ClCompile Include="pmb_parser_nodes_list.cpp" />
+    <ClCompile Include="pmb_parser_nodes_number.cpp" />
     <ClCompile Include="pmb_parser_nodes_unknow.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
@@ -245,7 +265,6 @@
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
     <ClCompile Include="pmb_parser_symbol.cpp" />
-    <ClCompile Include="pmb_parser_transporter.cpp" />
     <ClCompile Include="pmb_parser_tree.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
@@ -263,6 +282,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Parser.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\TODO.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

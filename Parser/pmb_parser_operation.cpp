@@ -12,34 +12,34 @@ namespace parser
 {
 
 
-template<class _TVALUE>
-const operation<_TVALUE> operation_table<_TVALUE>::_opr[] = {
-	operation<_TVALUE>("+", 250, false, "positive", "positive", &_TVALUE::VALUE::positive, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("-", 250, false, "negative", "negative", &_TVALUE::VALUE::negative, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("!", 250, true, "factorial", "factorial", &_TVALUE::VALUE::factorial, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("^", 200, true, "power", "exponentiation", &_TVALUE::VALUE::exponentiation, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("¨", 200, true, "root", "root", &_TVALUE::VALUE::root, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("", 110, true, "product implicit", "multiplication implicit or call function", &_TVALUE::VALUE::multiplication, &_TVALUE::VALUE::place, true),
-	operation<_TVALUE>(" ", 110, true, "product space", "multiplication space or call function", &_TVALUE::VALUE::multiplication, &_TVALUE::VALUE::place, true),
-	operation<_TVALUE>(" ", 110, false, "product space inverse", "multiplication space or call function right to left", &_TVALUE::VALUE::multiplication, &_TVALUE::VALUE::place, true),
-	operation<_TVALUE>("*", 100, true, "product", "multiplication", &_TVALUE::VALUE::multiplication, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("/", 100, true, "cocient", "division", &_TVALUE::VALUE::division, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("\\", 100, true, "modulo", "congruence relation", &_TVALUE::VALUE::modulo, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("+", 50, true, "add", "addition", &_TVALUE::VALUE::addition, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("-", 50, true, "substract", "substraction", &_TVALUE::VALUE::substraction, &_TVALUE::VALUE::place),
-	operation<_TVALUE>("=", 10, false, "assignation", "assignation", &_TVALUE::VALUE::assignation, &_TVALUE::VALUE::assignation_place, true, false),
-	operation<_TVALUE>("=", 0, true, "result", "result", &_TVALUE::VALUE::result, &_TVALUE::VALUE::place)
+/*template<class _TVALUE, class _NODE>
+const operation<_TVALUE> operation_table<_TVALUE, _NODE>::_opr[] = {
+	pmb::parser::operation<_TVALUE>("+", 250, false, "positive", "positive", &_TVALUE::tpvalue::positive, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("-", 250, false, "negative", "negative", &_TVALUE::tpvalue::negative, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("!", 250, true, "factorial", "factorial", &_TVALUE::tpvalue::factorial, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("^", 200, true, "power", "exponentiation", &_TVALUE::tpvalue::exponentiation, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("¨", 200, true, "root", "root", &_TVALUE::tpvalue::root, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("", 110, true, "product implicit", "multiplication implicit or call function", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place, true),
+	pmb::parser::operation<_TVALUE>(" ", 110, true, "product space", "multiplication space or call function", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place, true),
+	pmb::parser::operation<_TVALUE>(" ", 110, false, "product space inverse", "multiplication space or call function right to left", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place, true),
+	pmb::parser::operation<_TVALUE>("*", 100, true, "product", "multiplication", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("/", 100, true, "cocient", "division", &_TVALUE::tpvalue::division, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("\\", 100, true, "modulo", "congruence relation", &_TVALUE::tpvalue::modulo, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("+", 50, true, "add", "addition", &_TVALUE::tpvalue::addition, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("-", 50, true, "substract", "substraction", &_TVALUE::tpvalue::substraction, &_TVALUE::tpvalue::place),
+	pmb::parser::operation<_TVALUE>("=", 10, false, "assignation", "assignation", &_TVALUE::tpvalue::assignation, &_TVALUE::tpvalue::assignation_place, true, false),
+	pmb::parser::operation<_TVALUE>("=", 0, true, "result", "result", &_TVALUE::tpvalue::result, &_TVALUE::tpvalue::place)
 };
 
-template<class _TVALUE>
-const int operation_table<_TVALUE>::_oprSize = 14;
+template<class _TVALUE, class _NODE>
+const int operation_table<_TVALUE, _NODE>::_oprSize = 14;*/
 
 
 template<class _TVALUE>
-operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description,
-					tpOprFunc2 oprFunc2, tpOprPlace oprPlace, bool canCallFunction)
-	: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _oprFunc2(oprFunc2), _oprPlace(oprPlace), _canCallFunction(canCallFunction), 
-				_canCreateLVariable(false), _canCreateRVariable(false) 
+operation<_TVALUE>::operation(const char * symbol, int precedence, bool leftToRight, bool binary, const char * name, const char * description, tpFunc func,
+			bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: _precedence(precedence), _leftToRight(leftToRight), _binary(binary), _fnc(func), _canCallFunction(canCallFunction),
+	_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)
 {
 	_symbol = new char[(_len = strlen(symbol)) + 1];
 	strcpy(_symbol, symbol);
@@ -49,33 +49,6 @@ operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRig
 	strcpy(_description, description);
 }
 
-template<class _TVALUE>
-operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description,
-						tpOprFunc2 oprFunc2, tpOprPlace oprPlace, bool canCreateLVariable, bool canCreateRVariable)
-	: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _oprFunc2(oprFunc2), _oprPlace(oprPlace), _canCallFunction(false),
-			_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)
-{
-	_symbol = new char[(_len = strlen(symbol)) + 1];
-	strcpy(_symbol, symbol);
-	_name = new char[strlen(name) + 1];
-	strcpy(_name, name);
-	_description = new char[strlen(description) + 1];
-	strcpy(_description, description);
-}
-
-template<class _TVALUE>
-operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description,
-					tpOprFunc1 oprFunc1, tpOprPlace oprPlace)
-			: _precedence(precedence), _leftToRight(leftToRight), _binary(false), _oprFunc1(oprFunc1), _oprPlace(oprPlace), _canCreateLVariable(false), _canCreateRVariable(false),
-					_canCallFunction(false)
-{
-	_symbol = new char[(_len = strlen(symbol)) + 1];
-	strcpy(_symbol, symbol);
-	_name = new char[strlen(name) + 1];
-	strcpy(_name, name);
-	_description = new char[strlen(description) + 1];
-	strcpy(_description, description);
-}
 
 template<class _TVALUE>
 operation<_TVALUE>::~operation()
@@ -184,25 +157,19 @@ unsigned int operation<_TVALUE>::getFunctor2() const
 }
 
 template<class _TVALUE>
-void operation<_TVALUE>::operator()(_TVALUE& result, _TVALUE& value) const
+void operation<_TVALUE>::operator()(_TVALUE& values) const
 {
-	(*result((*result->*_oprPlace)(true, *value, NULL), value)->*_oprFunc1)(**value);
-//	(*result->*_oprFunc1)(**value);
+	typename transporter_args::nargs nvals = values.nArgs();
+	if (_binary && values.size() != 2 && (nvals != 2 && !(_canCreateLVariable || _canCreateRVariable) || nvals != 1 && nvals != 2))
+		throw exception(2 < nvals || 2 < values.size() ? "too many arguments for operator %item" : values.haveLeft() ? "missing right value for operator %item" : "missing left value for operator %item");
+	else if (!_binary && (nvals != 1 || values.size() != 1))
+		throw exception(1 < nvals || 1 < values.size() ? "too many arguments for operator %item" : _leftToRight ? "missing left value for operator %item" : "missing right value for operator %item");
+
+	if (!_canCreateLVariable && !_canCreateRVariable)
+		values.placeForResult();
+	(*_fnc)(values);
 }
 
-template<class _TVALUE>
-void operation<_TVALUE>::operator()(_TVALUE& result, _TVALUE& left, _TVALUE& right) const
-{
-	_TVALUE::_valuePtr l = *left;
-	_TVALUE::_valuePtr r = *right;
-	bool bHaveLPriority = result.haveLeftPriority(left, right);
-	
-	_TVALUE::_valuePtr place = (*result->*_oprPlace)(bHaveLPriority, l, r);
-	_TVALUE::_valuePtr res2 = *result(place, left, right);
-	(place->*_oprFunc2)(*l, *r);
-	// All this is equivalet to:
-//	(*result((*result->*_oprPlace)(bHaveLPriority, l, r), left, right)->*_oprFunc2)(*l, *r);
-}
 
 
 template<class _TVALUE>
@@ -215,8 +182,18 @@ bool operator<(int lPrecedence, const operation<_TVALUE>& opr)
 
 
 
-template<class _TVALUE>
-const operation<_TVALUE>* operation_table<_TVALUE>::find(const node<_TVALUE>* nd, const char* expr) const
+
+
+template<class _OPR, class _NODE>
+operation_table<_OPR, _NODE>::operation_table(const operation* opr, size_t size)
+	: _opr(opr), _oprSize(size)
+{
+}
+
+
+template<class _OPR, class _NODE>
+const typename operation_table<_OPR, _NODE>::operation*
+	operation_table<_OPR, _NODE>::find(const _NODE* nd, const char* expr) const
 {
 	for(int i = 0; i < _oprSize; ++i)
 	{
@@ -230,14 +207,15 @@ const operation<_TVALUE>* operation_table<_TVALUE>::find(const node<_TVALUE>* nd
 }
 
 
-template<class _TVALUE>
-const operation<_TVALUE>* operation_table<_TVALUE>::get(int i) const
+template<class _OPR, class _NODE>
+const typename operation_table<_OPR, _NODE>::operation*
+	operation_table<_OPR, _NODE>::get(size_t i) const
 {
 	return _opr + i;
 }
 
-template<class _TVALUE>
-int operation_table<_TVALUE>::size() const
+template<class _OPR, class _NODE>
+typename operation_table<_OPR, _NODE>::size_t operation_table<_OPR, _NODE>::size() const
 {
 	return _oprSize;
 }

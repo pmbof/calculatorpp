@@ -6,7 +6,6 @@
 #include "MainFrm.h"
 #include "Parser.h"
 #include "ParserDoc.h"
-#include "pmb_parser_transporter.cpp"
 #include "pmb_parser_operation.cpp"
 #include "pmb_parser_nodes_parentheses.h"
 
@@ -233,7 +232,8 @@ afx_msg LRESULT CPropertiesWnd::OnChargeProperties(WPARAM wParam, LPARAM lParam)
 		pExprGrp->Expand(false);
 		m_wndPropList.AddProperty(pExprGrp);
 		
-		int size = 0, count = pDoc->getTree2()->getRootNode()->getMetricsNodes(size);
+		int size = 0,
+			count = pDoc->getTree2() ? pDoc->getTree2()->getRootNode()->getMetricsNodes(size) : 0;
 		pExprGrp = new CMFCPropertyGridProperty(_T("Nodes:"), 0, true);
 		str.Format(L"%d", count);
 		pExprGrp->AddSubItem(new CMFCPropertyGridProperty(_T("count"), str, _T("Nodes amount")));
@@ -345,8 +345,8 @@ afx_msg LRESULT CPropertiesWnd::OnSetnode(WPARAM wParam, LPARAM lParam)
 
 CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM lParam, CMFCPropertyGridProperty* pNode) const
 {
-	const pmb::parser::node<transporter>* pNd = reinterpret_cast<pmb::parser::node<transporter>*>(wParam);
-	const pmb::parser::node<transporter>* pNdBase = reinterpret_cast<pmb::parser::node<transporter>*>(lParam);
+	const pmb::parser::node<item, ndtype>* pNd = reinterpret_cast<pmb::parser::node<item, ndtype>*>(wParam);
+	const pmb::parser::node<item, ndtype>* pNdBase = reinterpret_cast<pmb::parser::node<item, ndtype>*>(lParam);
 	if(!pNd)
 		return NULL;
 
@@ -359,7 +359,7 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)))
 	{
 		str += L"[";
-		pmb::parser::item::string se = pNd->getString(pDoc->m_expr);
+		item::string se = pNd->getString(pDoc->m_expr);
 		for(unsigned int i = 0; se[i]; ++i)
 			expr += se[i];
 		str += expr;
@@ -376,7 +376,11 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 		pNode = new CMFCPropertyGridProperty(str, 0);
 	else
 		pNode->SetName(str);
-	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(_T("ini"), (_variant_t)pNd->getIni(), _T("First position"));
+	CString format;
+	format.Format(L"0x%08X", pNd);
+	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(format);
+	pNode->AddSubItem(pProp);
+	pProp = new CMFCPropertyGridProperty(_T("ini"), (_variant_t)pNd->getIni(), _T("First position"));
 	pNode->AddSubItem(pProp);
 
 	pProp = new CMFCPropertyGridProperty( _T("end"), (_variant_t)pNd->getEnd(), _T("Last position + 1"));
@@ -389,7 +393,7 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	pNode->AddSubItem(pProp);
 	if(pNd->getType() == pmb::parser::ndParentheses)
 	{
-		const pmb::parser::nodes::parentheses<transporter>* pParen = static_cast<const pmb::parser::nodes::parentheses<transporter>*>(pNd);
+		const pmb::parser::nodes::parentheses<item, ndtype>* pParen = static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(pNd);
 
 		pProp = new CMFCPropertyGridProperty( _T("Opened"), (_variant_t)(pParen->getOpened()), _T("Type of item"));
 		pNode->AddSubItem(pProp);
@@ -398,13 +402,13 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 		pProp = new CMFCPropertyGridProperty( _T("class"), (_variant_t)(type), _T("Type of item"));
 		pNode->AddSubItem(pProp);
 	}
-	else if(pNd->getType() == pmb::parser::ndUnknow)
+	else if(pNd->getType() == pmb::parser::ndUnknown)
 	{
-		const pmb::parser::nodes::unknow<transporter>* pUn = static_cast<const pmb::parser::nodes::unknow<transporter>*>(pNd);
+		const pmb::parser::nodes::unknown<item, ndtype>* pUn = static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(pNd);
 
-		if(pUn->getOperation())
+		if(pUn->isValid())
 		{
-			CString descr(pUn->getOperation()->getDescription());
+/*			CString descr(pUn->getOperation()->getDescription());
 			pProp = new CMFCPropertyGridProperty( _T("Operation"), (_variant_t)(pUn->getOperation()->getName()), descr);
 			pProp->Enable(false);
 			pNode->AddSubItem(pProp);
@@ -422,14 +426,14 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 			else
 				pProp = new CMFCPropertyGridHexProperty( _T("ptr function1"), (_variant_t)(pUn->getOperation()->getFunctor1()), _T("pointer to unitary function"));
 			pProp->Enable(false);
-			pNode->AddSubItem(pProp);
+			pNode->AddSubItem(pProp);*/
 		}
 	}
 	if(pNd->isCalcType())
 	{
-		const transporter* pval = &(pNd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<transporter>*>(pNd)->getValue():
-							pNd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<transporter>*>(pNd)->getValue():
-							static_cast<const pmb::parser::nodes::list<transporter>*>(pNd)->getLValue());
+/*		const transporter* pval = &(pNd->getType() == pmb::parser::ndUnknown ? static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(pNd)->getValue() :
+							pNd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(pNd)->getValue() :
+							static_cast<const pmb::parser::nodes::list<item, ndtype>*>(pNd)->getLValue());
 		for (CMFCPropertyGridProperty* pVNode = pNode; pval; pval = pval->getNext(), pVNode = pProp)
 		{
 			const transporter& val = *pval;
@@ -450,22 +454,22 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 			if (val.getNext())
 				pProp->AddSubItem(new CMFCPropertyGridHexProperty(_T("Next Ptr"), (_variant_t)((UINT)val.getNext()), _T("Pointer to next value")));
 			pProp->Expand();
-		}
+		}*/
 	}
 	if(pNd->isCalcType())
 	{
-		const pmb::parser::nodes::calc<transporter>* pCalc = static_cast<const pmb::parser::nodes::calc<transporter>*>(pNd);
-		pProp = new CMFCPropertyGridProperty( _T("is Calculated"), (_variant_t)(pCalc->isCalculated()), _T("Node calculated"));
-		pNode->AddSubItem(pProp);
-		pProp = new CMFCPropertyGridProperty( _T("is Variable dependent"), (_variant_t)(pCalc->isVariableDependent()), _T("Node variable dependent"));
-		pNode->AddSubItem(pProp);
+		const pmb::parser::nodes::calc<item, ndtype>* pCalc = static_cast<const pmb::parser::nodes::calc<item, ndtype>*>(pNd);
+//		pProp = new CMFCPropertyGridProperty( _T("is Calculated"), (_variant_t)(pCalc->isCalculated()), _T("Node calculated"));
+//		pNode->AddSubItem(pProp);
+//		pProp = new CMFCPropertyGridProperty( _T("is Variable dependent"), (_variant_t)(pCalc->isVariableDependent()), _T("Node variable dependent"));
+//		pNode->AddSubItem(pProp);
 	}
 
 	expr = _T("'") + expr + _T("'");
 	CMFCPropertyGridProperty* pPropExpr = new CMFCPropertyGridProperty(expr, 0);
 	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)))
 	{
-		pmb::parser::item::string se = pNd->getString(pDoc->m_expr);
+		item::string se = pNd->getString(pDoc->m_expr);
 		for(unsigned int i = 0; se[i]; ++i)
 		{
 			CString pos;

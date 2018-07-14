@@ -8,16 +8,16 @@ namespace pmb
 
 
 
-template <class _TVALUE>
-class calculator: public parser::algorithm<_TVALUE>
+template <class _BLOCK, class _OPRTABLE>
+class calculator : public parser::algorithm<_BLOCK, _OPRTABLE>
 {
 public:
-	typedef parser::algorithm<_TVALUE> _base;
-	typedef typename _base::_tdSymbols _tdSymbols;
+	typedef parser::algorithm<_BLOCK, _OPRTABLE> _base;
+	typedef typename _base::symbol symbol;
 	typedef typename _base::_tdOprTable _tdOprTable;
 
 public:
-	calculator(_tdSymbols& symbols);
+	calculator(_tdOprTable* operation_table, _BLOCK* pBlock);
 	~calculator();
 };
 

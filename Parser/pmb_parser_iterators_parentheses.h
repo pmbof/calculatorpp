@@ -10,14 +10,14 @@ namespace iterators
 {
 
 
-template <class _IT, class _baseIterator, class _TVALUE>
+template <class _IT, class _baseIterator, class _ITEM, typename _NDTYPE>
 struct parentheses: public _baseIterator
 {
 	parentheses(_IT& it): s(it) { }
 
-	node<_TVALUE>* operator()()
+	node<_ITEM, _NDTYPE>* operator()()
 	{
-		int p = s;
+		typename _IT::idx p = s._i;
 		int opened = 0;
 		char open[] = {'(', '[', '{'};
 		char close[] = {')', ']', '}'};
@@ -26,11 +26,11 @@ struct parentheses: public _baseIterator
 			;
 		if(s() && type < sizeof(open) / sizeof(*open))
 		{
-			int space = s;
+			typename _IT::idx space = s._i;
 			for( ; s() && (0 <= opened && open[type] == s() || s() == close[type]); )
 			{
 				opened += s() == open[type] ? 1: s() == close[type] ? -1: 0;
-				space = ++s;
+				space = (typename _IT::idx)++s;
 				for(; s.isSpace(); ++s)
 					;
 			}
@@ -38,7 +38,7 @@ struct parentheses: public _baseIterator
 				s._i = space;
 
 		}
-		return p < s ? new nodes::parentheses<_TVALUE>(p, s, open[type], opened): NULL;
+		return p < s ? new nodes::parentheses<_ITEM, _NDTYPE>(p, s._i, open[type], opened): NULL;
 	}
 
 protected:

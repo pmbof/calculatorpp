@@ -5,7 +5,6 @@
 #include "Parser.h"
 #include "OutputTree.h"
 
-#include "pmb_parser_transporter.cpp"
 #include "pmb_parser_nodes_calc.h"
 #include "pmb_parser_nodes_calc.cpp"
 #include "pmb_parser_nodes_unknow.h"
@@ -87,7 +86,7 @@ int COutputTree::drawIterators(CDC* pDC, CParserDoc* pDoc, int x0, int y0, int h
 		y = r.bottom + height;
 	}
 
-	const pmb::parser::node<transporter>* nd = pDoc->getNewNode();
+	const pmb::parser::node<item, ndtype>* nd = pDoc->getNewNode();
 	if(nd)
 	{
 		CRect r(wr.Width() / 2, y0, wr.Width() / 2 + 100, y0 + 1 * height);
@@ -98,7 +97,7 @@ int COutputTree::drawIterators(CDC* pDC, CParserDoc* pDoc, int x0, int y0, int h
 		graph_node root = {this, pDC, expr, nd, 10, wr.Width() / 2, y0 + 2 * height, height};
 		root.draw();
 	}
-	const pmb::parser::node<transporter>* ndU = pDoc->getNewNodeUnknow();
+	const pmb::parser::node<item, ndtype>* ndU = pDoc->getNewNodeUnknow();
 	if(ndU)
 	{
 		CRect r(3 * wr.Width() / 4, y0, 3 * wr.Width() / 4 + 100, y0 + 1 * height);
@@ -148,7 +147,7 @@ void COutputTree::OnPaint()
 		m_cnd.clear();
 		int y = drawIterators(&dc, pDoc, x0, 10, height, expr);
 
-		const pmb::parser::node<transporter>* rt = pDoc->getTree()->getRootNode();
+		const pmb::parser::node<item, ndtype>* rt = pDoc->getTree()->getRootNode();
 		graph_node root = {this, &dc, expr, rt, 0, x0, y, height};
 		m_cy = root.draw();
 		m_cx = root.x;
@@ -159,7 +158,7 @@ void COutputTree::OnPaint()
 	{
 		m_cnd.clear();
 
-		const pmb::parser::node<transporter>* rt = pDoc->getTree2()->getRootNode();
+		const pmb::parser::node<item, ndtype>* rt = pDoc->getTree2()->getRootNode();
 		graph_node root = {this, &dc, expr, rt, 0, x0, y0, height};
 		m_cy = root.draw();
 		m_cx = root.x;
@@ -267,7 +266,7 @@ int COutputTree::graph_node::draw()
 
 	if(parent->m_pNd == nd)
 		oldBrush = pDC->SelectObject(&br);
-	else if(parent->m_pNdUnknow == nd || nd->isCalcType() && static_cast<const pmb::parser::nodes::calc<transporter>*>(nd)->isCalculated())
+	else if(parent->m_pNdUnknow == nd || nd->isCalcType())
 		oldBrush = pDC->SelectObject(&brUnknow);
 	pDC->Ellipse(&re);
 	parent->m_cnd.push_back(node(re, nd));
@@ -280,22 +279,22 @@ int COutputTree::graph_node::draw()
 	}
 	if(nd->isCalcType())
 	{
-		const transporter& val =	nd->getType() == pmb::parser::ndUnknow ? static_cast<const pmb::parser::nodes::unknow<transporter>*>(nd)->getValue():
-							nd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<transporter>*>(nd)->getValue():
-							*static_cast<const pmb::parser::nodes::list<transporter>*>(nd)->getRValue();
+/*		const transporter& val = nd->getType() == pmb::parser::ndUnknown ? static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(nd)->getValue() :
+			nd->getType() == pmb::parser::ndParentheses ? static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getValue() :
+			*static_cast<const pmb::parser::nodes::list<item, ndtype>*>(nd)->getRValue();
 		CBrush brVal;
 		brVal.CreateSolidBrush(val._getStateColor());
 		CBrush* oBr = pDC->SelectObject(&brVal);
 		pDC->Ellipse(re.right + 2, re.top + re.Height() / 2, re.right + 7, re.top + re.Height() / 2 + 5);
 		if(nd->getType() == pmb::parser::ndList)
 		{
-			const transporter& lVal =	static_cast<const pmb::parser::nodes::list<transporter>*>(nd)->getLValue();
+			const transporter& lVal = static_cast<const pmb::parser::nodes::list<item, ndtype>*>(nd)->getLValue();
 			CBrush brValL;
 			brValL.CreateSolidBrush(lVal._getStateColor());
 			pDC->SelectObject(&brValL);
 			pDC->Ellipse(re.left - 2, re.top + re.Height() / 2, re.left - 7, re.top + re.Height() / 2 + 5);
 		}
-		pDC->SelectObject(oBr);
+		pDC->SelectObject(oBr);*/
 	}
 
 	if(parent->m_pNd == nd || parent->m_pNdUnknow == nd)
@@ -379,7 +378,7 @@ afx_msg LRESULT COutputTree::OnNextunknow(WPARAM wParam, LPARAM lParam)
 	CParserDoc* pDoc = CParserDoc::getDocument(this);
 	if(pDoc && !m_bDebug)
 	{
-		const pmb::parser::node<transporter>* old = m_pNdUnknow;
+		const pmb::parser::node<item, ndtype>* old = m_pNdUnknow;
 		m_pNdUnknow = pDoc->getNextUnknowNode(old);
 		if(old != m_pNdUnknow)
 		{

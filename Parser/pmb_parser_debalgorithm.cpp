@@ -13,8 +13,8 @@ namespace debug
 {
 
 
-algorithm::algorithm(_base::_tdSymbols& symbols)
-	: _base(symbols), _ai(_expr), _newNode(NULL), _newNodeUnknow(NULL)
+algorithm::algorithm(operation_table* opr_table, block* pBlock)
+	: _base(opr_table, pBlock), _ai(_expr), _newNode(NULL), _newNodeUnknown(NULL)
 {
 }
 
@@ -24,7 +24,7 @@ algorithm::~algorithm()
 }
 
 
-const auto_iterator<0, iterator, algorithm::transporter>* algorithm::getIterators() const
+const auto_iterator<0, iterator, algorithm::item, ndtype>* algorithm::getIterators() const
 {
 	return &_ai;
 }
@@ -34,7 +34,7 @@ const iterator* algorithm::getIterator() const
 	return &_expr;
 }
 
-const tree<algorithm::transporter>* algorithm::getTree() const
+const typename algorithm::tptree* algorithm::getTree() const
 {
 	return _tree;
 }
@@ -45,15 +45,15 @@ void algorithm::populate()
 }
 
 
-const node<algorithm::transporter>* algorithm::getNewNode() const
+const typename algorithm::node* algorithm::getNewNode() const
 {
 	return _newNode;
 }
 
 
-const node<algorithm::transporter>* algorithm::getNewNodeUnknow() const
+const typename algorithm::node* algorithm::getNewNodeUnknow() const
 {
-	return _newNodeUnknow;
+	return _newNodeUnknown;
 }
 
 
@@ -67,9 +67,9 @@ bool algorithm::nextStep()
 		else
 		{
 			_ai.space();
-			_newNodeUnknow = _ai.release();
-			if(_newNodeUnknow)
-				_tree->insert(_newNodeUnknow);
+			_newNodeUnknown = _ai.release();
+			if(_newNodeUnknown)
+				_tree->insert(_newNodeUnknown);
 			_tree->insert(_newNode);
 			_newNode = NULL;
 		}
@@ -80,15 +80,15 @@ bool algorithm::nextStep()
 	}
 	else
 	{
-		_newNodeUnknow = _ai.release();
-		if(_newNodeUnknow)
-			_tree->insert(_newNodeUnknow);
+		_newNodeUnknown = _ai.release();
+		if(_newNodeUnknown)
+			_tree->insert(_newNodeUnknown);
 	}
 	return _expr;
 }
 
 
-void algorithm::mapUnknow()
+void algorithm::mapUnknown()
 {
 }
 
