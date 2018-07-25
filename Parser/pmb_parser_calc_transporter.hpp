@@ -35,10 +35,7 @@ inline transporter<_VALUE, _NREF>::transporter(bool bVariable)
 template<class _VALUE, typename _NREF>
 inline transporter<_VALUE, _NREF>::transporter(ptr_value pvalue)
 {
-	_prv = new sref_val;
-	_prv->nref = 0;
-	_prv->pvalue = pvalue;
-	_prv->variable = false;
+	set(pvalue);
 }
 
 
@@ -46,26 +43,33 @@ template<class _VALUE, typename _NREF>
 inline transporter<_VALUE, _NREF>::transporter(const thisc& rcopy)
 {
 	_prv = rcopy._prv;
-	++_prv->nref;
+	add_ref();
 }
 
+
+template<class _VALUE, typename _NREF>
+inline void transporter<_VALUE, _NREF>::add_ref()
+{
+	if (_prv)
+		++_prv->nref;
+}
+
+
+template<class _VALUE, typename _NREF>
+inline void transporter<_VALUE, _NREF>::set(ptr_value pvalue)
+{
+	_prv = new sref_val;
+	_prv->nref = 0;
+	_prv->pvalue = pvalue;
+	_prv->variable = false;
+}
 
 
 
 template<class _VALUE, typename _NREF>
 inline transporter<_VALUE, _NREF>::~transporter()
 {
-	if (_prv)
-	{
-		if (!_prv->nref)
-		{
-			if (_prv->pvalue)
-				delete _prv->pvalue;
-			delete _prv;
-		}
-		else
-			--_prv->nref;
-	}
+	clear();
 }
 
 
@@ -97,6 +101,7 @@ inline _VALUE* transporter<_VALUE, _NREF>::release()
 	if (_prv)
 	{
 		vret = _prv->pvalue;
+		_prv->pvalue = nullptr;
 		if (!_prv->nref)
 			delete _prv;
 		else
@@ -119,34 +124,26 @@ inline typename transporter<_VALUE, _NREF>::thisc& transporter<_VALUE, _NREF>::o
 	{
 		if (_prv && _prv->variable)
 		{
-			if (!_prv)
-			{
-				_prv = right._prv;
-				++_prv->nref;
-			}
-			else
-			{
-				if (_prv->pvalue)
-					delete _prv->pvalue;
-				_prv->pvalue = right._prv && !right._prv->variable ? right.release() : nullptr;
-			}
+			if (_prv->pvalue)
+				delete _prv->pvalue;
+			_prv->pvalue = right._prv && !right._prv->variable ? right.release() : nullptr;
 		}
 		else
 		{
 			clear();
-			if (_prv = right._prv)
-				++_prv->nref;
+			_prv = right._prv;
+			add_ref();
 		}
 	}
 	else if (!_prv)
 	{
 		// Chequear si esto solo ocurre en la definicion de funciones entre los parametros de la funcion y las referencias internas
-		_prv = new sref_val;
-		_prv->variable = false;
-		_prv->pvalue = nullptr;
+		set(nullptr);
 		right._prv = _prv;
 		_prv->nref = 1;
 	}
+	else if (this != &right) // but _prv == right._prv
+		add_ref();
 	return *this;
 }
 
@@ -168,19 +165,11 @@ inline typename transporter<_VALUE, _NREF>::thisc& transporter<_VALUE, _NREF>::o
 		else
 		{
 			--_prv->nref;
-			_prv = new sref_val;
-			_prv->variable = false;
-			_prv->nref = 0;
-			_prv->pvalue = right;
+			set(right);
 		}
 	}
 	if (!_prv)
-	{
-		_prv = new sref_val;
-		_prv->variable = false;
-		_prv->nref = 0;
-		_prv->pvalue = right;
-	}
+		set(right);
 	return *this;
 }
 
@@ -207,7 +196,7 @@ inline bool transporter<_VALUE, _NREF>::isNotNull() const
 }
 
 template<class _VALUE, typename _NREF>
-inline bool transporter<_VALUE, _NREF>::operator! () const
+inline bool transporter<_VALUE, _NREF>::operator!() const
 {
 	return isNull();
 }
@@ -244,6 +233,39 @@ _VALUE* transporter<_VALUE, _NREF>::operator->() const
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template<class _TVALUE, typename _NARGS>
 inline transporter_args<_TVALUE, _NARGS>::node::node()
 	: t(false)
@@ -258,6 +280,7 @@ inline transporter_args<_TVALUE, _NARGS>::transporter_args()
 	: _root(nullptr), _result(false)
 {
 }
+
 
 template<class _TVALUE, typename _NARGS>
 inline transporter_args<_TVALUE, _NARGS>::~transporter_args()
@@ -283,7 +306,10 @@ inline transporter_args<_TVALUE, _NARGS>& transporter_args<_TVALUE, _NARGS>::ope
 			nd = new node;
 			nd->pnext = nullptr;
 			if (!_root)
+			{
+				_size = 0;
 				_last = _root = nd;
+			}
 			else
 			{
 				_last->pnext = nd;
@@ -414,16 +440,24 @@ inline typename transporter_args<_TVALUE, _NARGS>::transporter& transporter_args
 }
 
 template<class _TVALUE, typename _NARGS>
-inline typename transporter_args<_TVALUE, _NARGS>::nargs transporter_args<_TVALUE, _NARGS>::size() const
+inline typename transporter_args<_TVALUE, _NARGS>::nargs transporter_args<_TVALUE, _NARGS>::capacity() const
 {
 	return _root ? _size: nargs(0);
 }
+
+
+template<class _TVALUE, typename _NARGS>
+inline typename transporter_args<_TVALUE, _NARGS>::nargs transporter_args<_TVALUE, _NARGS>::size() const
+{
+	return nArgs();
+}
+
 
 template<class _TVALUE, typename _NARGS>
 inline typename transporter_args<_TVALUE, _NARGS>::nargs transporter_args<_TVALUE, _NARGS>::nArgs() const
 {
 	nargs vret = nargs(0);
-	for (node* pN = _root; pN && pN->t.isNotNull(); pN = pN->pnext)
+	for (node* pN = _root; pN; pN = pN->pnext)
 		if (pN->t.isNotNull())
 			++vret;
 	return vret;

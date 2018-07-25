@@ -48,12 +48,15 @@ public:
 	ptr_value release();
 
 private:
+	void add_ref();
+	void set(ptr_value pvalue);
+
 	struct sref_val
 	{
 		bool variable;
 		nref nref;
 		ptr_value pvalue;
-	}*_prv;
+	}* _prv;
 };
 
 
@@ -86,8 +89,9 @@ public:
 	void removeLefts();
 	void removeRights();
 	transporter& result();
-	nargs size() const;
+	nargs capacity() const;
 	nargs nArgs() const;
+	nargs size() const;
 	bool haveLeft() const;
 
 	bool operator !() const;
