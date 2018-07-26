@@ -126,7 +126,17 @@ inline typename transporter<_VALUE, _NREF>::thisc& transporter<_VALUE, _NREF>::o
 		{
 			if (_prv->pvalue)
 				delete _prv->pvalue;
-			_prv->pvalue = right._prv && !right._prv->variable ? right.release() : nullptr;
+			if (right._prv)
+			{
+				if (right._prv->variable)
+					_prv->pvalue = right._prv->pvalue ? new tpvalue(*right._prv->pvalue) : nullptr;
+				else
+				{
+					_prv->pvalue = right.release();
+				}
+			}
+			else
+				_prv->pvalue = nullptr;
 		}
 		else
 		{
@@ -468,6 +478,12 @@ template<class _TVALUE, typename _NARGS>
 inline bool transporter_args<_TVALUE, _NARGS>::haveLeft() const
 {
 	return _root && _root->t.isNotNull();
+}
+
+template<class _TVALUE, typename _NARGS>
+inline bool transporter_args<_TVALUE, _NARGS>::haveRight() const
+{
+	return _root && _last->t.isNotNull();
 }
 
 

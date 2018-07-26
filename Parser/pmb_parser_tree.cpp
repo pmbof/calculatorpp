@@ -24,6 +24,8 @@ template<class _ITEM, class _NDTYPE>
 tree<_ITEM, _NDTYPE>::~tree()
 {
 	pmb::log* pLg = pmb::log::beginFunction(logDebug, "pmb::parser::tree::~tree");
+	pLg->trace(logDebug, "deleting tree 0x08%x, 0x08%x\n", this, _root);
+	pLg->flush();
 	if(_root)
 	{
 		SYSTEMTIME si;

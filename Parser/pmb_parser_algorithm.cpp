@@ -172,7 +172,7 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 	{
 		typename _BLOCK::iterator* it_calc = block.begin(_expr);
 
-		for (it_calc->begin(); *it_calc; ++(*it_calc))
+		for ( ; *it_calc; ++(*it_calc))
 		{
 			const typename node_calc* uc = static_cast<const typename node_calc*>(it_calc->node());
 			if (uc && uc->isCalcType())
@@ -203,7 +203,7 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 										const build_in_function* function = reinterpret_cast<const build_in_function*>(uk->pointer());
 										(*function)(args);
 										args.removeRights();
-										it_calc->calculated();
+										it_calc->calculated(true);
 									}
 									catch (build_in_function::exception& ex)
 									{
@@ -217,8 +217,6 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 										user_def_function* function = const_cast<user_def_function*>(reinterpret_cast<const user_def_function*>(uk->pointer()));
 										it_calc = block.call_function(function, args);
 										continue;
-										args.removeRights();
-										it_calc->calculated();
 									}
 									catch (exception<cItem>& ex)
 									{
@@ -232,7 +230,7 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 								{
 									const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
 									(*opr)(args);
-									it_calc->calculated();
+									it_calc->calculated(true);
 								}
 								catch (operation::exception& ex)
 								{
@@ -247,14 +245,14 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 				else if (uc->getType() == ndList)
 				{
 					block.getValues();
-					it_calc->calculated();
+					it_calc->calculated(true);
 				}
 				else if (uc->getType() == ndParentheses)
 				{
 					transporter_args& args = block.getValues();
 					if (uc->getRight() && uc->getRight()->getType() != ndList)
 						args.removeLefts();
-					it_calc->calculated();
+					it_calc->calculated(true);
 				}
 				else
 					throw exception<cItem>(uc, "unknown symbol %item");

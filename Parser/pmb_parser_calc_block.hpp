@@ -29,24 +29,25 @@ namespace calc
 
 template<class _CITERATOR, class _BIN_FNCTABLE>
 inline block<_CITERATOR, _BIN_FNCTABLE>::stack::stack(iterator* list)
-	: _it_calc(list), _delete(false)
+	: _it_calc(list), _delete(false), _expr(nullptr)
 {
 }
+
+
 template<class _CITERATOR, class _BIN_FNCTABLE>
 inline block<_CITERATOR, _BIN_FNCTABLE>::stack::stack(tptree* tree)
 	: _delete(true)
 {
 	_it_calc = new iterator(tree);
 }
+
+
 template<class _CITERATOR, class _BIN_FNCTABLE>
 inline block<_CITERATOR, _BIN_FNCTABLE>::stack::~stack()
 {
 	if (_it_calc && _delete)
 		delete _it_calc;
 }
-
-
-
 
 
 
@@ -134,8 +135,11 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator*
 	iterator* vret = _it_calc;
 	if (_it_calc)
 	{
-		vret->end();
-		_it_calc = nullptr;
+		if (!_it_calc->function())
+		{
+			_it_calc->end();
+			_it_calc = nullptr;
+		}
 	}
 	_margs.clear();
 	return vret;
@@ -276,7 +280,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator*
 template <class _CITERATOR, class _BIN_FNCTABLE>
 inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator* block<_CITERATOR, _BIN_FNCTABLE>::call_function(iterator* function, transporter_args& args)
 {
-	stack* fncstack = new stack(function->tree());
+	stack* fncstack = new stack(function);
 	_ndActual->_stack.push_back(fncstack);
 	function->parameters_set(args);
 	return function;
@@ -312,7 +316,16 @@ inline void block<_CITERATOR, _BIN_FNCTABLE>::next()
 		delete _ndActual->_stack.back();
 		_ndActual->_stack.pop_back();
 		if (_ndActual->_stack.size())
+		{
+			stack* stck = _ndActual->_stack.back();
+			if (_lastResult && _lastResult->function())
+			{
+				stck->_it_calc->result() = _lastResult->right();
+				_lastResult = nullptr;
+			}
+			stck->_it_calc->setBegined();
 			return;
+		}
 		if (_ndActual->_child)
 			_ndActual = _ndActual->_child;
 		else if (_ndActual->_next)
@@ -368,17 +381,17 @@ inline bool block<_CITERATOR, _BIN_FNCTABLE>::insert_function()
 	stack* a_stack = actualStack();
 	bool bRet = a_stack->in_function_breaknode();
 	if (bRet)
-		insert_function(a_stack->_fncName, a_stack->release());
+		insert_function(a_stack->_fncName, a_stack->_fncBreakNode, a_stack->release());
 	return bRet;
 }
 
 
 
 template <class _CITERATOR, class _BIN_FNCTABLE>
-void block<_CITERATOR, _BIN_FNCTABLE>::insert_function(const istring& fncName, iterator* clist)
+void block<_CITERATOR, _BIN_FNCTABLE>::insert_function(const istring& fncName, const tnode* fncBreakNode, iterator* clist)
 {
 	_ndActual->_functions[fncName.getString()][clist->parameters_amount()] = clist;
-	clist->function(true);
+	clist->function(fncBreakNode);
 }
 
 
@@ -430,7 +443,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::transporter_args& block<_CITER
 {
 	stack* st = _ndActual->_stack.back();
 	typename transporter_args& values = st->_it_calc->getValues();
-	if (!st->_it_calc->isCalculated())
+	if (!st->_it_calc->calculated() && !st->_it_calc->calculating())
 	{
 		unsigned short nArgs;
 		const tnode* childs[2];

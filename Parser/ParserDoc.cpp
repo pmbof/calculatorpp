@@ -259,8 +259,9 @@ BOOL CParserDoc::OnNewDocument()
 
 	const double pi = 4 * atan(1);
 	vector test;
+	test.push_back(tuple("a1 = 3", false, 0));
 	test.push_back(tuple("f(x) = 4 x", false, 0));
-	test.push_back(tuple("f(3)", true, 12));
+	test.push_back(tuple("a = f(a1)", true, 12));
 	test.push_back(tuple("k = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("a1 = 5 test(9 - 8, 1 + 1, 6 - 3, 2 * 2)", true, 50));
 	test.push_back(tuple("a2 = 5 test(1, 2, 3, 4)", true, 50));
@@ -275,7 +276,7 @@ BOOL CParserDoc::OnNewDocument()
 	int errors = 0;
 	m_symbols.addSetVariable("Constants");
 	m_symbols.selectSearch("Constants");
-	for (int i = 0; i < 2 && test.size(); ++i)
+	for (int i = 0; i < 3 && test.size(); ++i)
 	{
 		try
 		{

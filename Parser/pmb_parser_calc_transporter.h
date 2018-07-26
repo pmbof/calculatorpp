@@ -93,6 +93,7 @@ public:
 	nargs nArgs() const;
 	nargs size() const;
 	bool haveLeft() const;
+	bool haveRight() const;
 
 	bool operator !() const;
 

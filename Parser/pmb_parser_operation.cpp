@@ -160,11 +160,28 @@ template<class _TVALUE>
 void operation<_TVALUE>::operator()(_TVALUE& values) const
 {
 	typename transporter_args::nargs nvals = values.nArgs();
-	if (_binary && values.size() != 2 && (nvals != 2 && !(_canCreateLVariable || _canCreateRVariable) || nvals != 1 && nvals != 2))
-		throw exception(2 < nvals || 2 < values.size() ? "too many arguments for operator %item" : values.haveLeft() ? "missing right value for operator %item" : "missing left value for operator %item");
-	else if (!_binary && (nvals != 1 || values.size() != 1))
-		throw exception(1 < nvals || 1 < values.size() ? "too many arguments for operator %item" : _leftToRight ? "missing left value for operator %item" : "missing right value for operator %item");
-
+	if (_binary)
+	{
+		if (values.capacity() != 2)
+			throw exception(2 < values.capacity() ? "too many arguments for operator %item" : values.haveLeft() ? "missing right value for operator %item" : "missing left value for operator %item");
+		else if (nvals != 2)
+		{
+			if (!_canCreateLVariable && !values.haveLeft())
+				throw exception("missing left value for operator %item");
+			else if (!_canCreateRVariable && !values.haveRight())
+				throw exception("missing right value for operator %item");
+		}
+	}
+	if (!_binary)
+	{
+		if (values.capacity() != 1)
+			throw exception(1 < values.capacity() ? "too many value for unitary operator %item" : _leftToRight ? "missing left value for operator %item" : "missing right value for operator %item");
+		else if (nvals != 1)
+		{
+			if (!_canCreateLVariable && !_canCreateRVariable)
+				throw exception("missing value for operator %item");
+		}
+	}
 	if (!_canCreateLVariable && !_canCreateRVariable)
 		values.placeForResult();
 	(*_fnc)(values);

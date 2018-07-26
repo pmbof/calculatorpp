@@ -3,6 +3,7 @@
 
 #include "pmb_parser_calc_build_in_function.hpp"
 #include "pmb_parser_calc_transporter.hpp"
+#include <map>
 
 
 namespace pmb
@@ -58,8 +59,9 @@ struct iterator
 	const tnode* node() const;
 	const tnode* lastNode() const;
 	const tnode* lastJoinNode() const;
-	void calculated(bool bCalculated = true);
-	bool isCalculated() const;
+	void calculated(bool bCalculated);
+	bool calculated() const;
+	bool calculating() const;
 	void varDependent(bool bVarDependent = true);
 	bool is_varDependent() const;
 
@@ -84,19 +86,27 @@ struct iterator
 
 	tptree* tree();
 
+	void setBegined();
 	bool function() const;
-	void function(bool bFunction);
+	void function(const tnode* breakNode);
 
 protected:
-	tnode* _nextCalc();
+//	tnode* _nextCalc();
+	void clear(inode* root);
+	const tnode* next_calc();
 
 protected:
-	bool _function;
+	bool _begined;
+	const tnode* _function;
 	transporter_args _parameters;
 	tptree* _tree;
 	inode* _root;
 	inode* _cursor;
+	inode* _rootCalc;
 	const tnode* _rootNode;
+
+	typedef std::map<const tnode*, inode*> map;
+	map _cmap;
 };
 
 
