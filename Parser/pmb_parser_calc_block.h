@@ -71,7 +71,6 @@ public:
 		bool _delete;
 
 		istring _fncName;
-		const tnode* _fncBreakNode;
 		map_args _margs;
 
 		friend class block;
@@ -126,7 +125,7 @@ public:
 	iterator* call_function(iterator* function, transporter_args& args);
 
 protected:
-	void insert_function(const istring& fncName, const tnode* fncBreakNode, iterator* clist);
+	void insert_function(const istring& fncName, iterator* clist);
 
 	bool find_variable(const istring& symbol, transporter& value, bool canCreate);
 

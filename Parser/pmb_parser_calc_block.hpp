@@ -83,9 +83,9 @@ inline void block<_CITERATOR, _BIN_FNCTABLE>::stack::begin(_CPTRCHAR expr)
 				_fncName = uk->getLeft()->getString(_expr);
 				if (!_fncName)
 					return;
-				_fncBreakNode = uk->getRight(); // uk->getRight() is (
+				_it_calc->function(uk->getRight()); // uk->getRight() is (
 				// getting function's parameters
-				for (uk = _fncBreakNode ? static_cast<const nodes::unknown<cItem, cNdType>*>(_fncBreakNode->getRight()) : nullptr; 
+				for (uk = uk->getRight() ? static_cast<const nodes::unknown<cItem, cNdType>*>(_it_calc->function()->getRight()) : nullptr;
 										uk && (uk->getType() == ndList && uk->getLeft()); uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft()))
 					;
 				for (const tnode* lstparam = uk; lstparam; lstparam = lstparam->getRight() && lstparam->getRight()->getType() == ndParentheses ? lstparam->getRight() : lstparam->getParent())
@@ -94,6 +94,7 @@ inline void block<_CITERATOR, _BIN_FNCTABLE>::stack::begin(_CPTRCHAR expr)
 						|| lstparam->getType() == ndParentheses && (static_cast<const nodes::parentheses<cItem, cNdType>*>(lstparam)->getOpened() != -1
 							|| lstparam->getLeft() || lstparam->getRight()))
 					{
+						_it_calc->function(nullptr);
 						_fncName.clear();
 						_margs.clear();
 						break;
@@ -124,7 +125,7 @@ inline bool block<_CITERATOR, _BIN_FNCTABLE>::stack::function_call() const
 template<class _CITERATOR, class _BIN_FNCTABLE>
 inline bool block<_CITERATOR, _BIN_FNCTABLE>::stack::in_function_breaknode() const
 {
-	return _fncName && _it_calc->node() == _fncBreakNode;
+	return _fncName && _it_calc->node() == _it_calc->function();
 }
 
 
@@ -135,11 +136,8 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator*
 	iterator* vret = _it_calc;
 	if (_it_calc)
 	{
-		if (!_it_calc->function())
-		{
-			_it_calc->end();
-			_it_calc = nullptr;
-		}
+		_it_calc->end();
+		_it_calc = nullptr;
 	}
 	_margs.clear();
 	return vret;
@@ -381,17 +379,16 @@ inline bool block<_CITERATOR, _BIN_FNCTABLE>::insert_function()
 	stack* a_stack = actualStack();
 	bool bRet = a_stack->in_function_breaknode();
 	if (bRet)
-		insert_function(a_stack->_fncName, a_stack->_fncBreakNode, a_stack->release());
+		insert_function(a_stack->_fncName, a_stack->release());
 	return bRet;
 }
 
 
 
 template <class _CITERATOR, class _BIN_FNCTABLE>
-void block<_CITERATOR, _BIN_FNCTABLE>::insert_function(const istring& fncName, const tnode* fncBreakNode, iterator* clist)
+void block<_CITERATOR, _BIN_FNCTABLE>::insert_function(const istring& fncName, iterator* clist)
 {
 	_ndActual->_functions[fncName.getString()][clist->parameters_amount()] = clist;
-	clist->function(fncBreakNode);
 }
 
 
@@ -506,7 +503,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::transporter_args& block<_CITER
 				const istring& snumber = childs[arg]->getString(st->_expr);
 				*vals[arg] = new transporter::tpvalue(snumber, childs[arg]->len());
 			}
-			else if (st->_it_calc->lastNode() != childs[arg] && st->_it_calc->lastJoinNode() != childs[arg])
+			else if (!st->_it_calc->is_varDependent() && st->_it_calc->lastNode() != childs[arg] && st->_it_calc->lastJoinNode() != childs[arg])
 			{
 
 				if (st->_it_calc->prev() && st->_it_calc->prev()->_node == childs[arg])

@@ -30,10 +30,10 @@ inline iterator<_TVARGS, _TREE>::~iterator()
 template<class _TVARGS, class _TREE>
 inline void iterator<_TVARGS, _TREE>::clear(inode* root)
 {
-	for (_cursor = root; _cursor; _cursor = root)
+	for (inode* nd = root; nd; nd = root)
 	{
-		root = _cursor->_next;
-		delete _cursor;
+		root = nd->_next;
+		delete nd;
 	}
 }
 
@@ -63,6 +63,11 @@ inline typename iterator<_TVARGS, _TREE>::inode* iterator<_TVARGS, _TREE>::begin
 		++(*this);
 		return _cursor;
 	}
+	else
+	{
+		clear(_rootCalc);
+		_rootCalc = nullptr;
+	}
 	return _cursor = _root;
 }
 
@@ -73,11 +78,28 @@ inline void iterator<_TVARGS, _TREE>::end()
 	if (!_cursor)
 		_cursor = _root;
 	if (_cursor && !_cursor->_isVarDependent && !_function)
+		_cursor->_transporter.clean();
+	if (_function && !_rootCalc)
 	{
+		if (_cursor && _cursor->_prev)
+		{
+			_cursor = _cursor->_prev;
+			delete _cursor->_next;
+			_cursor->_next = nullptr;
+		}
 		_cmap.clear();
 		for (inode* nd = _root; nd; nd = nd->_next)
 			_cmap[nd->_node] = nd;
-		_cursor->_transporter.clean();
+	}
+	if (_rootCalc)
+	{
+		if (_cursor != _rootCalc)
+		{
+			_cursor->_prev->_next = nullptr;
+			_cursor->_prev = nullptr;
+			clear(_rootCalc);
+			_rootCalc = _cursor;
+		}
 	}
 }
 
@@ -233,9 +255,15 @@ inline void iterator<_TVARGS, _TREE>::setBegined()
 }
 
 template<class _TVARGS, class _TREE>
-inline bool iterator<_TVARGS, _TREE>::function() const
+inline const typename iterator<_TVARGS, _TREE>::tnode* iterator<_TVARGS, _TREE>::function() const
 {
 	return _function;
+}
+
+template<class _TVARGS, class _TREE>
+inline bool iterator<_TVARGS, _TREE>::function_definition() const
+{
+	return _function && !_rootCalc;
 }
 
 template<class _TVARGS, class _TREE>
@@ -340,9 +368,9 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 	else
 		uc = uc->nextCalc();
 
-	if (!uc)
+	if (!uc || uc == _function && _rootCalc)
 		_cursor = nullptr;
-	else if (_cursor->_node->getParent() != uc || !_cursor->_isCalculated && !_function && !_cursor->_isVarDependent && !_cursor->_next)
+	else if (_cursor->_node->getParent() != uc || _cursor->_isVarDependent && !_cursor->_next)
 	{
 		_cursor->_next = new inode;
 		_cursor->_next->_prev = _cursor;
@@ -398,67 +426,6 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 	return _cursor->_prev;
 }
 
-
-
-/*template<class _TVARGS, class _TREE>
-inline typename iterator<_TVARGS, _TREE>::tnode*
-	iterator<_TVARGS, _TREE>::_nextCalc()
-{
-	//	log* pLg = log::beginFunction(logDebug, "pmb::parser::nodes::calc::nextCalc");
-	calc<_ITEM, _NDTYPE>* c,
-		*nc;
-	for (c = this, nc = this; c && nc; )
-	{
-		//		TRACE_NODE(logDebug, "\t\t- ", c, false, false);
-		nc = NULL;
-		if (c->_type == ndUnknown)
-		{
-			unknown<_ITEM, _NDTYPE>* uk = static_cast<unknown<_ITEM, _NDTYPE>*>(c);
-			if (uk->getOperation())
-			{
-				if (uk->getOperation()->isFirstLeft())
-				{
-					if (isNotCalculated(uk->_left))
-						nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_left);
-					if (!nc && isNotCalculated(uk->_right))
-						nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_right);
-				}
-				if (!nc && uk->getOperation()->isFirstRight())
-				{
-					if (isNotCalculated(uk->_right))
-						nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_right);
-					if (!nc && isNotCalculated(uk->_left))
-						nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_left);
-				}
-				if (!nc)
-				{
-					if (uk->_bCalculated)
-						nc = static_cast<calc<_ITEM, _NDTYPE>*>(uk->_parent);
-				}
-				else if (!nc)
-					TRACE_NODE(logError, "pmb::parser::nodes::calc::nextCalc ERROR: Condition not match", nullptr, uk);
-			}
-		}
-		else //if(c->_type == ndParentheses || c->_type == ndList)
-		{
-			if (isNotCalculated(c->_left))
-				nc = static_cast<calc<_ITEM, _NDTYPE>*>(c->_left);
-			if (!nc && isNotCalculated(c->_right))
-				nc = static_cast<calc<_ITEM, _NDTYPE>*>(c->_right);
-			if (!nc)
-			{
-				//				if(!c->_bCalculated)
-				//					c->_bCalculated = true;
-				if (c->_bCalculated)
-					nc = static_cast<calc<_ITEM, _NDTYPE>*>(c->_parent);
-			}
-		}
-		if (nc)
-			c = nc;
-	}
-	//	pLg->endFunction();
-	return !nc && c ? c->_bCalculated ? NULL : c : nc;
-}*/
 
 
 
@@ -519,12 +486,26 @@ inline typename const iterator<_TVARGS, _TREE>::tnode*
 			map::const_iterator cf = _cmap.find(nc);
 			if (cf != _cmap.end())
 			{
-				_cursor->_next = new inode;
-				*_cursor->_next = *cf->second;
-				_cursor->_next->_prev = _cursor;
-				_cursor = _cursor->_next;
-				_cursor->_next = nullptr;
-				_cursor->_isVarDependent = false;
+				if (nc->getLeft() != _cursor->_node && nc->getRight() != _cursor->_node)
+				{
+					_cursor->_next = new inode;
+					*_cursor->_next = *cf->second;
+					_cursor->_next->_prev = _cursor;
+					_cursor = _cursor->_next;
+					_cursor->_next = nullptr;
+					_cursor->_isVarDependent = false;
+				}
+				else
+				{
+					bool bOnlyFirst = nc->getType() != ndList || !nc->getLeft() || nc->getLeft()->getType() != ndList;
+					bool bOnlyLast = nc->getType() != ndList || !nc->getRight() || nc->getRight()->getType() != ndList;
+					if (_cursor->_node == nc->getLeft())
+						_cursor->_transporter.join_l2r(cf->second->_transporter, bOnlyFirst, bOnlyLast);
+					else
+						_cursor->_transporter.join_r2l(cf->second->_transporter, bOnlyFirst, bOnlyLast);
+					_cursor->_nodeJoinLast = _cursor->_nodeLast = _cursor->_node;
+					_cursor->_node = nc;
+				}
 				nc = nullptr;
 			}
 		}

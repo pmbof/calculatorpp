@@ -131,9 +131,7 @@ inline typename transporter<_VALUE, _NREF>::thisc& transporter<_VALUE, _NREF>::o
 				if (right._prv->variable)
 					_prv->pvalue = right._prv->pvalue ? new tpvalue(*right._prv->pvalue) : nullptr;
 				else
-				{
 					_prv->pvalue = right.release();
-				}
 			}
 			else
 				_prv->pvalue = nullptr;
@@ -149,6 +147,7 @@ inline typename transporter<_VALUE, _NREF>::thisc& transporter<_VALUE, _NREF>::o
 	{
 		// Chequear si esto solo ocurre en la definicion de funciones entre los parametros de la funcion y las referencias internas
 		set(nullptr);
+		right.clear();
 		right._prv = _prv;
 		_prv->nref = 1;
 	}

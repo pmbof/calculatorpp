@@ -87,7 +87,8 @@ struct iterator
 	tptree* tree();
 
 	void setBegined();
-	bool function() const;
+	const tnode* function() const;
+	bool function_definition() const;
 	void function(const tnode* breakNode);
 
 protected:
