@@ -536,7 +536,7 @@ inline void transporter_args<_TVALUE, _NARGS>::join_l2r(transporter_args& targs,
 
 
 template<class _TVALUE, typename _NARGS>
-inline void transporter_args<_TVALUE, _NARGS>::join_r2l(transporter_args & targs, bool bOnlyLast, bool bOnlyFirst)
+inline void transporter_args<_TVALUE, _NARGS>::join_r2l(transporter_args& targs, bool bOnlyLast, bool bOnlyFirst)
 {
 	if (bOnlyLast)
 	{
@@ -568,6 +568,53 @@ inline void transporter_args<_TVALUE, _NARGS>::join_r2l(transporter_args & targs
 	}
 	clean();
 	targs._root = nullptr;
+}
+
+
+
+template<class _TVALUE, typename _NARGS>
+inline void transporter_args<_TVALUE, _NARGS>::copy_l2r(transporter_args& targs, bool bOnlyFirst, bool bOnlyLast)
+{
+	if (bOnlyFirst)
+	{
+		for (node* nd = _root->pnext; nd; --_size)
+		{
+			node* del = nd;
+			nd = nd->pnext;
+			delete del;
+		}
+		_last = _root;
+	}
+	for (node* nd = bOnlyLast ? targs._last : targs._root; nd; nd = nd->pnext)
+	{
+		add_back();
+		_last->t = nd->t;
+	}
+	clean();
+}
+
+
+template<class _TVALUE, typename _NARGS>
+inline void transporter_args<_TVALUE, _NARGS>::copy_r2l(transporter_args& targs, bool bOnlyLast, bool bOnlyFirst)
+{
+	if (bOnlyLast)
+	{
+		for (node* nd = _root; nd && nd != _last; --_size)
+		{
+			node* del = nd;
+			nd = nd->pnext;
+			delete del;
+		}
+		_root = _last;
+	}
+	for (node* nd = targs._root; nd; nd = nd->pnext)
+	{
+		add_front();
+		_root->t = nd->t;
+		if (bOnlyFirst)
+			break;
+	}
+	clean();
 }
 
 

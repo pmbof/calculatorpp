@@ -500,9 +500,9 @@ inline typename const iterator<_TVARGS, _TREE>::tnode*
 					bool bOnlyFirst = nc->getType() != ndList || !nc->getLeft() || nc->getLeft()->getType() != ndList;
 					bool bOnlyLast = nc->getType() != ndList || !nc->getRight() || nc->getRight()->getType() != ndList;
 					if (_cursor->_node == nc->getLeft())
-						_cursor->_transporter.join_l2r(cf->second->_transporter, bOnlyFirst, bOnlyLast);
+						_cursor->_transporter.copy_l2r(cf->second->_transporter, bOnlyFirst, bOnlyLast);
 					else
-						_cursor->_transporter.join_r2l(cf->second->_transporter, bOnlyFirst, bOnlyLast);
+						_cursor->_transporter.copy_r2l(cf->second->_transporter, bOnlyFirst, bOnlyLast);
 					_cursor->_nodeJoinLast = _cursor->_nodeLast = _cursor->_node;
 					_cursor->_node = nc;
 				}

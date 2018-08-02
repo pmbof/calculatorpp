@@ -100,6 +100,9 @@ public:
 	void join_l2r(transporter_args& targs, bool bOnlyFirst, bool bOnlyLast);
 	void join_r2l(transporter_args& targs, bool bOnlyLast, bool bOnlyFirst);
 
+	void copy_l2r(transporter_args& targs, bool bOnlyFirst, bool bOnlyLast);
+	void copy_r2l(transporter_args& targs, bool bOnlyLast, bool bOnlyFirst);
+
 	void add_back();
 	void add_back(transporter& arg);
 	void add_front();
