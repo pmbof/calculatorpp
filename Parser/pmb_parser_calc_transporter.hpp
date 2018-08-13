@@ -415,13 +415,29 @@ void transporter_args<_TVALUE, _NARGS>::moveToRight()
 template<class _TVALUE, typename _NARGS>
 inline void transporter_args<_TVALUE, _NARGS>::removeLefts()
 {
-	for (node* pN = _root; pN && pN != _last; --_size)
+	node* prev = nullptr;
+	for (node* pN = _root; pN; )
 	{
 		node* del = pN;
 		pN = pN->pnext;
-		delete del;
+		if (del->t.isNotNull())
+		{
+			if (prev)
+			{
+				delete prev;
+				--_size;
+			}
+			prev = del;
+		}
+		else
+		{
+			delete del;
+			--_size;
+			if (prev)
+				prev->pnext = pN;
+		}
 	}
-	_root = _last;
+	_root = _last = prev;
 }
 
 
