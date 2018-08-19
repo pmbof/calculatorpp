@@ -259,9 +259,10 @@ BOOL CParserDoc::OnNewDocument()
 
 	const double pi = 4 * atan(1);
 	vector test;
-	test.push_back(tuple("f(x) = 1 + 4 x + x", false, 0));
-	test.push_back(tuple("a = f(5) - 10", true, 16));
-	test.push_back(tuple("f(1)", true, 6));
+	test.push_back(tuple("f(x, y, z) = z + 4 x^2 + y", false, 0));
+	test.push_back(tuple("f(2, 3, 1)", true, 1 + 4 * 2 * 2 + 3));
+	test.push_back(tuple("f(x) = 1 + 4 x^2 + x", false, 0));
+	test.push_back(tuple("a0 = f(5) - f(2)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 * 2 * 2 + 2)));
 	test.push_back(tuple("k = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("a1 = 5 test(9 - 8, 1 + 1, 6 - 3, 2 * 2)", true, 50));
 	test.push_back(tuple("a2 = 5 test(1, 2, 3, 4)", true, 50));
@@ -272,15 +273,20 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("a5 = 5 test(9 - 8, 1 + 1, 6 - 3, 2 * 2)", true, 50));
 	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("a6 = sin pi/6", true, sin(pi / 6)));
+	test.push_back(tuple("g(x) = 1 + 4 x^2 + x", false, 0));
+	test.push_back(tuple("a = f(5) - f(-1)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 - 1)));
+	test.push_back(tuple("f(1)", true, 1 + 4 + 1));
 
 	int errors = 0;
 	m_symbols.addSetVariable("Constants");
 	m_symbols.selectSearch("Constants");
-	for (int i = 0; i < 3 && test.size(); ++i)
+	for (int i = 0; i < test.size(); ++i)
 	{
+		bool bResult = false;
 		try
 		{
 			m_calculator.parser(m_expr = std::get<0>(test[i]));
+			bResult = true;
 			if (_block.result() != std::get<2>(test[i]) || !std::get<1>(test[i]))
 			{
 				if (std::get<1>(test[i]))
@@ -294,7 +300,7 @@ BOOL CParserDoc::OnNewDocument()
 		}
 		catch (pmb::parser::exception<item>& ex)
 		{
-			if (std::get<1>(test[i]))
+			if (!bResult || std::get<1>(test[i]))
 			{
 				log->trace(pmb::logError, "Exception \"%s\": %s = <NULL> =! %f\n", ex.message(m_expr).c_str(), m_expr, std::get<2>(test[i]));
 				m_error = ex;

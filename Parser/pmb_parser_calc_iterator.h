@@ -48,7 +48,7 @@ struct iterator
 	~iterator();
 
 // Operations for move cursor:
-	inode* begin();
+	bool begin();
 	void end();
 
 	bool operator ()() const;

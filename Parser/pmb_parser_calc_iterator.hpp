@@ -40,7 +40,7 @@ inline void iterator<_TVARGS, _TREE>::clear(inode* root)
 
 
 template<class _TVARGS, class _TREE>
-inline typename iterator<_TVARGS, _TREE>::inode* iterator<_TVARGS, _TREE>::begin()
+inline bool iterator<_TVARGS, _TREE>::begin()
 {
 	if (!_root)
 	{
@@ -61,14 +61,15 @@ inline typename iterator<_TVARGS, _TREE>::inode* iterator<_TVARGS, _TREE>::begin
 		_begined = false;
 		_cursor->_isCalculated = true;
 		++(*this);
-		return _cursor;
+		return false;
 	}
 	else
 	{
 		clear(_rootCalc);
 		_rootCalc = nullptr;
 	}
-	return _cursor = _root;
+	_cursor = _root;
+	return true;
 }
 
 
@@ -253,6 +254,7 @@ inline void iterator<_TVARGS, _TREE>::setBegined()
 {
 	_begined = true;
 }
+
 
 template<class _TVARGS, class _TREE>
 inline const typename iterator<_TVARGS, _TREE>::tnode* iterator<_TVARGS, _TREE>::function() const

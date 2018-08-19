@@ -55,54 +55,65 @@ template<class _CITERATOR, class _BIN_FNCTABLE>
 inline void block<_CITERATOR, _BIN_FNCTABLE>::stack::begin(_CPTRCHAR expr)
 {
 	_expr = expr;
-	_it_calc->begin();
-	const nodes::unknown<cItem, cNdType>* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(_it_calc->rootNode());
-	if (uk && uk->getType() == ndUnknown)
+	if (_it_calc->begin())
 	{
-		// uk is =
-		if (uk->isBinary() && uk->canCreateLVariable() && uk->getLeft() && uk->getLeft()->getType() == ndUnknown)
+		const nodes::unknown<cItem, cNdType>* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(_it_calc->rootNode());
+		if (uk && uk->getType() == ndUnknown)
 		{
-			// uk is *    (operator call functions)
-			uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft());
-			if (!uk->isBinary()
+			// uk is =
+			if (uk->isBinary() && uk->canCreateLVariable() && uk->getLeft() && uk->getLeft()->getType() == ndUnknown)
+			{
+				// uk is *    (operator call functions)
+				uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft());
+				if (!uk->isBinary()
 					|| !uk->getLeft() || uk->getLeft()->getType() != ndAlpha   // function name
 					|| !uk->getRight() || uk->getRight()->getType() != ndParentheses // (  or  ()
 					|| static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() != 0  // ()
-						&& static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() != 1  // (
+					&& static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() != 1  // (
 					|| !uk->getRight()->getRight() && static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() == 1
 					|| uk->getRight()->getRight() && static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() == 0)
-			{
-				_fncName.clear();
-				return; /// false
-			}
-			else
-			{
-				_margs.clear();
-				_it_calc->parameters_clear();
-
-				_fncName = uk->getLeft()->getString(_expr);
-				if (!_fncName)
-					return;
-				_it_calc->function(uk->getRight()); // uk->getRight() is (
-				// getting function's parameters
-				for (uk = uk->getRight() ? static_cast<const nodes::unknown<cItem, cNdType>*>(_it_calc->function()->getRight()) : nullptr;
-										uk && (uk->getType() == ndList && uk->getLeft()); uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft()))
-					;
-				for (const tnode* lstparam = uk; lstparam; lstparam = lstparam->getRight() && lstparam->getRight()->getType() == ndParentheses ? lstparam->getRight() : lstparam->getParent())
 				{
-					if ((lstparam->getType() != ndAlpha && lstparam->getType() != ndList && lstparam->getType() != ndParentheses)
-						|| lstparam->getType() == ndParentheses && (static_cast<const nodes::parentheses<cItem, cNdType>*>(lstparam)->getOpened() != -1
-							|| lstparam->getLeft() || lstparam->getRight()))
+					_fncName.clear();
+					return; /// false
+				}
+				else
+				{
+					_margs.clear();
+					_it_calc->parameters_clear();
+
+					_fncName = uk->getLeft()->getString(_expr);
+					if (!_fncName)
+						return;
+					_it_calc->function(uk->firstCalc()); // uk->getRight() is (
+					uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getRight());
+					const nodes::unknown<cItem, cNdType>* first = uk;
+					// getting function's parameters
+					for (uk = uk ? static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getRight()) : nullptr;
+							uk && (uk->getType() == ndList && uk->getLeft() && uk->getLeft()->getType() == ndList);
+							uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft()))
+						;
+					for (const tnode* lstparam = uk; lstparam;
+							lstparam = lstparam->getRight() && lstparam->getRight()->getType() == ndParentheses ? lstparam->getRight() : 
+							lstparam->getParent() == first && lstparam->getRight() ? lstparam->getRight()->getRight() : lstparam->getParent())
 					{
-						_it_calc->function(nullptr);
-						_fncName.clear();
-						_margs.clear();
-						break;
+						if ((lstparam->getType() != ndAlpha && lstparam->getType() != ndList && lstparam->getType() != ndParentheses)
+								|| lstparam->getType() == ndParentheses && (static_cast<const nodes::parentheses<cItem, cNdType>*>(lstparam)->getOpened() != -1
+								|| lstparam->getLeft() || lstparam->getRight()))
+						{
+							_it_calc->function(nullptr);
+							_fncName.clear();
+							_margs.clear();
+							break;
+						}
+						else if (lstparam->getType() == ndParentheses)
+							break;
+						if (lstparam->getType() == ndList && lstparam->getLeft() && lstparam->getLeft()->getType() != ndList)
+							_it_calc->parameters_add(_margs[lstparam->getLeft()->getString(_expr).getString()]);
+						const tnode* param = lstparam->getType() == ndList ? lstparam->getRight() : lstparam;
+						_it_calc->parameters_add(_margs[param->getString(_expr).getString()]);
+						if (param->getRight() && param->getRight()->getType() == ndParentheses && !static_cast<const nodes::parentheses<cItem, cNdType>*>(param->getRight())->getOpened())
+							break;
 					}
-					else if (lstparam->getType() == ndParentheses)
-						break;
-					const tnode* param = lstparam->getType() == ndList ? lstparam->getLeft() : lstparam;
-					_it_calc->parameters_add(_margs[param->getString(_expr).getString()]);
 				}
 			}
 		}
@@ -451,8 +462,8 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::transporter_args& block<_CITER
 		if (uk->getType() == ndUnknown && uk->isValid())
 		{
 			nArgs = uk->isBinary() ? 2 : 1;
-			childs[0] = uk->isFirstLeft() ? uk->getLeft() : uk->getRight();
-			vals[0] = uk->isFirstLeft() ? &values.left() : &values.right();
+			childs[0] = uk->isBinary() && uk->isFirstLeft() || !uk->isBinary() && uk->getLeft() ? uk->getLeft() : uk->getRight();
+			vals[0] = uk->isBinary() && uk->isFirstLeft() || !uk->isBinary() ? &values.left() : &values.right();
 			bForAlpha[0] = !uk->isCallFunction() || !uk->isFirstLeft();
 			bCanCreateVariable[0] = uk->isFirstLeft() && uk->canCreateLVariable() || uk->isFirstRight() && uk->canCreateRVariable();
 			if (1 < nArgs)
