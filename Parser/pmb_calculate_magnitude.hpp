@@ -12,22 +12,38 @@ namespace units
 
 
 
-template<typename _CHAR>
-inline dimension<_CHAR>::dimension()
+template<typename _CHAR, typename _SIZE>
+inline dimension<_CHAR, _SIZE>::dimension()
 	: _symbol(nullptr), _name(nullptr)
 {
 }
 
+template<typename _CHAR, typename _SIZE>
+inline dimension<_CHAR, _SIZE>::dimension(const _CHAR* symbol, const _CHAR* name)
+	: _symbol(nullptr), _name(nullptr)
+{
+	_SIZE slen = strlen(symbol),
+		nlen = name ? strlen(name) : 0;
+	set(symbol, slen, name, nlen);
+}
 
-template<typename _CHAR>
-inline dimension<_CHAR>::~dimension()
+template<typename _CHAR, typename _SIZE>
+inline dimension<_CHAR, _SIZE>::dimension(const _CHAR* symbol, const _SIZE& slen, const _CHAR* name, const _SIZE& nlen)
+	: _symbol(nullptr), _name(nullptr)
+{
+	set(symbol, slen, name, nlen);
+}
+
+
+template<typename _CHAR, typename _SIZE>
+inline dimension<_CHAR, _SIZE>::~dimension()
 {
 	clear();
 }
 
 
-template<typename _CHAR>
-inline void dimension<_CHAR>::clear()
+template<typename _CHAR, typename _SIZE>
+inline void dimension<_CHAR, _SIZE>::clear()
 {
 	if (_symbol)
 		delete[] _symbol;
@@ -36,55 +52,128 @@ inline void dimension<_CHAR>::clear()
 }
 
 
-template<typename _CHAR>
-inline bool dimension<_CHAR>::empty() const
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::empty() const
 {
 	return !_symbol;
 }
 
 
-template<typename _CHAR>
-inline bool dimension<_CHAR>::operator==(const _CHAR* dimension) const
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::operator==(const _CHAR* dimension) const
 {
 	return dimension ? strcmp(_symbol, dimension) == 0 || (_name ? strcmp(_name, dimension) == 0 : false) : false;
 }
 
-template<typename _CHAR>
-inline bool dimension<_CHAR>::operator!=(const _CHAR* dimension) const
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::operator!=(const _CHAR* dimension) const
 {
 	return !dimension || strcmp(_symbol, dimension) != 0 && (_name ? strcmp(_name, dimension) != 0 : true);
 }
 
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::operator<(const dimension& right) const
+{
+	const _CHAR* l, *r;
+	for (l = _symbol, r = right._symbol; l - _symbol < _slen && r - right._symbol < right._slen && *l == *r; ++l, ++r)
+		;
+	return l - _symbol == _slen && r - right._symbol < right._slen || *l < *r;
+}
 
-template<typename _CHAR>
-inline void dimension<_CHAR>::set(const _CHAR* symbol, unsigned short len, const _CHAR* name)
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::less(const _CHAR* right, const _SIZE& len)
+{
+	const _CHAR* l, *r;
+	for (l = _symbol, r = right; l - _symbol < _slen && r - right < len && *l == *r; ++l, ++r)
+		;
+	return r - right < len && (_slen <= l - _symbol || *l < *r);
+}
+
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::greater(const _CHAR* right, const _SIZE& len)
+{
+	const _CHAR* l, *r;
+	for (l = _symbol, r = right; l - _symbol < _slen && r - right < len && *l == *r; ++l, ++r)
+		;
+	return l - _symbol < _slen && (len <= r - right || *r < *l);
+}
+
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::less_name(const dimension& right) const
+{
+	const _CHAR* l, *r;
+	for (l = _name, r = right._name; l && r && l - _name < _nlen && r - right._name < right._nlen && *l == *r; ++l, ++r)
+		;
+	return !l && r || l && r && r - right._name < right._nlen && (_nlen < l - _name || *l < *r);
+}
+
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::less_name(const _CHAR* right, const _SIZE& len)
+{
+	const _CHAR* l, *r;
+	for (l = _name, r = right; l && l - _name < _nlen && r - right < len && *l == *r; ++l, ++r)
+		;
+	return !l || r - right < len && (_nlen <= l - _name || *l < *r);
+}
+
+template<typename _CHAR, typename _SIZE>
+inline bool dimension<_CHAR, _SIZE>::greater_name(const _CHAR* right, const _SIZE& len)
+{
+	const _CHAR* l, *r;
+	for (l = _name, r = right; l && l - _name < _nlen && r - right < len && *l == *r; ++l, ++r)
+		;
+	return l && len && l - _name < _nlen && (len <= r - right || *r < *l);
+}
+
+
+
+
+template<typename _CHAR, typename _SIZE>
+inline void dimension<_CHAR, _SIZE>::set(const _CHAR* symbol, const _SIZE& slen, const _CHAR* name, const _SIZE& nlen)
 {
 	clear();
-	_symbol = new _CHAR[len + 1];
-	strncpy(_symbol, symbol, len);
-	_symbol[(int)symbol] = '\0';
-	if (name)
+
+	_slen = slen;
+	_symbol = new _CHAR[_slen];
+	strncpy(_symbol, symbol, _slen);
+	if (name && nlen)
 	{
-		_name = new _CHAR[strlen(name) + 1];
-		strcpy(_name, name);
+		_nlen = nlen;
+		_name = new _CHAR[_nlen];
+		strncpy(_name, name, _nlen);
 	}
 	else
 		_name = nullptr;
 }
 
 
-template<typename _CHAR>
-inline const _CHAR* dimension<_CHAR>::getSymbol() const
+template<typename _CHAR, typename _SIZE>
+inline const _CHAR* dimension<_CHAR, _SIZE>::symbol() const
 {
 	return _symbol;
 }
 
 
-template<typename _CHAR>
-inline const _CHAR* dimension<_CHAR>::getName() const
+template<typename _CHAR, typename _SIZE>
+inline const _CHAR* dimension<_CHAR, _SIZE>::name() const
 {
 	return _name;
 }
+
+
+template<typename _CHAR, typename _SIZE>
+inline const _SIZE& dimension<_CHAR, _SIZE>::symbol_size() const
+{
+	return _symbol ? _slen: 0;
+}
+
+
+template<typename _CHAR, typename _SIZE>
+inline const _SIZE& dimension<_CHAR, _SIZE>::name_size() const
+{
+	return _name ? _nlen : 0;
+}
+
 
 
 
@@ -405,31 +494,31 @@ inline rational<_INT> operator/(const _INT &left, const rational<_INT>& right)
 
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR>::power_dimension()
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR>::power_dimension()
 	: rational()
 {
 }
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR>::power_dimension(const rational<_INT>& q, const dimension<_CHAR>* pDim)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR>::power_dimension(const rational<_INT>& q, const dimension* pDim)
 	: rational(q), dim(pDim)
 {
 }
 
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR>& power_dimension<_INT, _CHAR>::operator=(const power_dimension<_INT, _CHAR>& right)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR>& power_dimension<_INT, _CHAR, _SZSTR>::operator=(const power_dimension& right)
 {
 	*static_cast<rational<_INT>*>(this) = *static_cast<const rational<_INT>*>(&right);
 	dim = right.dim;
 	return *this;
 }
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR>& power_dimension<_INT, _CHAR>::operator+=(const power_dimension<_INT, _CHAR>& right)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR>& power_dimension<_INT, _CHAR, _SZSTR>::operator+=(const power_dimension& right)
 {
 	*static_cast<rational<_INT>*>(this) += *static_cast<const rational<_INT>*>(&right);
 	dim = right.dim;
@@ -437,37 +526,37 @@ inline power_dimension<_INT, _CHAR>& power_dimension<_INT, _CHAR>::operator+=(co
 }
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR> power_dimension<_INT, _CHAR>::operator*(const _INT& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator*(const _INT& right) const
 {
 	rational<_INT> result = *static_cast<const rational<_INT>*>(this) * right;
-	return power_dimension<_INT, _CHAR>(result, dim);
+	return power_dimension(result, dim);
 }
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR> power_dimension<_INT, _CHAR>::operator/(const _INT& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator/(const _INT& right) const
 {
 	rational<_INT> result = *static_cast<rational<_INT>*>(this) / right;
-	return power_dimension<_INT, _CHAR>(result, dim);
+	return power_dimension(result, dim);
 }
 
 
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR> operator*(const _INT &left, const power_dimension<_INT, _CHAR>& right)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR> operator*(const _INT &left, const power_dimension<_INT, _CHAR, _SZSTR>& right)
 {
 	rational<_INT> result = left * *static_cast<const rational<_INT>*>(&right);
-	return power_dimension<_INT, _CHAR>(result, right.dim);
+	return power_dimension<_INT, _CHAR, _SZSTR>(result, right.dim);
 }
 
 
-template<typename _INT, typename _CHAR>
-inline power_dimension<_INT, _CHAR> operator/(const _INT &left, const power_dimension<_INT, _CHAR>& right)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline power_dimension<_INT, _CHAR, _SZSTR> operator/(const _INT &left, const power_dimension<_INT, _CHAR, _SZSTR>& right)
 {
 	rational<_INT> result = left / *static_cast<rational<_INT>*>(&right);
-	return power_dimension<_INT, _CHAR>(result, right.dim);
+	return power_dimension<_INT, _CHAR, _SZSTR>(result, right.dim);
 }
 
 
@@ -515,128 +604,28 @@ inline power_dimension<_INT, _CHAR> operator/(const _INT &left, const power_dime
 
 
 
-
-template<typename _CHAR, typename _POWER>
-inline prefix<_CHAR, _POWER>::prefix(const _CHAR* symbol, const _CHAR* name, _POWER power)
-	: _power(power)
-{
-	_symbol = new _CHAR[strlen(symbol) + 1];
-	strcpy(_symbol, symbol);
-	if (name)
-	{
-		_name = new _CHAR[strlen(name) + 1];
-		strcpy(_name, name);
-	}
-	else
-		_name = nullptr;
-}
-
-
-template<typename _CHAR, typename _POWER>
-inline prefix<_CHAR, _POWER>::~prefix()
-{
-	delete[]_symbol;
-	if (_name)
-		delete[]_name;
-}
-
-
-template<typename _CHAR, typename _POWER>
-inline short prefix<_CHAR, _POWER>::find(const _CHAR* str) const
-{
-	short i;
-	for (i = 0; _symbol[i] && str[i] && str[i] == _symbol[i]; ++i)
-		;
-	return !_symbol[i] && str[i] ? i : -1;
-}
-
-
-template<typename _CHAR, typename _POWER>
-inline short prefix<_CHAR, _POWER>::findName(const _CHAR* str) const
-{
-	short i;
-	for (i = 0; _name[i] && str[i] && str[i] == _name[i]; ++i)
-		;
-	return !_name[i] && str[i] ? i : -1;
-}
-
-
-template<typename _CHAR, typename _POWER>
-inline double prefix<_CHAR, _POWER>::getFactor(short base) const
-{
-	return ::pow((double)base, (double)_power);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>::unit(power_dimension<_INT, _CHAR>* dim, const ndim& nDims)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>::unit(power_dimension* dim, const ndim& nDims)
 	: _dim(dim), _nDims(nDims), _capacity(nDims)
 {
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>::unit(const dimension<_CHAR>* dim)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>::unit(const dimension* dim)
 	: _nDims(1)
 {
-	_dim = new power_dimension<_INT, _CHAR>[_capacity = _nDims];
-	_dim[0].pow = _INT(1);
+	_dim = new power_dimension[_capacity = _nDims];
 	_dim[0].dim = dim;
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>::unit(const unit& u)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>::unit(const unit& u)
 {
 	if (u._dim)
 	{
-		_dim = new power_dimension<_INT, _CHAR>[_capacity = _nDims = u._nDims];
+		_dim = new power_dimension[_capacity = _nDims = u._nDims];
 		for (ndim d = 0; d < _nDims; ++d)
 			_dim[d] = u._dim[d];
 	}
@@ -648,15 +637,15 @@ inline unit<_INT, _CHAR>::unit(const unit& u)
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>::unit()
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>::unit()
 	: _dim(nullptr), _nDims(0), _capacity(0)
 {
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>::~unit()
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>::~unit()
 {
 	if (_dim)
 		delete[] _dim;
@@ -664,15 +653,15 @@ inline unit<_INT, _CHAR>::~unit()
 
 
 
-template<typename _INT, typename _CHAR>
-inline typename unit<_INT, _CHAR>::ndim unit<_INT, _CHAR>::nDims() const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline typename unit<_INT, _CHAR, _SZSTR>::ndim unit<_INT, _CHAR, _SZSTR>::nDims() const
 {
 	return _nDims;
 }
 
 
-template<typename _INT, typename _CHAR>
-inline bool unit<_INT, _CHAR>::operator==(const unit& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline bool unit<_INT, _CHAR, _SZSTR>::operator==(const unit& right) const
 {
 	bool bRet = _nDims == right._nDims;
 	for (ndim i = 0; i < _nDims && bRet; ++i)
@@ -693,16 +682,16 @@ inline bool unit<_INT, _CHAR>::operator==(const unit& right) const
 }
 
 
-template<typename _INT, typename _CHAR>
-inline bool unit<_INT, _CHAR>::operator!=(const unit& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline bool unit<_INT, _CHAR, _SZSTR>::operator!=(const unit& right) const
 {
 	return !operator==(right);
 }
 
 
 
-template<typename _INT, typename _CHAR>
-inline typename unit<_INT, _CHAR>::ndim unit<_INT, _CHAR>::calcNewDim(const unit& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline typename unit<_INT, _CHAR, _SZSTR>::ndim unit<_INT, _CHAR, _SZSTR>::calcNewDim(const unit& right) const
 {
 	ndim notFoundInRight = 0;
 	for (ndim i = 0; i < _nDims; ++i)
@@ -721,8 +710,8 @@ inline typename unit<_INT, _CHAR>::ndim unit<_INT, _CHAR>::calcNewDim(const unit
 
 
 
-template<typename _INT, typename _CHAR>
-inline void unit<_INT, _CHAR>::populateNewDim(power_dimension<_INT, _CHAR>* result, ndim nNewDim, const unit& right, const _INT& mult) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline void unit<_INT, _CHAR, _SZSTR>::populateNewDim(power_dimension* result, ndim nNewDim, const unit& right, const _INT& mult) const
 {
 	for (ndim i = 0; i < _nDims; ++i)
 	{
@@ -751,15 +740,15 @@ inline void unit<_INT, _CHAR>::populateNewDim(power_dimension<_INT, _CHAR>* resu
 }
 
 
-template<typename _INT, typename _CHAR>
-inline void unit<_INT, _CHAR>::clean()
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline void unit<_INT, _CHAR, _SZSTR>::clean()
 {
 	compressVector(this, &_nDims);
 }
 
 
-template<typename _INT, typename _CHAR>
-inline bool unit<_INT, _CHAR>::compressVector(power_dimension<_INT, _CHAR>* dim, ndim* nDim)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline bool unit<_INT, _CHAR, _SZSTR>::compressVector(power_dimension* dim, ndim* nDim)
 {
 	for (ndim i = 0; i < *nDim; ++i)
 	{
@@ -776,11 +765,11 @@ inline bool unit<_INT, _CHAR>::compressVector(power_dimension<_INT, _CHAR>* dim,
 
 
 
-template<typename _INT, typename _CHAR>
-inline void unit<_INT, _CHAR>::calc(power_dimension<_INT, _CHAR>** result, ndim* nNewDim, const unit& right, const _INT& mult) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline void unit<_INT, _CHAR, _SZSTR>::calc(power_dimension** result, ndim* nNewDim, const unit& right, const _INT& mult) const
 {
 	*nNewDim = calcNewDim(right);
-	*result = new power_dimension<_INT, _CHAR>[*nNewDim];
+	*result = new power_dimension[*nNewDim];
 	populateNewDim(*result, *nNewDim, right, mult);
 	if (compressVector(*result, nNewDim))
 	{
@@ -790,8 +779,8 @@ inline void unit<_INT, _CHAR>::calc(power_dimension<_INT, _CHAR>** result, ndim*
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>& unit<_INT, _CHAR>::operator=(const unit& right)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>& unit<_INT, _CHAR, _SZSTR>::operator=(const unit& right)
 {
 	if (this != &right)
 	{
@@ -801,7 +790,7 @@ inline unit<_INT, _CHAR>& unit<_INT, _CHAR>::operator=(const unit& right)
 			{
 				if (_dim)
 					delete[]_dim;
-				_dim = new power_dimension<_INT, _CHAR>[_capacity = _nDims = right._nDims];
+				_dim = new power_dimension[_capacity = _nDims = right._nDims];
 			}
 			else
 				_nDims = right._nDims;
@@ -813,8 +802,8 @@ inline unit<_INT, _CHAR>& unit<_INT, _CHAR>::operator=(const unit& right)
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR>& unit<_INT, _CHAR>::operator=(const dimension<_CHAR>* right)
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR>& unit<_INT, _CHAR, _SZSTR>::operator=(const dimension* right)
 {
 	if (_nDims != 1)
 	{
@@ -822,7 +811,7 @@ inline unit<_INT, _CHAR>& unit<_INT, _CHAR>::operator=(const dimension<_CHAR>* r
 		{
 			if (_dim)
 				delete[]_dim;
-			_dim = new power_dimension<_INT, _CHAR>[_capacity = _nDims = right._nDims];
+			_dim = new power_dimension[_capacity = _nDims = right._nDims];
 		}
 		else
 			_nDims = right._nDims;
@@ -833,8 +822,8 @@ inline unit<_INT, _CHAR>& unit<_INT, _CHAR>::operator=(const dimension<_CHAR>* r
 }
 
 
-template<typename _INT, typename _CHAR>
-inline void unit<_INT, _CHAR>::clear()
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline void unit<_INT, _CHAR, _SZSTR>::clear()
 {
 	if (_dim)
 	{
@@ -845,30 +834,30 @@ inline void unit<_INT, _CHAR>::clear()
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR> unit<_INT, _CHAR>::operator*(const unit& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::operator*(const unit& right) const
 {
 	ndim newDim;
-	power_dimension<_INT, _CHAR>* dim;
+	power_dimension* dim;
 	calc(&dim, &newDim, right, _INT(1));
 	return unit(dim, newDim);
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR> unit<_INT, _CHAR>::operator/(const unit& right) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::operator/(const unit& right) const
 {
 	ndim newDim;
-	power_dimension<_INT, _CHAR>* dim;
+	power_dimension* dim;
 	calc(&dim, &newDim, right, _INT(-1));
 	return unit(dim, newDim);
 }
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR> unit<_INT, _CHAR>::pow(const _INT& p) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _INT& p) const
 {
-	power_dimension<_INT, _CHAR>* dim = p ? new power_dimension<_INT, _CHAR>[_nDims] : nullptr;
+	power_dimension* dim = p ? new power_dimension[_nDims] : nullptr;
 	for (ndim i = 0; p && i < _nDims; ++i)
 	{
 		dim[i].dim = _dim[i].dim;
@@ -879,10 +868,10 @@ inline unit<_INT, _CHAR> unit<_INT, _CHAR>::pow(const _INT& p) const
 
 
 
-template<typename _INT, typename _CHAR>
-inline unit<_INT, _CHAR> unit<_INT, _CHAR>::root(const _INT& p) const
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _INT& p) const
 {
-	power_dimension<_INT, _CHAR>* dim = p ? new power_dimension<_INT, _CHAR>[_nDims] : nullptr;
+	power_dimension* dim = p ? new power_dimension[_nDims] : nullptr;
 	for (ndim i = 0; p && i < _nDims; ++i)
 	{
 		dim[i].dim = _dim[i].dim;
@@ -942,28 +931,28 @@ inline unit<_INT, _CHAR> unit<_INT, _CHAR>::root(const _INT& p) const
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline magnitude<_TYPE, _INT, _CHAR>::magnitude()
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude()
 {
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline magnitude<_TYPE, _INT, _CHAR>::magnitude(const _TYPE& src)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _TYPE& src)
 	: _number(src)
 {
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline magnitude<_TYPE, _INT, _CHAR>::magnitude(const _MyT* src)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _MyT* src)
 	: _number(src->_number), _unit(src->_unit)
 {
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline magnitude<_TYPE, _INT, _CHAR>::magnitude(const _CHAR* str, unsigned short len)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _CHAR* str, const _SZSTR& len)
 {
 	_number = 0;
 	unsigned short ini = 0;
@@ -1005,26 +994,32 @@ inline magnitude<_TYPE, _INT, _CHAR>::magnitude(const _CHAR* str, unsigned short
 	}
 }
 
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const dimension * dim)
+	: _number(1), _unit(dim)
+{
+}
+
 
 
 
 // Operations:
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::positive(const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::positive(const _MyT& right)
 {
 	_number = +right._number;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::negative(const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::negative(const _MyT& right)
 {
 	_number = -right._number;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::factorial(const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::factorial(const _MyT& right)
 {
 	long res = 1;
 	for (int i = 2; i <= right._number; ++i)
@@ -1033,32 +1028,32 @@ inline void magnitude<_TYPE, _INT, _CHAR>::factorial(const _MyT& right)
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::multiplication(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::multiplication(const _MyT& left, const _MyT& right)
 {
 	_number = left._number * right._number;
 	_unit = left._unit * right._unit;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::division(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::division(const _MyT& left, const _MyT& right)
 {
 	_number = left._number / right._number;
 	_unit = left._unit / right._unit;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::modulo(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, typename _SZSTR>::modulo(const _MyT& left, const _MyT& right)
 {
 	_number = (long int)left._number % (long int)right._number;
 	_unit = left._unit;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::addition(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::addition(const _MyT& left, const _MyT& right)
 {
 	if (left._unit != right._unit)
 		throw "incompatible units";
@@ -1066,8 +1061,8 @@ inline void magnitude<_TYPE, _INT, _CHAR>::addition(const _MyT& left, const _MyT
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::substraction(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::substraction(const _MyT& left, const _MyT& right)
 {
 	if (left._unit != right._unit)
 		throw "incompatible units";
@@ -1075,24 +1070,24 @@ inline void magnitude<_TYPE, _INT, _CHAR>::substraction(const _MyT& left, const 
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::exponentiation(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::exponentiation(const _MyT& left, const _MyT& right)
 {
 	_number = pow(left._number, right._number);
 	_unit = left._unit.pow(right._number);
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::root(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::root(const _MyT& left, const _MyT& right)
 {
 	_number = pow(left._number, 1 / right._number);
 	_unit = left.root(right._number);
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::assignation(const _MyT& left, const _MyT& right)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::assignation(const _MyT& left, const _MyT& right)
 {
 	_number = right._number;
 	_unit = right._unit;
@@ -1101,45 +1096,45 @@ inline void magnitude<_TYPE, _INT, _CHAR>::assignation(const _MyT& left, const _
 
 
 // Functions:
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::abs(const _MyT& arg)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::abs(const _MyT& arg)
 {
 	_number = arg._number < 0 ? -arg._number : arg._number;
 	_unit = arg._unit;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::sgn(const _MyT& arg)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sgn(const _MyT& arg)
 {
 	_number = arg._number < 0 ? -1 : 1;
 	_unit = arg._unit;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::sin(const _MyT& arg)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sin(const _MyT& arg)
 {
 	_number = ::sin(arg._number);
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::tg(const _MyT & arg)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::tg(const _MyT & arg)
 {
 	_number = ::tan(arg._number);
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::atg(const _MyT & arg)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg(const _MyT & arg)
 {
 	_number = ::atan(arg._number);
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline void magnitude<_TYPE, _INT, _CHAR>::atg2(const _MyT& opposite, const _MyT& adjacent)
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg2(const _MyT& opposite, const _MyT& adjacent)
 {
 	_number = ::atan2(opposite._number, adjacent._number);
 }
@@ -1147,84 +1142,84 @@ inline void magnitude<_TYPE, _INT, _CHAR>::atg2(const _MyT& opposite, const _MyT
 
 
 // Check:
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::zero() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::zero() const
 {
 	return _number == _TYPE(0);
 }
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::positive() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::positive() const
 {
 	return 0 < _number;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::negative() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::negative() const
 {
 	return _number < 0;
 }
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::integer() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::integer() const
 {
 	return ceil(_number) == floor(_number);
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::dimensionless() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::dimensionless() const
 {
 	return !_unit.nDims();
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::scalar() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::scalar() const
 {
 	return true;
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::real() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::real() const
 {
 	return true;
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::imaginary() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::imaginary() const
 {
 	return false;
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::complex() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::complex() const
 {
 	return false;
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::vector() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::vector() const
 {
 	return false;
 }
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
-inline bool magnitude<_TYPE, _INT, _CHAR>::matrix() const
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::matrix() const
 {
 	return false;
 }

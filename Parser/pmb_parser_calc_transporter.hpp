@@ -210,6 +210,12 @@ inline bool transporter<_VALUE, _NREF>::operator!() const
 	return isNull();
 }
 
+template<class _VALUE, typename _NREF>
+inline bool transporter<_VALUE, _NREF>::variable() const
+{
+	return _prv && _prv->variable;
+}
+
 
 template<class _VALUE, typename _NREF>
 _VALUE* transporter<_VALUE, _NREF>::operator*()
@@ -399,15 +405,27 @@ inline typename transporter_args<_TVALUE, _NARGS>::transporter&
 
 
 template<class _TVALUE, typename _NARGS>
-void transporter_args<_TVALUE, _NARGS>::moveToLeft()
+inline void transporter_args<_TVALUE, _NARGS>::clear_all_variables()
 {
+	for (node* pN = _root; pN; pN = pN->pnext)
+	{
+		if(pN->t.variable())
+			pN->t.clear();
+	}
+}
+
+template<class _TVALUE, typename _NARGS>
+inline void transporter_args<_TVALUE, _NARGS>::moveToLeft()
+{
+	clear_all_variables();
 	_root->t = _result.release();
 }
 
 
 template<class _TVALUE, typename _NARGS>
-void transporter_args<_TVALUE, _NARGS>::moveToRight()
+inline void transporter_args<_TVALUE, _NARGS>::moveToRight()
 {
+	clear_all_variables();
 	_last->t = _result.release();
 }
 

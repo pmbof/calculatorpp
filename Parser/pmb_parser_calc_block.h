@@ -22,7 +22,7 @@ namespace calc
 
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
 class block
 {
 public:
@@ -38,9 +38,10 @@ public:
 
 	typedef typename iterator::transporter_args transporter_args;
 	typedef typename iterator::transporter transporter;
-	typedef util::map<std::string, transporter, istring> map_args;
 
-	typedef symbol<transporter, istring, map_args> symbol;
+	typedef typename _SYMBOL symbol;
+	typedef typename symbol::_tpMap map_args;
+
 	typedef typename iterator::nargs nargs;
 	typedef std::map<nargs, iterator*> map_nargs_iterator;
 	typedef util::map<std::string, map_nargs_iterator, istring> mapfnc;

@@ -15,10 +15,12 @@
 
 #include "pmb_calculate_number.h"
 #include "pmb_calculate_magnitude.h"
+#include "pmb_calculate_symbol.h"
+
 
 //typedef pmb::parser::transporter<pmb::parser::number<double> > transporter;
 
-typedef pmb::calculate::units::magnitude<double, unsigned short, char> number_double;
+typedef pmb::calculate::units::magnitude<double, unsigned short, char, unsigned short> number_double;
 //typedef pmb::calculate::number<double> number_double;
 typedef pmb::parser::calc::transporter<number_double, unsigned short> transporter;
 typedef pmb::parser::calc::transporter_args<transporter, unsigned char> transporter_args;
@@ -37,9 +39,10 @@ typedef pmb::parser::calc::iterator<transporter_args, tree> citerator;
 typedef pmb::parser::operation<transporter_args> operation;
 typedef pmb::parser::operation_table<operation, tnode> operation_table;
 
-typedef pmb::parser::calc::block<citerator, build_in_function_table> block;
-typedef block::symbol symbol;
+typedef pmb::calculate::units::symbol<char, unsigned char, transporter, item::string> symbol;
+typedef pmb::parser::calc::block<citerator, build_in_function_table, symbol> block;
 
+typedef symbol::prefix_base prefix_base;
 
 
 class CParserDoc : public CDocument
@@ -119,7 +122,6 @@ public:
 
 protected:
 	symbol m_symbols;
-	pmb::parser::debug::algorithm m_parser;
 	pmb::calculator<block, operation_table> m_calculator;
 	block _block;
 

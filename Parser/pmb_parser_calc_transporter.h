@@ -38,6 +38,7 @@ public:
 	bool isNull() const;
 	bool isNotNull() const;
 	bool operator !() const;
+	bool variable() const;
 	
 	ptr_value operator *();
 	ptr_value operator *() const;
@@ -110,6 +111,7 @@ public:
 	void clean();
 protected:
 	void _init();
+	void clear_all_variables();
 
 private:
 	struct node

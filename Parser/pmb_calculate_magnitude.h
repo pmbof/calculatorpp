@@ -12,11 +12,17 @@ namespace units
 
 
 
-template<typename _CHAR>
+template<typename _CHAR, typename _SIZE>
 class dimension
 {
 public:
+	typedef typename _CHAR tpChar;
+	typedef typename _SIZE tpSize;
+
+public:
 	dimension();
+	dimension(const _CHAR* symbol, const _CHAR* name = nullptr);
+	dimension(const _CHAR* symbol, const _SIZE& slen, const _CHAR* name = nullptr, const _SIZE& nlen = 0);
 //	dimension(const stringcmp& symbol, const char* name);
 	~dimension();
 
@@ -24,16 +30,28 @@ public:
 	bool operator==(const _CHAR* dimension) const;
 	bool operator!=(const _CHAR* dimension) const;
 
-	void set(const _CHAR* symbol, unsigned short len, const _CHAR* name = nullptr);
+	bool operator<(const dimension& right) const;
+	bool less(const _CHAR* right, const _SIZE& len);
+	bool greater(const _CHAR* right, const _SIZE& len);
 
-	const _CHAR* getSymbol() const;
-	const _CHAR* getName() const;
+	bool less_name(const dimension& right) const;
+	bool less_name(const _CHAR* right, const _SIZE& len);
+	bool greater_name(const _CHAR* right, const _SIZE& len);
+
+	void set(const _CHAR* symbol, const _SIZE& slen, const _CHAR* name = nullptr, const _SIZE& nlen = 0);
+
+	const _CHAR* symbol() const;
+	const _CHAR* name() const;
+	const _SIZE& symbol_size() const;
+	const _SIZE& name_size() const;
 
 private:
 	void clear();
 
 private:
+	_SIZE _slen;
 	_CHAR* _symbol;
+	_SIZE _nlen;
 	_CHAR* _name;
 };
 
@@ -101,73 +119,28 @@ struct rational
 
 
 
-template<typename _INT, typename _CHAR>
+template<typename _INT, typename _CHAR, typename _SZSTR>
 struct power_dimension: rational<_INT>
 {
+	typedef typename _SZSTR tpSzStr;
+	typedef typename dimension<_CHAR, _SZSTR> dimension;
+
 	power_dimension();
-	power_dimension(const rational<_INT>& q, const dimension<_CHAR>* pDim);
+	power_dimension(const rational<_INT>& q, const dimension* pDim);
 
-	power_dimension<_INT, _CHAR>& operator =(const power_dimension<_INT, _CHAR>& right);
-	power_dimension<_INT, _CHAR>& operator +=(const power_dimension<_INT, _CHAR>& right);
+	power_dimension& operator =(const power_dimension& right);
+	power_dimension& operator +=(const power_dimension& right);
 
-	power_dimension<_INT, _CHAR> operator*(const _INT& right) const;
-	power_dimension<_INT, _CHAR> operator/(const _INT& right) const;
+	power_dimension operator*(const _INT& right) const;
+	power_dimension operator/(const _INT& right) const;
 
-	template<typename _INT, typename _CHAR>
-	friend power_dimension<_INT, _CHAR> operator*(const _INT& left, const power_dimension<_INT, _CHAR>& right);
-	template<typename _INT, typename _CHAR>
-	friend power_dimension<_INT, _CHAR> operator/(const _INT& left, const power_dimension<_INT, _CHAR>& right);
-
-
-	const dimension<_CHAR>* dim;
-};
+	template<typename _INT, typename _CHAR, typename _SZSTR>
+	friend power_dimension<_INT, _CHAR, _SZSTR> operator*(const _INT& left, const power_dimension<_INT, _CHAR, _SZSTR>& right);
+	template<typename _INT, typename _CHAR, typename _SZSTR>
+	friend power_dimension<_INT, _CHAR, _SZSTR> operator/(const _INT& left, const power_dimension<_INT, _CHAR, _SZSTR>& right);
 
 
-
-
-
-
-
-
-
-
-
-
-template<typename _CHAR, typename _POWER>
-class prefix
-{
-public:
-	prefix(const _CHAR* symbol, const _CHAR* name, _POWER power);
-	~prefix();
-
-	short find(const _CHAR* u) const;
-	short findName(const _CHAR* u) const;
-
-	double getFactor(short base) const;
-
-private:
-	_CHAR* _symbol;
-	_CHAR* _name;
-	_POWER _power;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-template<typename _CHAR, typename _POWER, typename _BASE>
-struct prefix_base: std::list<prefix<_CHAR, _POWER>*>
-{
-	_BASE base;
+	const dimension* dim;
 };
 
 
@@ -211,13 +184,21 @@ struct prefix_base: std::list<prefix<_CHAR, _POWER>*>
 
 
 
-template<typename _INT, typename _CHAR>
+
+
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
 struct unit
 {
+	typedef typename _INT _tpInt;
+	typedef typename _CHAR _tpChar;
+	typedef power_dimension<_INT, _CHAR, _SZSTR> power_dimension;
+	typedef typename power_dimension::dimension dimension;
 	typedef unsigned char ndim;
 
-	explicit unit(power_dimension<_INT, _CHAR>* dim, const ndim& nDims);
-	explicit unit(const dimension<_CHAR>* dim);
+	explicit unit(power_dimension* dim, const ndim& nDims);
+	explicit unit(const dimension* dim);
 	unit(const unit& u);
 	unit();
 	~unit();
@@ -227,7 +208,7 @@ struct unit
 	bool operator!=(const unit& right) const;
 
 	unit& operator=(const unit& right);
-	unit& operator=(const dimension<_CHAR>* dim);
+	unit& operator=(const dimension* dim);
 
 	unit operator*(const unit& right) const;
 	unit operator/(const unit& right) const;
@@ -242,14 +223,14 @@ struct unit
 
 private:
 	ndim calcNewDim(const unit& right) const;
-	void populateNewDim(power_dimension<_INT, _CHAR>* result, ndim nNewDim, const unit& right, const _INT& mult) const;
-	void calc(power_dimension<_INT, _CHAR>** result, ndim* nNewDim, const unit& right, const _INT& mult) const;
-	static bool compressVector(power_dimension<_INT, _CHAR>* dim, ndim* nDim);
+	void populateNewDim(power_dimension* result, ndim nNewDim, const unit& right, const _INT& mult) const;
+	void calc(power_dimension** result, ndim* nNewDim, const unit& right, const _INT& mult) const;
+	static bool compressVector(power_dimension* dim, ndim* nDim);
 
 private:
 	ndim _capacity;
 	ndim _nDims;
-	power_dimension<_INT, _CHAR>* _dim;
+	power_dimension* _dim;
 };
 
 
@@ -274,20 +255,28 @@ private:
 
 
 
-template<class _TYPE, typename _INT, typename _CHAR>
+
+
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 struct magnitude
 {
 public:
 	typename typedef _TYPE _TypeValue;
 	typename typedef _INT _TypeInt;
-	typedef magnitude<_TYPE, _INT, _CHAR> _MyT;
+	typedef magnitude<_TYPE, _INT, _CHAR, _SZSTR> _MyT;
+	typedef typename unit<_INT, _CHAR, _SZSTR> unit;
+	typedef typename unit::dimension dimension;
 
 public:
 	// Constructors:
 	magnitude();
 	explicit magnitude(const _TYPE& src);
 	explicit magnitude(const _MyT* src);
-	explicit magnitude(const _CHAR* str, unsigned short len);
+	explicit magnitude(const _CHAR* str, const _SZSTR& len);
+	explicit magnitude(const dimension* dim);
 
 	// Operators:
 	void positive(const _MyT& right);
@@ -334,8 +323,9 @@ public:
 	bool matrix() const;
 
 	_TYPE _number;
-	unit<_INT, _CHAR> _unit;
+	unit _unit;
 };
+
 
 
 

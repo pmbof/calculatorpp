@@ -31,11 +31,24 @@ struct less
 
 
 
-template<class _Kty, typename _Ty, class _KFty>
-class map: public std::map<_Kty, _Ty, less<_Kty, _KFty> >
+
+
+#if _ITERATOR_DEBUG_LEVEL < 2
+#define _PMB_DEBUG_LT_PRED(pred, x, y)	std::pred(x, y)
+
+#else /* _ITERATOR_DEBUG_LEVEL < 2 */
+#define _PMB_DEBUG_LT_PRED(pred, x, y) std::_Debug_lt_pred(pred, x, y)
+#endif
+
+
+
+
+template<class _Kty, typename _Ty, class _KFty, class _less = less<_Kty, _KFty>>
+class map: public std::map<_Kty, _Ty, _less>
 {
 public:
-	typedef std::map<_Kty, _Ty, less<_Kty, _KFty> > _Mybase;
+	typedef typename _Kty _tpKey;
+	typedef std::map<_Kty, _Ty, _less> _Mybase;
 	typedef typename _Mybase::const_iterator const_iterator;
 	typedef typename _Mybase::iterator iterator;
 	typedef _Mybase::_Nodeptr _Nodeptr;
@@ -49,7 +62,7 @@ public:
 	{
 		// find an element in nonmutable sequence that matches _Keyval
 		const_iterator _Where = lower_bound(kfind);
-		return _Where == end() || _DEBUG_LT_PRED(this->_Getcomp(), kfind, this->_Key(_Where._Ptr)) ? end() : _Where;
+		return _Where == end() || _PMB_DEBUG_LT_PRED(this->_Getcomp(), kfind, this->_Key(_Where._Ptr)) ? end() : _Where;
 	}
 	
 	iterator find(const _Kty& key)
@@ -60,7 +73,7 @@ public:
 	{
 		// find an element in nonmutable sequence that matches _Keyval
 		iterator _Where = lower_bound(kfind);
-		return _Where == end() || _DEBUG_LT_PRED(this->_Getcomp(), kfind, this->_Key(_Where._Ptr)) ? end() : _Where;
+		return _Where == end() || _PMB_DEBUG_LT_PRED(this->_Getcomp(), kfind, this->_Key(_Where._Ptr)) ? end() : _Where;
 	}
 
 

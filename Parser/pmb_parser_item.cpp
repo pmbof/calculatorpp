@@ -143,6 +143,19 @@ item<_CHAR, _SIZE>::string::operator bool() const
 	return _str && _size;
 }
 
+template<typename _CHAR, typename _SIZE>
+inline typename item<_CHAR, _SIZE>::_CPTRCHAR item<_CHAR, _SIZE>::string::str() const
+{
+	return _str;
+}
+
+template<typename _CHAR, typename _SIZE>
+inline typename item<_CHAR, _SIZE>::SIZETP item<_CHAR, _SIZE>::string::size() const
+{
+	return _size;
+}
+
+
 
 template <typename _CHAR, typename _SIZE>
 bool operator <(const std::string& left, typename const item<_CHAR, _SIZE>::string& right)

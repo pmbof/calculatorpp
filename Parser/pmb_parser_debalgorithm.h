@@ -5,6 +5,7 @@
 #include "pmb_parser_calc_transporter.hpp"
 #include "pmb_calculate_number.h"
 #include "pmb_calculate_magnitude.h"
+#include "pmb_calculate_symbol.h"
 
 
 namespace pmb
@@ -316,7 +317,7 @@ protected:
 };
 
 
-typedef pmb::calculate::units::magnitude<double, unsigned short, char> number_double;
+typedef pmb::calculate::units::magnitude<double, unsigned short, char, unsigned short> number_double;
 //typedef calculate::number<double> number_double;
 typedef item<char, typename iterator::idx> citem;
 typedef tree<citem, ndtype> debug_tree;
@@ -325,7 +326,9 @@ typedef calc::transporter<number_double, unsigned short> transporter;
 typedef calc::transporter_args<transporter, unsigned char> transporter_args;
 typedef calc::build_in_function_table<calc::build_in_function<transporter_args, char, unsigned char>, unsigned short> build_in_function_table;
 typedef calc::iterator<transporter_args, debug_tree> citerator;
-typedef calc::block<citerator, build_in_function_table> block;
+//typedef pmb::parser::symbol<transporter, citem::string> symbol;
+typedef pmb::calculate::units::symbol<char, unsigned char, transporter, citem::string> symbol;
+typedef calc::block<citerator, build_in_function_table, symbol> block;
 
 typedef parser::operation<transporter_args> operation;
 typedef parser::operation_table<operation, tnode> operation_table;

@@ -23,6 +23,10 @@ public:
 	class string
 	{
 	public:
+		typedef typename _CHAR tpChar;
+		typedef typename SIZETP tpSize;
+
+	public:
 		string();
 		string(_CPTRCHAR str, SIZETP size);
 
@@ -40,6 +44,8 @@ public:
 		bool operator!() const;
 		operator bool() const;
 
+		_CPTRCHAR str() const;
+		SIZETP size() const;
 	private:
 		_CPTRCHAR _str;
 		SIZETP _size;

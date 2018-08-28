@@ -1,4 +1,4 @@
-
+ï»¿
 // ParserDoc.cpp : implementation of the CParserDoc class
 //
 
@@ -34,12 +34,12 @@ const operation CParserDoc::_operation[] = {
 	operation("-", 250, false, false, "negative", "negative", &CParserDoc::opr_negative),
 	operation("!", 250, true, false, "factorial", "factorial", &CParserDoc::opr_factorial),
 	operation("^", 200, true, true, "power", "exponentiation", &CParserDoc::opr_exponentiation),
-	operation("¨", 200, true, true, "root", "root", &CParserDoc::opr_root),
+	operation("Â¨", 200, true, true, "root", "root", &CParserDoc::opr_root),
 	operation("*", 110, true, true, "product", "multiplication", &CParserDoc::opr_multiplication),
 	operation("/", 110, true, true, "cocient", "division", &CParserDoc::opr_division),
 	operation("", 100, true, true, "product implicit", "multiplication implicit or call function", &CParserDoc::opr_multiplication, true),
 	operation(" ", 100, true, true, "product space", "multiplication space or call function", &CParserDoc::opr_multiplication, true),
-	operation(" ", 100, false, true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication, true),
+	operation("Â ", 100, false, true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication, true),
 	operation("\\", 100, true, true, "modulo", "congruence relation", &CParserDoc::opr_modulo),
 	operation("-", 50, true, true, "substract", "substraction", &CParserDoc::opr_subtraction),
 	operation("+", 50, true, true, "add", "addition", &CParserDoc::opr_addition),
@@ -93,7 +93,6 @@ CParserDoc::CParserDoc()
 	: _operation_table(_operation, sizeof(_operation) / sizeof(*_operation)),
 		_build_in_fnc_table(_build_in_function, sizeof(_build_in_function) / sizeof(*_build_in_function)),
 		_block(&_build_in_fnc_table, &m_symbols),
-		m_parser(&_operation_table, &_block),
 		m_calculator(&_operation_table, &_block)
 {
 }
@@ -140,7 +139,7 @@ int determinante_recursiva(int orden, const int* matriz, int f, int* cols)
 				continue;
 			cols[f] = c; // columna anulada
 			// si la suma de los indices es par, se suma, y si es impar se resta: ((f + c) % 2 ? -1 : 1) 
-			// acá hace la recursividad al llamrse a si misma:
+			// acÃ¡ hace la recursividad al llamrse a si misma:
 			for (k = 0; k < f; ++k)
 				*pmb::log::instance() << "\t";
 			*pmb::log::instance() << (((f + col) % 2 ? "-" : "")) << f + 1 << c + 1 << " * |";
@@ -153,8 +152,8 @@ int determinante_recursiva(int orden, const int* matriz, int f, int* cols)
 	else if (orden - f == 2) // matriz de orden 2:
 	{
 		// matriz[fila * orden + columna] es el elemento (fila, columna) de la matriz, con los indices comenzando desde 0
-		// fila es la fila que estámos pivoteando, tenemos que calcular a partir de fila + 1
-		// col es la columna que estámos pivoteando (anulando)
+		// fila es la fila que estÃ¡mos pivoteando, tenemos que calcular a partir de fila + 1
+		// col es la columna que estÃ¡mos pivoteando (anulando)
 		// entonce:
 		// |11 12|
 		// |21 22|
@@ -242,11 +241,149 @@ BOOL CParserDoc::OnNewDocument()
 		return FALSE;
 	}
 
-	m_parser.initialize();
-	m_calculator.initialize();
+	m_symbols.add_dimension("L", "length");
+	m_symbols.add_dimension("T", "time");
+	m_symbols.add_dimension("M", "mass");
+	m_symbols.add_dimension("I", "electric current");
+	m_symbols.add_dimension("Theta", "temperature");
+	m_symbols.add_dimension("N", "amount of substance");
+	m_symbols.add_dimension("J", "luminous intensity");
+	m_symbols.add_dimension("Crr", "currency");
+	m_symbols.add_dimension("Mem", "memory");
 
-	m_iterators = m_parser.getIterators();
-	m_iterator = m_parser.getIterator();
+	prefix_base* prefix = new prefix_base(10);
+	prefix->insert("Y",   24, "yotta");
+	prefix->insert("Z",   21, "zetta");
+	prefix->insert("E",   18, "exa");
+	prefix->insert("P",   15, "peta");
+	prefix->insert("T",   12, "tera");
+	prefix->insert("G",    9, "giga");
+	prefix->insert("M",    6, "mega");
+	prefix->insert("k",    3, "kilo");
+	prefix->insert("h",    2, "hecto");
+	prefix->insert("da",   1, "deka");
+	prefix->insert("d",   -1, "deci");
+	prefix->insert("c",   -2, "centi");
+	prefix->insert("m",   -3, "mili");
+	prefix->insert("mhu", -6, "micro");
+	prefix->insert("n",   -9, "nano");
+	prefix->insert("p",  -12, "pico");
+	prefix->insert("f",  -15, "femto");
+	prefix->insert("a",  -18, "atto");
+	prefix->insert("z",  -21, "zepto");
+	prefix->insert("y",  -24, "yocto");
+	m_symbols.add_prefix("decimal", prefix);
+
+	prefix = new prefix_base(2);
+	prefix->insert("E", 60, "exa");
+	prefix->insert("P", 50, "peta");
+	prefix->insert("T", 40, "tera");
+	prefix->insert("G", 30, "giga");
+	prefix->insert("M", 20, "mega");
+	prefix->insert("k", 10, "kilo");
+	m_symbols.add_prefix("memory", prefix);
+
+	m_symbols.add_system("No");
+	// adding Internation System of Units (SI):
+	m_symbols.add_system("SI", "decimal");
+	// adding Imperial units (United States customary system):
+	m_symbols.add_system("USCS"); // no prefix support
+	// adding Memory system units:
+	m_symbols.add_system("Memory", "memory");
+
+	// Initialized calculator:
+	m_calculator.initialize();
+	// set default system of units:
+	m_symbols.set_system("SI");
+ 
+	try
+	{
+		// meter
+		m_calculator.parser(m_expr = "m = 1L");
+		// second
+		m_calculator.parser(m_expr = "s = 1T");
+		// gram
+		m_calculator.parser(m_expr = "g = 1M");
+		// ampere
+		m_calculator.parser(m_expr = "A = 1I");
+		// kelvin
+		m_calculator.parser(m_expr = "K = 1Theta");
+		// mole
+		m_calculator.parser(m_expr = "mol = 1N");
+		// candela
+		m_calculator.parser(m_expr = "cd = 1J");
+
+
+		m_symbols.set_system("No");
+		// rad   = radian = 1            plane angle
+		m_calculator.parser(m_expr = "rad = 1");
+		// sr    = steradian = 1         solid angle
+		m_calculator.parser(m_expr = "sr = 1");
+		// min   = minute = 60s
+		m_calculator.parser(m_expr = "min = 60s");
+		// h     = hour = 60min
+		m_calculator.parser(m_expr = "h = 60min");
+		// d     = day = 24h
+		m_calculator.parser(m_expr = "d = 24h");
+		// degree = pi / 180 rad
+		m_calculator.parser(m_expr = "degree = 3.141592/180 rad");
+		// L     = litre = 1dm^3
+		m_calculator.parser(m_expr = "L = 1dm^3");
+		// t     = ton = 10^3 kg
+		m_calculator.parser(m_expr = "t = 10^3kg");
+		// Np    = neper = 1
+		m_calculator.parser(m_expr = "Np = 1");
+
+
+		m_symbols.set_system("SI");
+		// Hz    = hertz = 1/s           frequency
+		m_calculator.parser(m_expr = "Hz = 1/s");
+		// N     = newton = kg m / s^2   force
+		m_calculator.parser(m_expr = "N = kg m/s^2");
+		// Pa    = pascal = N/m^2        pressure, stress
+		m_calculator.parser(m_expr = "Pa = N/m^2");
+		// J     = joule = N m           energy, work, quantity of heat
+		m_calculator.parser(m_expr = "J = N m");
+		// W     = watt = J/s            power, radiant flux
+		m_calculator.parser(m_expr = "W = J/s");
+		// C     = coulomb = A s         electric charge, quantity of electricity
+		m_calculator.parser(m_expr = "C = A s");
+		// V     = volt = W / A          electric potential difference, electromotive force
+		m_calculator.parser(m_expr = "V = W/A");
+		// F     = farad = C / V         capacitance
+		m_calculator.parser(m_expr = "F = C/V");
+		// Omega = ohm = V / A           electric resistance
+		m_calculator.parser(m_expr = "ohm = V/A");
+		// S     = siemens = 1 / ohm     electric conductance
+		m_calculator.parser(m_expr = "S = 1/ohm");
+		// Wb    = weber = V s           magnetic flux
+		m_calculator.parser(m_expr = "Wb = V s");
+		// T     = tesla = Wb / m^2      magnetic flux density
+		m_calculator.parser(m_expr = "T = Wb/m^2");
+		// H     = henry = Wb / A        inductance
+		m_calculator.parser(m_expr = "H = W/A");
+		// Â°C    = ???                   Celsius temperature
+		// lm    = lumen = cd sr         luminous flux
+		m_calculator.parser(m_expr = "lm = cd sr");
+		// lx    = lux = lm / m^2        illuminance
+		m_calculator.parser(m_expr = "lx = lm/m^2");
+		// Bq    = becquerel = 1 / s     activity (of a radionuclide)
+		m_calculator.parser(m_expr = "Bq = 1/s");
+		// Gy    = gray = J / kg         absorbed dose, specific energy (imparted), kerma
+		m_calculator.parser(m_expr = "Gy = J/kg");
+		// Sv    = sievert = J / kg      dose equivalent
+		m_calculator.parser(m_expr = "Sv = J/kg");
+		// kat   = katal = mol / s       catalytic activity
+		m_calculator.parser(m_expr = "kat = mol/s");
+	}
+	catch (pmb::parser::exception<item>& ex)
+	{
+		log->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str(), m_expr);
+		m_error = ex;
+		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
+		return true;
+	}
+
 	m_countIterators = 1;
 
 	m_expr = "a (sin(b + 3, zl), 4 ^ 7 * z^i * 2^3 + 1*2 + 3 + 4 +5, beta(c-3)alpha,  (8*(9*(h + 5))^(j-k)) )(2c) = - a*b+c";
@@ -332,7 +469,6 @@ BOOL CParserDoc::OnNewDocument()
 	}
 	m_symbols.selectSearch("Variables");
 
-	m_parser.parser(m_expr);
 
 	GetSystemTime(&m_time_ini);
 //	m_calculator.parser(m_expr);
@@ -367,12 +503,12 @@ BOOL CParserDoc::OnNewDocument()
 
 bool CParserDoc::nextStep()
 {
-	return m_parser.nextStep();
+	return false;// m_parser.nextStep();
 }
 
 const tree* CParserDoc::getTree() const
 {
-	return m_parser.getTree();
+	return false; // m_parser.getTree();
 }
 
 const tnode* CParserDoc::getNodeRoot() const
@@ -382,12 +518,12 @@ const tnode* CParserDoc::getNodeRoot() const
 
 const tnode* CParserDoc::getNewNode() const
 {
-	return m_parser.getNewNode();
+	return false; // m_parser.getNewNode();
 }
 
 const tnode* CParserDoc::getNewNodeUnknow() const
 {
-	return m_parser.getNewNodeUnknow();
+	return false; // m_parser.getNewNodeUnknow();
 }
 
 

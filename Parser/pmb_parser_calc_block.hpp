@@ -27,23 +27,23 @@ namespace calc
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::stack::stack(iterator* list)
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::stack(iterator* list)
 	: _it_calc(list), _delete(false), _expr(nullptr)
 {
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::stack::stack(tptree* tree)
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::stack(tptree* tree)
 	: _delete(true)
 {
 	_it_calc = new iterator(tree);
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::stack::~stack()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::~stack()
 {
 	if (_it_calc && _delete)
 		delete _it_calc;
@@ -51,8 +51,8 @@ inline block<_CITERATOR, _BIN_FNCTABLE>::stack::~stack()
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline void block<_CITERATOR, _BIN_FNCTABLE>::stack::begin(_CPTRCHAR expr)
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::begin(_CPTRCHAR expr)
 {
 	_expr = expr;
 	if (_it_calc->begin())
@@ -121,28 +121,28 @@ inline void block<_CITERATOR, _BIN_FNCTABLE>::stack::begin(_CPTRCHAR expr)
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline bool block<_CITERATOR, _BIN_FNCTABLE>::stack::function_def() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::function_def() const
 {
 	return _fncName;
 }
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline bool block<_CITERATOR, _BIN_FNCTABLE>::stack::function_call() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::function_call() const
 {
 	return _margs.empty() && !_vargs.empty();
 }
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline bool block<_CITERATOR, _BIN_FNCTABLE>::stack::in_function_breaknode() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::in_function_breaknode() const
 {
 	return _fncName && _it_calc->node() == _it_calc->function();
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator* 
-	block<_CITERATOR, _BIN_FNCTABLE>::stack::release()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::iterator*
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::release()
 {
 	iterator* vret = _it_calc;
 	if (_it_calc)
@@ -171,15 +171,15 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator*
 
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::bnode::bnode(block* root, symbol* variables)
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::bnode::bnode(block* root, symbol* variables)
 	: _root(root), _parent(root->_ndActual), _child(nullptr), _next(nullptr), _variables(variables), _internal(false)
 {
 }
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::bnode::bnode(bnode* parent)
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::bnode::bnode(bnode* parent)
 	: _root(parent->_root), _parent(parent), _child(nullptr), _next(nullptr), _internal(true)
 {
 	_variables = new symbol;
@@ -187,8 +187,8 @@ inline block<_CITERATOR, _BIN_FNCTABLE>::bnode::bnode(bnode* parent)
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::bnode::~bnode()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::bnode::~bnode()
 {
 	if (_internal && _variables)
 		delete _variables;
@@ -240,16 +240,16 @@ inline block<_CITERATOR, _BIN_FNCTABLE>::block(const _BIN_FNCTABLE* bin_fnc_tabl
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::block(const _BIN_FNCTABLE* bin_fnc_table, symbol* variables)
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::block(const _BIN_FNCTABLE* bin_fnc_table, symbol* variables)
 	: _fncTable(bin_fnc_table), _ndActual(nullptr), _lastResult(nullptr)
 {
 	_root = new bnode(this, variables);
 }
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::~block()
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::~block()
 {
 	if (_lastResult)
 		delete _lastResult;
@@ -269,16 +269,16 @@ inline block<_CITERATOR, _BIN_FNCTABLE>::~block()
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline void	block<_CITERATOR, _BIN_FNCTABLE>::init(tptree* tree)
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline void	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::init(tptree* tree)
 {
 	_ndActual = _root;
 	_ndActual->_stack.push_back(new stack(tree));
 }
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator*
-	block<_CITERATOR, _BIN_FNCTABLE>::begin(_CPTRCHAR expr)
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::iterator*
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::begin(_CPTRCHAR expr)
 {
 	stack* stck_actual = _ndActual->_stack.back();
 	stck_actual->begin(expr);
@@ -286,8 +286,9 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator*
 }
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator* block<_CITERATOR, _BIN_FNCTABLE>::call_function(iterator* function, transporter_args& args)
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::iterator*
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::call_function(iterator* function, transporter_args& args)
 {
 	stack* fncstack = new stack(function);
 	_ndActual->_stack.push_back(fncstack);
@@ -297,16 +298,16 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::iterator* block<_CITERATOR, _B
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline block<_CITERATOR, _BIN_FNCTABLE>::operator bool() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::operator bool() const
 {
 	return _ndActual && _ndActual->_stack.size();
 }
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline bool block<_CITERATOR, _BIN_FNCTABLE>::calculate()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::calculate()
 {
 	stack* stck = _ndActual->_stack.back();
 	return false;
@@ -314,8 +315,8 @@ inline bool block<_CITERATOR, _BIN_FNCTABLE>::calculate()
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline void block<_CITERATOR, _BIN_FNCTABLE>::next()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::next()
 {
 	if (_ndActual)
 	{
@@ -354,8 +355,9 @@ inline void block<_CITERATOR, _BIN_FNCTABLE>::next()
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline typename const block<_CITERATOR, _BIN_FNCTABLE>::tpvalue::_TypeValue& block<_CITERATOR, _BIN_FNCTABLE>::result() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpvalue::_TypeValue& 
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::result() const
 {
 	if (!_lastResult || _lastResult->getValues().result().isNull())
 		throw exception<cItem>("No result found");
@@ -363,29 +365,30 @@ inline typename const block<_CITERATOR, _BIN_FNCTABLE>::tpvalue::_TypeValue& blo
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline typename const block<_CITERATOR, _BIN_FNCTABLE>::tnode* block<_CITERATOR, _BIN_FNCTABLE>::rootNode() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tnode* 
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::rootNode() const
 {
 	return _ndActual && !_ndActual->_stack.empty() ? _ndActual->_stack.back()->_it_calc->rootNode() : _lastResult ? _lastResult->rootNode() : nullptr;
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline typename block<_CITERATOR, _BIN_FNCTABLE>::stack* 
-	block<_CITERATOR, _BIN_FNCTABLE>::actualStack()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack*
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::actualStack()
 {
 	return _ndActual->_stack.back();
 }
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline bool block<_CITERATOR, _BIN_FNCTABLE>::is_functionDef() const
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::is_functionDef() const
 {
 	return _ndActual->_stack.back()->function_def();
 }
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline bool block<_CITERATOR, _BIN_FNCTABLE>::insert_function()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::insert_function()
 {
 	stack* a_stack = actualStack();
 	bool bRet = a_stack->in_function_breaknode();
@@ -396,8 +399,8 @@ inline bool block<_CITERATOR, _BIN_FNCTABLE>::insert_function()
 
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-void block<_CITERATOR, _BIN_FNCTABLE>::insert_function(const istring& fncName, iterator* clist)
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::insert_function(const istring& fncName, iterator* clist)
 {
 	_ndActual->_functions[fncName.getString()][clist->parameters_amount()] = clist;
 }
@@ -405,9 +408,9 @@ void block<_CITERATOR, _BIN_FNCTABLE>::insert_function(const istring& fncName, i
 
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-typename block<_CITERATOR, _BIN_FNCTABLE>::pair_function
-	block<_CITERATOR, _BIN_FNCTABLE>::find_function(const tnode* nd, typename _CPTRCHAR expr, bool toRight, bool firstFindBuildInFunctions) const
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::pair_function
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::find_function(const tnode* nd, typename _CPTRCHAR expr, bool toRight, bool firstFindBuildInFunctions) const
 {
 	const tnode* chFnc = toRight ? nd->getLeft() : nd->getRight();
 	if (chFnc && chFnc->getType() == ndAlpha)
@@ -446,8 +449,9 @@ typename block<_CITERATOR, _BIN_FNCTABLE>::pair_function
 
 
 
-template<class _CITERATOR, class _BIN_FNCTABLE>
-inline typename block<_CITERATOR, _BIN_FNCTABLE>::transporter_args& block<_CITERATOR, _BIN_FNCTABLE>::getValues()
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args& 
+	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::getValues()
 {
 	stack* st = _ndActual->_stack.back();
 	typename transporter_args& values = st->_it_calc->getValues();
@@ -540,8 +544,8 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE>::transporter_args& block<_CITER
 
 
 
-template <class _CITERATOR, class _BIN_FNCTABLE>
-bool block<_CITERATOR, _BIN_FNCTABLE>::find_variable(const istring& symbol, transporter& value, bool canCreate)
+template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+bool block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::find_variable(const istring& symbol, transporter& value, bool canCreate)
 {
 	stack* st = _ndActual->_stack.back();
 	if (st->function_def())

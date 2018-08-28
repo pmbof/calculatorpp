@@ -33,7 +33,7 @@ inline short parentheses<_ITEM, _NDTYPE>::getOpened() const
 
 
 template<class _ITEM, class _NDTYPE>
-inline bool parentheses<_ITEM, _NDTYPE>::isThisType(const node * nd) const
+inline bool parentheses<_ITEM, _NDTYPE>::isThisType(const cnode* nd) const
 {
 	const parentheses* pr = static_cast<const parentheses*>(nd);
 	return nd && pr->_type == ndParentheses && pr->_prtype == _prtype;

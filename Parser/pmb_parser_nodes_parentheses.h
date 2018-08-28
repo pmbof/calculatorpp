@@ -18,7 +18,7 @@ public:
 
 	inline short getOpened() const;
 
-	inline bool isThisType(const node* nd) const;
+	inline bool isThisType(const cnode* nd) const;
 
 	char getClass() const;
 

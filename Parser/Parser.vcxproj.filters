@@ -264,6 +264,12 @@
     <ClInclude Include="pmb_calculate_magnitude.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="pmb_calculate_symbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pmb_calculate_symbol.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser.cpp">

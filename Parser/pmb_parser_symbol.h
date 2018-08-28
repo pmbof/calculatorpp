@@ -27,6 +27,7 @@ public:
 	~symbol();
 
 	void addSetVariable(const std::string& set);
+	void addSetVariable(const std::string& set, _tpMap* vars);
 	void addSetSearch(const std::string& set, const std::string& defaultInsert, const _tpList& lst);
 	
 	void selectSearch(const std::string& set) const;

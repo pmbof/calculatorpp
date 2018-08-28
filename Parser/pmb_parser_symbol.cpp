@@ -10,14 +10,14 @@ namespace parser
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-symbol<_TVALUE, _ITSTRING, _MAP>::symbol()
-	: _defaultInsert(NULL), _defaultSearch(NULL)
+inline symbol<_TVALUE, _ITSTRING, _MAP>::symbol()
+	: _defaultInsert(nullptr), _defaultSearch(nullptr)
 {
 }
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-symbol<_TVALUE, _ITSTRING, _MAP>::~symbol()
+inline symbol<_TVALUE, _ITSTRING, _MAP>::~symbol()
 {
 	for(_tpMMap::const_iterator it = _map.begin(); it != _map.end(); ++it)
 		delete it->second;
@@ -25,7 +25,7 @@ symbol<_TVALUE, _ITSTRING, _MAP>::~symbol()
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-void symbol<_TVALUE, _ITSTRING, _MAP>::addSetVariable(const std::string& set)
+inline void symbol<_TVALUE, _ITSTRING, _MAP>::addSetVariable(const std::string& set)
 {
 	_tpMMap::const_iterator it = _map.find(set);
 	if(it == _map.end())
@@ -39,7 +39,34 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::addSetVariable(const std::string& set)
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-void symbol<_TVALUE, _ITSTRING, _MAP>::addSetSearch(const std::string& set, const std::string& defaultInsert, const _tpList& lst)
+inline void symbol<_TVALUE, _ITSTRING, _MAP>::addSetVariable(const std::string& set, _tpMap* vars)
+{
+	_tpMMap::iterator it = _map.find(set);
+	if (it == _map.end())
+	{
+		if (!_defaultInsert)
+			_defaultInsert = vars;
+		_map[set] = vars;
+	}
+	else
+	{
+		for (_tpMap::const_iterator v = vars->begin(); v != vars->end(); ++v)
+		{
+			_tpMap::iterator oldv = it->second->find(v->first);
+			if (oldv != it->second->end())
+			{
+//				delete oldv->second;
+			}
+			//(*it->second)[v->first] = v->second;
+		}
+		delete it->second;
+		it->second = vars;
+	}
+}
+
+
+template<class _TVALUE, class _ITSTRING, class _MAP>
+inline void symbol<_TVALUE, _ITSTRING, _MAP>::addSetSearch(const std::string& set, const std::string& defaultInsert, const _tpList& lst)
 {
 	_tpLstMap searchlst;
 	for(_tpList::const_iterator it = lst.begin(); it != lst.end(); ++it)
@@ -49,7 +76,7 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::addSetSearch(const std::string& set, cons
 			searchlst.push_back(m->second);
 	}
 	_tpMMap::const_iterator d = _map.find(defaultInsert);
-	_MAP* mDef = d != _map.end() ? d->second: NULL;
+	_MAP* mDef = d != _map.end() ? d->second: nullptr;
 	if(searchlst.size())
 		_setSearch[set] = _tpPairDef(mDef, searchlst);
 	else if(mDef)
@@ -59,7 +86,7 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::addSetSearch(const std::string& set, cons
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-void symbol<_TVALUE, _ITSTRING, _MAP>::selectSearch(const std::string& set) const
+inline void symbol<_TVALUE, _ITSTRING, _MAP>::selectSearch(const std::string& set) const
 {
 	_tpMMapSearch::const_iterator i = _setSearch.find(set);
 	if(i != _setSearch.end())
@@ -72,7 +99,7 @@ void symbol<_TVALUE, _ITSTRING, _MAP>::selectSearch(const std::string& set) cons
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate)
+inline bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate)
 {
 	if(!_defaultSearch)
 	{
@@ -106,7 +133,7 @@ bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& va
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol) const
+inline bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol) const
 {
 	if(!_defaultSearch)
 	{
@@ -131,7 +158,7 @@ bool symbol<_TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol) const
 
 
 template<class _TVALUE, class _ITSTRING, class _MAP>
-const typename symbol<_TVALUE, _ITSTRING, _MAP>::_tpMMap* symbol<_TVALUE, _ITSTRING, _MAP>::get() const
+inline const typename symbol<_TVALUE, _ITSTRING, _MAP>::_tpMMap* symbol<_TVALUE, _ITSTRING, _MAP>::get() const
 {
 	return &_map;
 }
