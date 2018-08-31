@@ -52,6 +52,7 @@ public:
 	typedef typename _Mybase::const_iterator const_iterator;
 	typedef typename _Mybase::iterator iterator;
 	typedef _Mybase::_Nodeptr _Nodeptr;
+	typedef typename _Mybase::value_type value_type;
 
 public:
 	const_iterator find(const _Kty& key) const

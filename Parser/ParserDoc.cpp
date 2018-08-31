@@ -283,98 +283,128 @@ BOOL CParserDoc::OnNewDocument()
 	prefix->insert("k", 10, "kilo");
 	m_symbols.add_prefix("memory", prefix);
 
-	m_symbols.add_system("No");
+	m_symbols.add_system("No prefix");
 	// adding Internation System of Units (SI):
 	m_symbols.add_system("SI", "decimal");
+	// adding system CGS:
+	m_symbols.add_system("cgs", "decimal");
 	// adding Imperial units (United States customary system):
 	m_symbols.add_system("USCS"); // no prefix support
 	// adding Memory system units:
 	m_symbols.add_system("Memory", "memory");
+	// adding Memory system units:
+	m_symbols.add_system("Currency");
 
 	// Initialized calculator:
 	m_calculator.initialize();
 	// set default system of units:
-	m_symbols.set_system("SI");
  
 	try
 	{
-		// meter
-		m_calculator.parser(m_expr = "m = 1L");
-		// second
-		m_calculator.parser(m_expr = "s = 1T");
-		// gram
-		m_calculator.parser(m_expr = "g = 1M");
-		// ampere
-		m_calculator.parser(m_expr = "A = 1I");
-		// kelvin
-		m_calculator.parser(m_expr = "K = 1Theta");
-		// mole
-		m_calculator.parser(m_expr = "mol = 1N");
-		// candela
-		m_calculator.parser(m_expr = "cd = 1J");
+		m_symbols.set_system("SI");
+		m_calculator.add_unit("meter", "m = 1L");
+		m_calculator.add_unit("second", "s = 1T");
+		m_calculator.add_unit("gram", "g = 10^(-3)M");
+		m_calculator.add_unit("ampere", "A = 1I");
+		m_calculator.add_unit("kelvin", "K = 1Theta");
+		m_calculator.add_unit("mole", "mol = 1N");
+		m_calculator.add_unit("candela", "cd = 1J");
 
-
-		m_symbols.set_system("No");
-		// rad   = radian = 1            plane angle
-		m_calculator.parser(m_expr = "rad = 1");
-		// sr    = steradian = 1         solid angle
-		m_calculator.parser(m_expr = "sr = 1");
-		// min   = minute = 60s
-		m_calculator.parser(m_expr = "min = 60s");
-		// h     = hour = 60min
-		m_calculator.parser(m_expr = "h = 60min");
-		// d     = day = 24h
-		m_calculator.parser(m_expr = "d = 24h");
+		m_symbols.set_system("No prefix");
+		m_calculator.add_unit("radian", "rad = 1", "plane angle");
+		m_calculator.add_unit("steradian", "sr = 1", "solid angle");
+		m_calculator.add_unit("minute", "min = 60s");
+		m_calculator.add_unit("hour", "h = 60min");
+		m_calculator.add_unit("day", "d = 24h");
 		// degree = pi / 180 rad
-		m_calculator.parser(m_expr = "degree = 3.141592/180 rad");
-		// L     = litre = 1dm^3
-		m_calculator.parser(m_expr = "L = 1dm^3");
-		// t     = ton = 10^3 kg
-		m_calculator.parser(m_expr = "t = 10^3kg");
-		// Np    = neper = 1
-		m_calculator.parser(m_expr = "Np = 1");
+		m_calculator.add_unit("degree = 3.141592/180 rad");
+		m_calculator.add_unit("ton", "t = 10^3kg");
+		m_calculator.add_unit("neper", "Np = 1");
 
 
 		m_symbols.set_system("SI");
-		// Hz    = hertz = 1/s           frequency
-		m_calculator.parser(m_expr = "Hz = 1/s");
-		// N     = newton = kg m / s^2   force
-		m_calculator.parser(m_expr = "N = kg m/s^2");
-		// Pa    = pascal = N/m^2        pressure, stress
-		m_calculator.parser(m_expr = "Pa = N/m^2");
-		// J     = joule = N m           energy, work, quantity of heat
-		m_calculator.parser(m_expr = "J = N m");
-		// W     = watt = J/s            power, radiant flux
-		m_calculator.parser(m_expr = "W = J/s");
-		// C     = coulomb = A s         electric charge, quantity of electricity
-		m_calculator.parser(m_expr = "C = A s");
-		// V     = volt = W / A          electric potential difference, electromotive force
-		m_calculator.parser(m_expr = "V = W/A");
-		// F     = farad = C / V         capacitance
-		m_calculator.parser(m_expr = "F = C/V");
-		// Omega = ohm = V / A           electric resistance
-		m_calculator.parser(m_expr = "ohm = V/A");
-		// S     = siemens = 1 / ohm     electric conductance
-		m_calculator.parser(m_expr = "S = 1/ohm");
-		// Wb    = weber = V s           magnetic flux
-		m_calculator.parser(m_expr = "Wb = V s");
-		// T     = tesla = Wb / m^2      magnetic flux density
-		m_calculator.parser(m_expr = "T = Wb/m^2");
-		// H     = henry = Wb / A        inductance
-		m_calculator.parser(m_expr = "H = W/A");
+		m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency");
+		m_calculator.add_unit("newton", "N = kg m/s^2", "force");
+		m_calculator.add_unit("pascal", "Pa = N/m^2", "pressure, stress");
+		m_calculator.add_unit("joule", "J = N m", "energy, work, quantity of heat");
+		m_calculator.add_unit("watt", "W = J/s", "power, radiant flux");
+		m_calculator.add_unit("coulomb", "C = A s", "electric charge, quantity of electricity");
+		m_calculator.add_unit("volt", "V = W/A", "electric potential difference, electromotive force");
+		m_calculator.add_unit("farad", "F = C/V", "capacitance");
+		m_calculator.add_unit("ohm", "omega = V/A", "electric resistance");
+		m_calculator.add_unit("siemens", "S = 1/omega", "electric conductance");
+		m_calculator.add_unit("weber", "Wb = V s", "magnetic flux");
+		m_calculator.add_unit("tesla", "T = Wb/m^2", "magnetic flux density");
+		m_calculator.add_unit("henry", "H = W/A", "inductance");
 		// °C    = ???                   Celsius temperature
-		// lm    = lumen = cd sr         luminous flux
-		m_calculator.parser(m_expr = "lm = cd sr");
-		// lx    = lux = lm / m^2        illuminance
-		m_calculator.parser(m_expr = "lx = lm/m^2");
-		// Bq    = becquerel = 1 / s     activity (of a radionuclide)
-		m_calculator.parser(m_expr = "Bq = 1/s");
-		// Gy    = gray = J / kg         absorbed dose, specific energy (imparted), kerma
-		m_calculator.parser(m_expr = "Gy = J/kg");
-		// Sv    = sievert = J / kg      dose equivalent
-		m_calculator.parser(m_expr = "Sv = J/kg");
-		// kat   = katal = mol / s       catalytic activity
-		m_calculator.parser(m_expr = "kat = mol/s");
+		m_calculator.add_unit("lumen", "lm = cd sr", "luminous flux");
+		m_calculator.add_unit("lux", "lx = lm/m^2", "illuminance");
+		m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)");
+		m_calculator.add_unit("gray", "Gy = J/kg", "absorbed dose, specific energy (imparted), kerma");
+		m_calculator.add_unit("sievert", "Sv = J/kg", "dose equivalent");
+		m_calculator.add_unit("katal", "kat = mol/s", "catalytic activity");
+
+		m_calculator.add_unit("litre", "L = 1dm^3", "volume");
+
+		m_symbols.set_system("cgs");
+		m_calculator.add_unit("gal", "Gal = cm/s^2", "acceleration");
+		m_calculator.add_unit("dyne", "dyn = g Gal");
+		m_calculator.add_unit("erg = dyn cm");
+		m_calculator.add_unit("barye", "Ba = dyn/cm^2");
+		m_calculator.add_unit("poise", "P = g/(cm s)", "dynamic viscosity");
+		m_calculator.add_unit("stockes", "St = cm^2/s", "kinematic viscosity");
+		m_calculator.add_unit("kayser", "kays = 1/cm", "wavenumber");
+		m_calculator.add_unit("statcoulomb", "Fr = cm dyn^(1/2)");
+		m_calculator.add_unit("statampere", "stA = Fr/s");
+		m_calculator.add_unit("abampere", "Bi = Fr/cm");
+		m_calculator.add_unit("abcoulomb", "abC = Bi s");
+
+		m_symbols.set_system("USCS");
+		m_calculator.add_unit("point", "p = 127/360 mm");
+		m_calculator.add_unit("pica", "Pi = 12 p");
+		m_calculator.add_unit("inch", "in = 6 Pi");
+		m_calculator.add_unit("foot", "ft = 12 in");
+		m_calculator.add_unit("yard", "yd = 3 ft");
+		m_calculator.add_unit("mile", "mi = 1760 yd");
+		m_calculator.add_unit("link", "li = 33/50 ft");
+		m_calculator.add_unit("rod", "rd = 25 li");
+		m_calculator.add_unit("chain", "ch = 4 rd");
+		m_calculator.add_unit("furlong", "fur = 10 ch");
+		m_calculator.add_unit("league", "lea = 3 mi");
+		m_calculator.add_unit("fathom", "ftm = 2 yd");
+		m_calculator.add_unit("cable", "cb = 120 ftm");
+		m_calculator.add_unit("nautical_mile", "NM = nmi = 8439 cb");
+		m_calculator.add_unit("acres", "acre = 10 ch^2", "area");
+		m_calculator.add_unit("sections", "section = 640 acres");
+		m_calculator.add_unit("survey_township", "twp = 36 sections");
+
+		m_calculator.add_unit("grain", "gr = 64.79891 mg");
+		m_calculator.add_unit("dram", "dr = (27 + 11/32)gr");
+		m_calculator.add_unit("ounce", "oz = 16 dr");
+		m_calculator.add_unit("pound", "lb = 16 oz");
+		m_calculator.add_unit("hundredweicht", "cwt = 100 lb");
+		m_calculator.add_unit("short_ton", "ton = 20 cwt");
+
+		m_calculator.add_unit("pound_force", "lbf = lb * 9.80665m/s^2");
+		m_calculator.add_unit("psi = lbf/in^2");
+//		m_symbols.add_by_name("survey_township", _block.tresult());
+
+		m_calculator.add_unit("british_thermal_unit", "Btu = 1055 J");
+		m_calculator.add_unit("calorie", "cal = 4.184 J");
+		m_calculator.add_unit("large_calorie", "Cal = kcal = 1000 cal");
+		m_symbols.add_by_name("food_calorie", _block.tresult());
+		m_calculator.add_unit("horse_power", "hp = 745.7 W");
+
+		m_symbols.set_system("No prefix");
+		m_calculator.add_unit("atm = 101325 Pa");
+		//		m_symbols.add_by_name("survey_township", _block.tresult());
+
+		m_symbols.set_system("Memory");
+		m_calculator.add_unit("bit", "b = 1Mem");
+		m_calculator.add_unit("byte", "B = 8b");
+
+		m_symbols.set_system("Currency");
+		m_calculator.add_unit("dollar = 1Crr");
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
@@ -383,6 +413,7 @@ BOOL CParserDoc::OnNewDocument()
 		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 		return true;
 	}
+	m_symbols.set_system();
 
 	m_countIterators = 1;
 
@@ -390,6 +421,7 @@ BOOL CParserDoc::OnNewDocument()
 	m_expr = "a = 2^3";
 //	m_expr = "a acos(6x, -3y, z) = -5k";
 //	m_expr = "a acos (";
+
 
 	typedef std::tuple<const char*, bool, double> tuple;
 	typedef std::vector<tuple> vector;
@@ -424,7 +456,7 @@ BOOL CParserDoc::OnNewDocument()
 		{
 			m_calculator.parser(m_expr = std::get<0>(test[i]));
 			bResult = true;
-			if (_block.result() != std::get<2>(test[i]) || !std::get<1>(test[i]))
+			if (_block.nresult() != std::get<2>(test[i]) || !std::get<1>(test[i]))
 			{
 				if (std::get<1>(test[i]))
 					log->trace(pmb::logError, "%s = %f != %f\n", m_expr, _block.result(), std::get<2>(test[i]));

@@ -317,9 +317,9 @@ protected:
 };
 
 
-typedef pmb::calculate::units::magnitude<double, unsigned short, char, unsigned short> number_double;
+typedef pmb::calculate::units::magnitude<double, short, char, unsigned short> number_double;
 //typedef calculate::number<double> number_double;
-typedef item<char, typename iterator::idx> citem;
+typedef item<char, unsigned short> citem;
 typedef tree<citem, ndtype> debug_tree;
 typedef debug_tree::cnode tnode; 
 typedef calc::transporter<number_double, unsigned short> transporter;

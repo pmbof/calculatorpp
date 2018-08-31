@@ -176,18 +176,19 @@ public:
 	system(const map_dimension* dim, const prefix* pPrefix);
 	~system();
 
-
-	void unit_definition(bool bDef = true);
-
 	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
 
+	bool add_by_name(const tpChar* name, const _TVALUE& val);
+
+	std::list<std::string>& last_defined();
 
 protected:
 	const map_dimension* _dimension;
 	const prefix* _prefix;
 	base _by_name;
-	bool _unit_def;
 	bool _search_by_names;
+
+	std::list<std::string> _last_defined;
 };
 
 
@@ -219,6 +220,15 @@ public:
 	typedef std::map<std::string, prefix_base*> map_prefix;
 	typedef std::map<std::string, system*> map_system;
 
+	typedef std::list<std::string> slist;
+	struct map_unit : std::map<std::string, slist> {
+		map_unit() {}
+		map_unit(const _TVALUE& val) : _val(val) {}
+
+		_TVALUE _val;
+	};
+	typedef std::map<std::string, map_unit> ssmapb;
+
 public:
 
 
@@ -230,15 +240,20 @@ public:
 	bool add_system(const tpChar* name, const tpChar* prefix = nullptr);
 
 	bool set_system(const tpChar* name = nullptr);
+	bool add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group = nullptr);
 
 	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
-//	bool find(const _ITSTRING& symbol) const;
+
+	bool defining_unit() const;
+
 protected:
 	map_dimension _dimension;
 	map_prefix _mprefix;
 
 	map_system _msystems;
 	system* _default_system;
+
+	ssmapb _grp_unit;
 };
 
 

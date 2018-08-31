@@ -113,7 +113,9 @@ public:
 	bool calculate();
 	transporter_args& getValues();
 	void next();
-	typename const tpvalue::_TypeValue& result() const;
+	typename const transporter& tresult() const;
+	typename const tpvalue& result() const;
+	typename const tpvalue::_TypeValue& nresult() const;
 	const tnode* rootNode() const;
 
 	stack* actualStack();
@@ -124,6 +126,8 @@ public:
 	pair_function find_function(const tnode* nd, typename _CPTRCHAR expr, bool toRight, bool firstFindBuildInFunctions) const;
 
 	iterator* call_function(iterator* function, transporter_args& args);
+
+	symbol* variables();
 
 protected:
 	void insert_function(const istring& fncName, iterator* clist);

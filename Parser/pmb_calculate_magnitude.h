@@ -215,6 +215,10 @@ struct unit
 	unit pow(const _INT& p) const;
 	unit root(const _INT& p) const;
 
+	bool one_dimension() const;
+	const dimension* operator[](ndim nd) const;
+	const dimension* get_dimension(ndim nd) const;
+
 	void clean();
 
 	void clear();
@@ -315,6 +319,7 @@ public:
 	bool negative() const;
 	bool integer() const;
 	bool dimensionless() const;
+	bool one_dimension() const;
 	bool scalar() const;
 	bool real() const;
 	bool imaginary() const;

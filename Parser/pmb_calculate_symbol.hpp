@@ -1,6 +1,9 @@
 #include "pmb_calculate_symbol.h"
 #pragma once
 
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
 
 
 namespace pmb
@@ -310,7 +313,7 @@ inline typename map_dimension<_DIMENSION, _ITSTRING, _MAP>::mapName::const_itera
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::system(const map_dimension* pDim, const prefix* pPrefix)
-	: _dimension(pDim), _prefix(pPrefix), _unit_def(false), _search_by_names(true)
+	: _dimension(pDim), _prefix(pPrefix), _search_by_names(true)
 {
 }
 
@@ -320,11 +323,6 @@ inline system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::~system()
 {
 }
 
-template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
-inline void system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::unit_definition(bool bDef)
-{
-	_unit_def = bDef;
-}
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate)
@@ -342,25 +340,6 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 		{
 			value = const_cast<_TVALUE&>(ui->second);
 			return true;
-		}
-	}
-
-	if (_unit_def && _dimension && !canCreate)
-	{
-		map_dimension::const_iterator di = _dimension->find(symbol);
-		if (di != _dimension->end())
-		{
-			value = _TVALUE(new _TVALUE::tpvalue(di->first));
-			return true;
-		}
-		if (_search_by_names)
-		{
-			map_dimension::mapName::const_iterator din = _dimension->find_by_name(symbol);
-			if (din != _dimension->end_by_name())
-			{
-				value = _TVALUE(new _TVALUE::tpvalue(din->second));
-				return true;
-			}
 		}
 	}
 
@@ -397,20 +376,36 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 					continue;
 				_ITSTRING sprefix(symbol.str(), symbol.size() - p);
 				typename prefix::mapName::const_iterator pf = _prefix->find_by_name(sprefix);
-				if (pf == _prefix->end())
+				if (pf == _prefix->end_by_name())
 					continue;
 				value = _TVALUE(new _TVALUE::tpvalue(*(ui->second)));
 				(*value)->_number *= pf->first->getFactor(_prefix->base());
 				return true;
 			}
 		}
-
 	}
 
 	if (canCreate)
+	{
+		_last_defined.push_back(symbol.getString());
 		value = (*this)[symbol.getString()];
-
+	}
 	return canCreate;
+}
+
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val)
+{
+	_by_name.insert(base::value_type(std::string(name), const_cast<_TVALUE&>(val)));
+	_last_defined.clear();
+	return true;
+}
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline std::list<std::string>& system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::last_defined()
+{
+	return _last_defined;
 }
 
 
@@ -510,23 +505,72 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_system(const tp
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system(const tpChar* name)
 {
-	if (_default_system)
-		_default_system->unit_definition(false);
-
 	if (!name)
 	{
 		_default_system = nullptr;
 		return false;
 	}
 	map_system::const_iterator is = _msystems.find(name);
-	if (is != _msystems.end())
+	_default_system = is != _msystems.end() ? is->second : nullptr;
+}
+
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group)
+{
+	if (!_default_system)
+		return false;
+
+	std::string sname(name ? name : "");
+	std::list<std::string> last_defined = _default_system->last_defined();
+	bool bRet = _default_system->add_by_name(sname.c_str(), val);
+	if (bRet)
 	{
-		_default_system = is->second;
-		_default_system->unit_definition();
+		if (group)
+		{
+			std::stringstream ss(group);
+			std::string item;
+			while (std::getline(ss, item, ','))
+			{
+				item.erase(item.begin(), std::find_if(item.begin(), item.end(), [](int ch) {
+						return !std::isspace(ch);
+					}));
+				item.erase(std::find_if(item.rbegin(), item.rend(), [](int ch) {
+						return !std::isspace(ch);
+					}).base(), item.end());
+				ssmapb::const_iterator ci = _grp_unit.find(item);
+				if (ci == _grp_unit.end())
+					_grp_unit.insert(ssmapb::value_type(item, const_cast<_TVALUE&>(val)));
+				else if ((**(ci->second._val))._unit != (**val)._unit)
+					return false; // invalid unit
+				_grp_unit[item][sname].insert(_grp_unit[item][sname].end(), last_defined.begin(), last_defined.end());
+			}
+		}
+		else
+		{
+			if ((*val)->one_dimension())
+			{
+				std::string item((**val)._unit[0]->name(), (**val)._unit[0]->name_size());
+				ssmapb::const_iterator ci = _grp_unit.find(item);
+				if (ci == _grp_unit.end())
+					_grp_unit.insert(ssmapb::value_type(item, const_cast<_TVALUE&>(val)));
+				_grp_unit[item][sname].insert(_grp_unit[item][sname].end(), last_defined.begin(), last_defined.end());
+			}
+			else if (!(*val)->dimensionless())
+			{
+				bRet = false;
+				for (ssmapb::iterator ug = _grp_unit.begin(); ug != _grp_unit.end(); ++ug)
+				{
+					if ((*ug->second._val)->_unit == (*val)->_unit)
+					{
+						ug->second[sname].insert(ug->second[sname].end(), last_defined.begin(), last_defined.end());
+						bRet = true;
+					}
+				}
+			}
+		}
 	}
-	else
-		_default_system = nullptr;
-	return is != _msystems.end();
+	return bRet;
 }
 
 
@@ -573,10 +617,32 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 			return true;
 	}
 
+	if (_default_system && !canCreate)
+	{
+		map_dimension::const_iterator di = _dimension.find(symbol);
+		if (di != _dimension.end())
+		{
+			value = _TVALUE(new _TVALUE::tpvalue(di->first));
+			return true;
+		}
+		map_dimension::mapName::const_iterator din = _dimension.find_by_name(symbol);
+		if (din != _dimension.end_by_name())
+		{
+			value = _TVALUE(new _TVALUE::tpvalue(din->second));
+			return true;
+		}
+	}
+
 	bool vret = canCreate && _defaultInsert;
 	if (vret)
 		value = (*_defaultInsert)[symbol.getString()];
 	return vret;
+}
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::defining_unit() const
+{
+	return _default_system;
 }
 
 

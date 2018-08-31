@@ -43,4 +43,26 @@ calculator<_BLOCK, _OPRTABLE>::~calculator()
 }
 
 
+template<class _BLOCK, class _OPRTABLE>
+inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group)
+{
+	if (!_pBlock->variables()->defining_unit())
+		return false;
+	parser(expression);
+	return _pBlock->variables()->add_by_name(name, _pBlock->tresult(), group);
+}
+
+
+
+template<class _BLOCK, class _OPRTABLE>
+inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expression)
+{
+	if (!_pBlock->variables()->defining_unit())
+		return false;
+	parser(expression);
+	return _pBlock->variables()->add_by_name(nullptr, _pBlock->tresult());
+}
+
+
+
 }

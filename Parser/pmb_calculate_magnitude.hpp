@@ -880,6 +880,26 @@ inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _INT& p) 
 	return unit(dim, p ? _nDims : 0);
 }
 
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline bool unit<_INT, _CHAR, _SZSTR>::one_dimension() const
+{
+	return _nDims == 1 && _dim[0].numerator == _dim[0].denominator;
+}
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline const typename unit<_INT, _CHAR, _SZSTR>::dimension*
+	unit<_INT, _CHAR, _SZSTR>::operator[](ndim nd) const
+{
+	return _dim[nd].dim;
+}
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline const typename unit<_INT, _CHAR, _SZSTR>::dimension*
+	unit<_INT, _CHAR, _SZSTR>::get_dimension(ndim nd) const
+{
+	return _dim[nd].dim;
+}
+
 
 
 
@@ -1174,6 +1194,12 @@ template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::dimensionless() const
 {
 	return !_unit.nDims();
+}
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::one_dimension() const
+{
+	return _unit.one_dimension();
 }
 
 
