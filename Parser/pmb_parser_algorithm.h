@@ -181,6 +181,7 @@ public:
 	typedef typename _BLOCK::build_in_function build_in_function;
 	typedef typename _BLOCK::iterator user_def_function;
 	typedef typename _BLOCK::symbol symbol;
+	typedef typename _BLOCK::CHAR tpChar;
 
 protected:
 /*	struct stack
@@ -207,9 +208,13 @@ public:
 	void clear();
 	void initialize();
 
-	void parser(const char* expr);
+	bool parser(const typename tpChar* expr);
+	bool calculate();
+	bool calculate(const typename tpChar* expr);
 
 	const tptree* getTree() const;
+	const tpChar* expression() const;
+
 
 protected:
 	virtual void populate();
@@ -220,8 +225,6 @@ protected:
 
 ///	bool getValue(node* nd, _TVALUE& value, bool functionDef, bool canCreateVariable = false) const;
 
-
-	bool calculate();
 
 protected:
 	_tdOprTable* _oprTable;

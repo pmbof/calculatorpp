@@ -408,6 +408,7 @@ BOOL CParserDoc::OnNewDocument()
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
+		m_expr = m_calculator.expression();
 		log->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str(), m_expr);
 		m_error = ex;
 		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
@@ -454,7 +455,7 @@ BOOL CParserDoc::OnNewDocument()
 		bool bResult = false;
 		try
 		{
-			m_calculator.parser(m_expr = std::get<0>(test[i]));
+			m_calculator.calculate(m_expr = std::get<0>(test[i]));
 			bResult = true;
 			if (_block.nresult() != std::get<2>(test[i]) || !std::get<1>(test[i]))
 			{

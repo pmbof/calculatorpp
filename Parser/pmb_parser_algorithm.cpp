@@ -60,13 +60,13 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::initialize()
 
 
 template <class _BLOCK, class _OPRTABLE, class _IT>
-void algorithm<_BLOCK, _OPRTABLE, _IT>::parser(const char* expr)
+bool algorithm<_BLOCK, _OPRTABLE, _IT>::parser(const typename tpChar* expr)
 {
 	log* pLg = log::beginFunction(pmb::logDebug, "pmb::parser::algorithm::parser");
 	if (!expr)
 	{
 		pLg->trace(logError, "expression is NULL").endFunction(logError);
-		return;
+		return false;
 	}
 
 	if(_tree)
@@ -84,12 +84,26 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::parser(const char* expr)
 	mapUnknown();
 	_tree->trace(_expr);
 
+	pLg->endFunction(logDebug);
+	return true;
+}
+
+
+template <class _BLOCK, class _OPRTABLE, class _IT>
+bool algorithm<_BLOCK, _OPRTABLE, _IT>::calculate(const typename tpChar* expr)
+{
+	if (!parser(expr))
+		return false;
+
+	log* pLg = log::beginFunction(pmb::logDebug, "pmb::parser::algorithm::calculate");
+
 	pLg->trace(logDebug, "Calculating: '%s'\n", expr).trace(logDebug, "");
-	pLg->traceN(         "              ", strlen(expr), "\n");
-	calculate();
+	pLg->traceN("              ", strlen(expr), "\n");
+	bool bRet = calculate();
 	_tree->trace(_expr);
 
 	pLg->endFunction(logDebug);
+	return bRet;
 }
 
 
@@ -272,6 +286,12 @@ const typename algorithm<_BLOCK, _OPRTABLE, _IT>::tptree*
 	algorithm<_BLOCK, _OPRTABLE, _IT>::getTree() const
 {
 	return _tree;
+}
+
+template<class _BLOCK, class _OPRTABLE, class _IT>
+const typename algorithm<_BLOCK, _OPRTABLE, _IT>::tpChar* algorithm<_BLOCK, _OPRTABLE, _IT>::expression() const
+{
+	return _expr;
 }
 
 

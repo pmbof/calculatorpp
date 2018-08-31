@@ -48,7 +48,7 @@ inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name,
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
-	parser(expression);
+	calculate(expression);
 	return _pBlock->variables()->add_by_name(name, _pBlock->tresult(), group);
 }
 
@@ -59,7 +59,7 @@ inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expre
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
-	parser(expression);
+	calculate(expression);
 	return _pBlock->variables()->add_by_name(nullptr, _pBlock->tresult());
 }
 
