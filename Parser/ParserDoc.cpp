@@ -298,10 +298,19 @@ BOOL CParserDoc::OnNewDocument()
 	// Initialized calculator:
 	m_calculator.initialize();
 	// set default system of units:
- 
+
 	try
 	{
 		m_symbols.set_system("SI");
+		m_symbols.addSetVariable("Constants");
+		m_calculator.add_constant("Archimedes' constant", "pi = 4 atg 1");
+		m_calculator.add_constant("Euler's number", "e = 2.7182818284590452353602874");
+		m_calculator.add_constant("Golden ratio", "phi = (1 + 5^(1/2))/2");
+		m_calculator.add_constant("Euler–Mascheroni", "gamma = 0.5772156649015328606065120");
+		m_calculator.add_constant("Khinchin's constant", "Kh = 2.685452001065306445309714835481795");
+		m_calculator.add_constant("Glaisher–Kinkelin", "A = 1.282427129100622636875342568869791727");
+		m_calculator.add_constant("Liouville's constant", "Lc = .7656250596046447753906250000000000007");
+
 		m_calculator.add_unit("meter", "m = 1L");
 		m_calculator.add_unit("second", "s = 1T");
 		m_calculator.add_unit("gram", "g = 10^(-3)M");
@@ -317,7 +326,7 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_unit("hour", "h = 60min");
 		m_calculator.add_unit("day", "d = 24h");
 		// degree = pi / 180 rad
-		m_calculator.add_unit("degree = 3.141592/180 rad");
+		m_calculator.add_unit("degree = pi/180 rad");
 		m_calculator.add_unit("ton", "t = 10^3kg");
 		m_calculator.add_unit("neper", "Np = 1");
 
@@ -405,6 +414,28 @@ BOOL CParserDoc::OnNewDocument()
 
 		m_symbols.set_system("Currency");
 		m_calculator.add_unit("dollar = 1Crr");
+
+		m_symbols.addSetVariable("Physical Constants");
+		m_calculator.add_constant("speed of light in a vacuum", "c = 299792458 m/s");
+		m_calculator.add_constant("gravitational constant", "G = 6.67408 10^(-11) N m^2/kg^2");
+		m_calculator.add_constant("planck constant", "h = 6.62607015 10^(-34) J s");
+		m_calculator.add_constant("h c", "hc = h c");
+		m_calculator.add_constant("elementary charge", "e = 1.602176634 10^(-19) C");
+		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu0 = 4 pi 10^(-7) m/A");
+		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu0 = 4 pi 10^(-7) m/A");
+		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon0 = mhu0 / c^2");
+		m_calculator.add_constant("avogadro constant", "NA = 6.02214076 10^23 1/mol");
+		m_calculator.add_constant("boltzmann constant", "k = 1.380649 10^(-23) J/K");
+		m_calculator.add_constant("gas constant", "R = NA k");
+		m_calculator.add_constant("wien displacement constant", "b = 2.897771955 mm/K");
+		m_calculator.add_constant("atomic mass constant", "mu = 1.660 10^(-27) kg");
+		m_calculator.add_constant("electron mass", "me = 9.109 10^(-31) kg");
+		m_calculator.add_constant("proton mass", "mp = 1.007 mu");
+		m_calculator.add_constant("neutron mass", "mn = 1.008 mu");
+		m_calculator.add_constant("luminous efficacy", "Kcd = 683 lm/W");
+		m_calculator.add_constant("standard gravity", "g = 9.80665 m/s^2");
+		m_calculator.add_constant("hubble constant", "H0 = 2.25 10^(-18) 1/s");
+		m_symbols.set_system();
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
@@ -414,7 +445,6 @@ BOOL CParserDoc::OnNewDocument()
 		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 		return true;
 	}
-	m_symbols.set_system();
 
 	m_countIterators = 1;
 

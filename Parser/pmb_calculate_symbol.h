@@ -229,9 +229,10 @@ public:
 	};
 	typedef std::map<std::string, map_unit> ssmapb;
 
+	typedef std::map<std::string, std::string> mapss;
+	typedef std::map<std::string, mapss> mapmss;
+
 public:
-
-
 	symbol();
 	~symbol();
 
@@ -241,6 +242,8 @@ public:
 
 	bool set_system(const tpChar* name = nullptr);
 	bool add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group = nullptr);
+
+	bool add_constant(const tpChar* name);
 
 	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
 
@@ -254,6 +257,7 @@ protected:
 	system* _default_system;
 
 	ssmapb _grp_unit;
+	mapmss _constants;
 };
 
 

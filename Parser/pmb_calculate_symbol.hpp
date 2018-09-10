@@ -573,6 +573,30 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 	return bRet;
 }
 
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_constant(const tpChar* name)
+{
+	if (!_default_system || !name || !*name || !_defaultInsert)
+		return false;
+	std::list<std::string>& last_defined = _default_system->last_defined();
+	bool bRet = !last_defined.empty();
+	if (bRet)
+	{
+		bRet = false;
+		for (_tpMMap::const_iterator f = _map.begin(); f != _map.end(); ++f)
+		{
+			if (f->second == _defaultInsert)
+			{
+				bRet = true;
+				_constants[f->first][name] = last_defined.back();
+				break;
+			}
+		}
+		last_defined.clear();
+	}
+	return bRet;
+}
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>

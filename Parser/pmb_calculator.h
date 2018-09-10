@@ -24,6 +24,7 @@ public:
 	bool add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group = nullptr);
 	bool add_unit(const typename tpChar* expression);
 
+	bool add_constant(const typename tpChar* name, const typename tpChar* expression);
 };
 
 

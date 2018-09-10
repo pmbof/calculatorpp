@@ -65,4 +65,15 @@ inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expre
 
 
 
+template<class _BLOCK, class _OPRTABLE>
+bool calculator<_BLOCK, _OPRTABLE>::add_constant(const typename tpChar* name, const typename tpChar* expression)
+{
+//	if (_pBlock->variables()->defining_unit())
+//		return false;
+	calculate(expression);
+	return _pBlock->variables()->add_constant(name);
+}
+
+
+
 }

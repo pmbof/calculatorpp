@@ -31,9 +31,7 @@ inline void symbol<_TVALUE, _ITSTRING, _MAP>::addSetVariable(const std::string& 
 	if(it == _map.end())
 	{
 		_tpMap* nMap = new _tpMap;
-		if(!_defaultInsert)
-			_defaultInsert = nMap;
-		_map[set] = nMap;
+		_map[set] = _defaultInsert = nMap;
 	}
 }
 
