@@ -440,7 +440,7 @@ inline std::list<std::string>& system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::symbol()
-	: parser::symbol<_TVALUE, _ITSTRING, _MAP>(), _default_system(nullptr)
+	: parser::symbol<_TVALUE, _ITSTRING, _MAP>(), _define_system(nullptr), _save_last_define(false)
 {
 }
 
@@ -507,23 +507,23 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system(const tp
 {
 	if (!name)
 	{
-		_default_system = nullptr;
+		_define_system = nullptr;
 		return false;
 	}
 	map_system::const_iterator is = _msystems.find(name);
-	_default_system = is != _msystems.end() ? is->second : nullptr;
+	_define_system = is != _msystems.end() ? is->second : nullptr;
 }
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group)
 {
-	if (!_default_system)
+	if (!_define_system)
 		return false;
 
 	std::string sname(name ? name : "");
-	std::list<std::string> last_defined = _default_system->last_defined();
-	bool bRet = _default_system->add_by_name(sname.c_str(), val);
+	std::list<std::string> last_defined = _define_system->last_defined();
+	bool bRet = _define_system->add_by_name(sname.c_str(), val);
 	if (bRet)
 	{
 		if (group)
@@ -574,25 +574,36 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 }
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system_constants(const tpChar* name)
+{
+	_last_defined.clear();
+	if (_save_last_define = name)
+		add_set_variable(name);
+	return _save_last_define;
+}
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_constant(const tpChar* name)
 {
-	if (!_default_system || !name || !*name || !_defaultInsert)
+	if (!_default_insert || !name || !*name || !_save_last_define || _last_defined.empty())
 		return false;
-	std::list<std::string>& last_defined = _default_system->last_defined();
-	bool bRet = !last_defined.empty();
+	bool bRet = !_last_defined.back().empty();
 	if (bRet)
 	{
 		bRet = false;
 		for (_tpMMap::const_iterator f = _map.begin(); f != _map.end(); ++f)
 		{
-			if (f->second == _defaultInsert)
+			if (f->second == _default_insert)
 			{
 				bRet = true;
-				_constants[f->first][name] = last_defined.back();
+				while (!_last_defined.empty())
+				{
+					_constants[f->first][name] = _last_defined.back();
+					_last_defined.pop_back();
+				}
 				break;
 			}
 		}
-		last_defined.clear();
 	}
 	return bRet;
 }
@@ -602,13 +613,13 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_constant(const 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate)
 {
-	if (_default_system)
+	if (_define_system)
 	{
-		if (_default_system->find(symbol, value, canCreate))
+		if (_define_system->find(symbol, value, canCreate))
 			return true;
 	}
 
-	if (!_defaultSearch)
+	if (!_default_search)
 	{
 		for (_tpMMap::const_iterator it = _map.begin(); it != _map.end(); ++it)
 		{
@@ -622,7 +633,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 	}
 	else
 	{
-		for (_tpLstMap::const_iterator it = _defaultSearch->begin(); it != _defaultSearch->end(); ++it)
+		for (_tpLstMap::const_iterator it = _default_search->begin(); it != _default_search->end(); ++it)
 		{
 			_MAP::const_iterator i = (*it)->find(symbol);
 			if (i != (*it)->end())
@@ -635,13 +646,13 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 
 	for (map_system::const_iterator is = _msystems.begin(); is != _msystems.end(); ++is)
 	{
-		if (is->second == _default_system)
+		if (is->second == _define_system)
 			continue;
 		if (is->second->find(symbol, value, false))
 			return true;
 	}
 
-	if (_default_system && !canCreate)
+	if (_define_system && !canCreate)
 	{
 		map_dimension::const_iterator di = _dimension.find(symbol);
 		if (di != _dimension.end())
@@ -657,16 +668,20 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 		}
 	}
 
-	bool vret = canCreate && _defaultInsert;
+	bool vret = canCreate && _default_insert;
 	if (vret)
-		value = (*_defaultInsert)[symbol.getString()];
+	{
+		if (_save_last_define)
+			_last_defined.push_back(symbol.getString());
+		value = (*_default_insert)[symbol.getString()];
+	}
 	return vret;
 }
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::defining_unit() const
 {
-	return _default_system;
+	return _define_system;
 }
 
 

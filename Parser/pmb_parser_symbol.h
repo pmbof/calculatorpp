@@ -26,23 +26,25 @@ public:
 	symbol();
 	~symbol();
 
-	void addSetVariable(const std::string& set);
-	void addSetVariable(const std::string& set, _tpMap* vars);
-	void addSetSearch(const std::string& set, const std::string& defaultInsert, const _tpList& lst);
+	void add_set_variable(const std::string& set);
+	void add_set_variable(const std::string& set, _tpMap* vars);
+	void add_set_search(const std::string& set, const std::string& defaultInsert, const _tpList& lst);
 	
-	void selectSearch(const std::string& set) const;
+	void select_search(const std::string& set) const;
 
 	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
 	bool find(const _ITSTRING& symbol) const;
+
+	bool is_set_variable() const;
 
 	const _tpMMap* get() const;
 
 protected:
 	_tpMMap _map;
-	mutable _MAP* _defaultInsert;
+	mutable _MAP* _default_insert;
 
 	_tpMMapSearch _setSearch;
-	mutable const _tpLstMap* _defaultSearch;
+	mutable const _tpLstMap* _default_search;
 };
 
 

@@ -243,6 +243,7 @@ public:
 	bool set_system(const tpChar* name = nullptr);
 	bool add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group = nullptr);
 
+	bool set_system_constants(const tpChar* name = nullptr);
 	bool add_constant(const tpChar* name);
 
 	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
@@ -254,10 +255,13 @@ protected:
 	map_prefix _mprefix;
 
 	map_system _msystems;
-	system* _default_system;
+	system* _define_system;
 
 	ssmapb _grp_unit;
 	mapmss _constants;
+
+	bool _save_last_define;
+	std::list<std::string> _last_defined;
 };
 
 

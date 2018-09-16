@@ -301,8 +301,7 @@ BOOL CParserDoc::OnNewDocument()
 
 	try
 	{
-		m_symbols.set_system("SI");
-		m_symbols.addSetVariable("Constants");
+		m_symbols.set_system_constants("Constants");
 		m_calculator.add_constant("Archimedes' constant", "pi = 4 atg 1");
 		m_calculator.add_constant("Euler's number", "e = 2.7182818284590452353602874");
 		m_calculator.add_constant("Golden ratio", "phi = (1 + 5^(1/2))/2");
@@ -310,7 +309,9 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_constant("Khinchin's constant", "Kh = 2.685452001065306445309714835481795");
 		m_calculator.add_constant("Glaisher–Kinkelin", "A = 1.282427129100622636875342568869791727");
 		m_calculator.add_constant("Liouville's constant", "Lc = .7656250596046447753906250000000000007");
+		m_symbols.set_system_constants();
 
+		m_symbols.set_system("SI");
 		m_calculator.add_unit("meter", "m = 1L");
 		m_calculator.add_unit("second", "s = 1T");
 		m_calculator.add_unit("gram", "g = 10^(-3)M");
@@ -415,13 +416,13 @@ BOOL CParserDoc::OnNewDocument()
 		m_symbols.set_system("Currency");
 		m_calculator.add_unit("dollar = 1Crr");
 
-		m_symbols.addSetVariable("Physical Constants");
+		m_symbols.set_system();
+		m_symbols.set_system_constants("Physical Constants");
 		m_calculator.add_constant("speed of light in a vacuum", "c = 299792458 m/s");
 		m_calculator.add_constant("gravitational constant", "G = 6.67408 10^(-11) N m^2/kg^2");
 		m_calculator.add_constant("planck constant", "h = 6.62607015 10^(-34) J s");
 		m_calculator.add_constant("h c", "hc = h c");
 		m_calculator.add_constant("elementary charge", "e = 1.602176634 10^(-19) C");
-		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu0 = 4 pi 10^(-7) m/A");
 		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu0 = 4 pi 10^(-7) m/A");
 		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon0 = mhu0 / c^2");
 		m_calculator.add_constant("avogadro constant", "NA = 6.02214076 10^23 1/mol");
@@ -435,7 +436,7 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_constant("luminous efficacy", "Kcd = 683 lm/W");
 		m_calculator.add_constant("standard gravity", "g = 9.80665 m/s^2");
 		m_calculator.add_constant("hubble constant", "H0 = 2.25 10^(-18) 1/s");
-		m_symbols.set_system();
+		m_symbols.set_system_constants();
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
@@ -478,8 +479,8 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("f(1)", true, 1 + 4 + 1));
 
 	int errors = 0;
-	m_symbols.addSetVariable("Constants");
-	m_symbols.selectSearch("Constants");
+	m_symbols.add_set_variable("test");
+	m_symbols.select_search("Test");
 	for (int i = 0; i < test.size(); ++i)
 	{
 		bool bResult = false;
@@ -530,7 +531,7 @@ BOOL CParserDoc::OnNewDocument()
 		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 		return true;
 	}
-	m_symbols.selectSearch("Variables");
+	m_symbols.select_search("Variables");
 
 
 	GetSystemTime(&m_time_ini);
