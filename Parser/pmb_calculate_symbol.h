@@ -18,8 +18,10 @@ template<typename _CHAR, typename _POWER>
 class prefix
 {
 public:
-	prefix(const _CHAR* symbol, const _CHAR* name, _POWER power);
+	prefix(const _CHAR* symbol, const _CHAR* name, _POWER power, bool bShow);
 	~prefix();
+
+	const _CHAR* symbol() const;
 
 	bool operator<(const prefix& right) const;
 	bool less(const _CHAR* right, unsigned int len) const;
@@ -32,11 +34,15 @@ public:
 	short findName(const _CHAR* u) const;
 
 	double getFactor(short base) const;
+	double getFactor(short base, _POWER pow) const;
+
+	bool show() const;
 
 private:
 	_CHAR* _symbol;
 	_CHAR* _name;
 	_POWER _power;
+	bool _show;
 };
 
 
@@ -102,9 +108,14 @@ public:
 	prefix_base(const _BASE& inbase);
 	~prefix_base();
 
-	bool insert(const _CHAR* symbol, const _POWER& power, const _CHAR* name);
+	bool insert(const _CHAR* symbol, const _POWER& power, const _CHAR* name, bool bShow = true);
 
 	_BASE base() const;
+
+	template <typename _T>
+	const prefix* find_prefix(const _T& val, _BASE pow) const;
+
+	double getFactor(const prefix* pr, _BASE pow) const;
 
 	typename mapName::const_iterator find_by_name(const _ITSTRING& sfind) const;
 	typename mapName::const_iterator end_by_name() const;
@@ -156,12 +167,13 @@ protected:
 
 
 template<typename _POWER, typename _BASE, class _TVALUE,
-	class _ITSTRING = parser::item<char, short>::string, class _MAP = util::map<std::string, _TVALUE, _ITSTRING>>
+	class _ITSTRING = parser::item<char, short>::string, class _MAP = util::map<std::string, std::pair<_TVALUE, bool>, _ITSTRING>>
 class system: protected _MAP
 {
 public:
-	typedef typename _TVALUE::tpvalue tpvalue;
-	typedef typename tpvalue::unit tpUnit;
+	typedef typename _TVALUE::tpValue tpValue;
+	typedef typename _TVALUE::_TypeValue _TypeValue;
+	typedef typename tpValue::unit tpUnit;
 	typedef typename _ITSTRING::tpChar tpChar;
 	typedef typename tpUnit::_tpInt tpInt;
 	typedef typename tpUnit::dimension dimension;
@@ -171,6 +183,7 @@ public:
 
 	typedef prefix_base<tpChar, _POWER, _BASE, _ITSTRING> prefix;
 	typedef _MAP base;
+	typedef std::vector<std::string> vstring;
 
 public:
 	system(const map_dimension* dim, const prefix* pPrefix);
@@ -178,9 +191,11 @@ public:
 
 	bool find(const _ITSTRING& symbol, _TVALUE& value, bool canCreate);
 
-	bool add_by_name(const tpChar* name, const _TVALUE& val);
+	bool add_by_name(const tpChar* name, const _TVALUE& val, bool automatic);
 
-	std::list<std::string>& last_defined();
+	vstring& last_defined();
+
+	bool value(const _TVALUE& refVal, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
 
 protected:
 	const map_dimension* _dimension;
@@ -188,7 +203,7 @@ protected:
 	base _by_name;
 	bool _search_by_names;
 
-	std::list<std::string> _last_defined;
+	vstring _last_defined;
 };
 
 
@@ -209,12 +224,12 @@ public:
 	typedef _MAP _tpMap;
 
 	typedef typename _ITSTRING::tpChar tpChar;
-	typedef typename _TVALUE::tpvalue tpvalue;
-	typedef typename tpvalue::unit unit;
+	typedef typename _TVALUE::tpValue tpValue;
+	typedef typename tpValue::unit unit;
 	typedef typename unit::power_dimension power_dimension;
 	typedef typename unit::dimension dimension;
 	
-	typedef system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP> system;
+	typedef system<_POWER, _BASE, _TVALUE, _ITSTRING> system;
 	typedef typename system::map_dimension map_dimension;
 	typedef typename system::prefix prefix_base;
 	typedef std::map<std::string, prefix_base*> map_prefix;
@@ -241,7 +256,9 @@ public:
 	bool add_system(const tpChar* name, const tpChar* prefix = nullptr);
 
 	bool set_system(const tpChar* name = nullptr);
-	bool add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group = nullptr);
+	bool add_by_name(const tpChar* name, const _TVALUE& val, bool automatic, const tpChar* group = nullptr);
+
+	bool set_default_system(const tpChar* name);
 
 	bool set_system_constants(const tpChar* name = nullptr);
 	bool add_constant(const tpChar* name);
@@ -250,12 +267,16 @@ public:
 
 	bool defining_unit() const;
 
+	bool value(const tpChar* path, const tpChar* varname, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
+	bool value(const _TVALUE& refVal, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
+
 protected:
 	map_dimension _dimension;
 	map_prefix _mprefix;
 
 	map_system _msystems;
 	system* _define_system;
+	system* _default_system;
 
 	ssmapb _grp_unit;
 	mapmss _constants;
@@ -263,6 +284,7 @@ protected:
 	bool _save_last_define;
 	std::list<std::string> _last_defined;
 };
+
 
 
 

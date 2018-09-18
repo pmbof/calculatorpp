@@ -21,8 +21,8 @@ public:
 	calculator(_tdOprTable* operation_table, _BLOCK* pBlock);
 	~calculator();
 
-	bool add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group = nullptr);
-	bool add_unit(const typename tpChar* expression);
+	bool add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group = nullptr, bool automatic = true);
+	bool add_unit(const typename tpChar* expression, bool automatic = true);
 
 	bool add_constant(const typename tpChar* name, const typename tpChar* expression);
 };

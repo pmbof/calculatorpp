@@ -19,8 +19,8 @@ namespace units
 
 
 template<typename _CHAR, typename _POWER>
-inline prefix<_CHAR, _POWER>::prefix(const _CHAR* symbol, const _CHAR* name, _POWER power)
-	: _power(power)
+inline prefix<_CHAR, _POWER>::prefix(const _CHAR* symbol, const _CHAR* name, _POWER power, bool bShow)
+	: _power(power), _show(bShow)
 {
 	_symbol = new _CHAR[strlen(symbol) + 1];
 	strcpy(_symbol, symbol);
@@ -40,6 +40,12 @@ inline prefix<_CHAR, _POWER>::~prefix()
 	delete[] _symbol;
 	if (_name)
 		delete[] _name;
+}
+
+template<typename _CHAR, typename _POWER>
+inline const _CHAR * prefix<_CHAR, _POWER>::symbol() const
+{
+	return _symbol;
 }
 
 
@@ -130,6 +136,20 @@ inline double prefix<_CHAR, _POWER>::getFactor(short base) const
 }
 
 
+template<typename _CHAR, typename _POWER>
+inline double prefix<_CHAR, _POWER>::getFactor(short base, _POWER pow) const
+{
+	return ::pow((double)base, (double)_power * pow);
+}
+
+
+template<typename _CHAR, typename _POWER>
+inline bool prefix<_CHAR, _POWER>::show() const
+{
+	return _show;
+}
+
+
 
 
 
@@ -156,14 +176,14 @@ inline prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::~prefix_base()
 
 
 template<typename _CHAR, typename _POWER, typename _BASE, class _ITSTRING, class _MAP>
-inline bool prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::insert(const _CHAR* symbol, const _POWER& power, const _CHAR* name)
+inline bool prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::insert(const _CHAR* symbol, const _POWER& power, const _CHAR* name, bool bShow)
 {
 	_ITSTRING istring(symbol, strlen(symbol));
 	const_iterator fs = find(istring);
 	bool bRet = fs == end();
 	if (bRet)
 	{
-		prefix* pNew = new prefix(symbol, name, power);
+		prefix* pNew = new prefix(symbol, name, power, bShow);
 		(*this)[pNew] = false;
 		if (name)
 			_byName[pNew] = true;
@@ -177,12 +197,43 @@ inline _BASE prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::base() const
 	return _base;
 }
 
+
+template<typename _CHAR, typename _POWER, typename _BASE, class _ITSTRING, class _MAP>
+template<typename _T>
+inline const typename prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::prefix*
+prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::find_prefix(const _T& val, _BASE pow) const
+{
+	const prefix* vret = nullptr;
+	double last = 0;
+	for (const_iterator i = begin(); i != end(); ++i)
+	{
+		if (!i->first->show())
+			continue;
+		double f = i->first->getFactor(_base, pow);
+		if (0 < val && last < f && f <= val || val < 0 && f < last && val <= f)
+		{
+			last = f;
+			vret = i->first;
+		}
+	}
+	return vret;
+}
+
+
+template<typename _CHAR, typename _POWER, typename _BASE, class _ITSTRING, class _MAP>
+inline double prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::getFactor(const prefix* pr, _BASE pow) const
+{
+	return pr->getFactor(_base, pow);
+}
+
+
 template<typename _CHAR, typename _POWER, typename _BASE, class _ITSTRING, class _MAP>
 inline typename prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::mapName::const_iterator 
 	prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::find_by_name(const _ITSTRING& sfind) const
 {
 	return _byName.find(sfind);
 }
+
 
 template<typename _CHAR, typename _POWER, typename _BASE, class _ITSTRING, class _MAP>
 inline typename prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::mapName::const_iterator 
@@ -330,7 +381,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 	const_iterator ui = _MAP::find(symbol);
 	if (ui != end())
 	{
-		value = const_cast<_TVALUE&>(ui->second);
+		value = const_cast<_TVALUE&>(ui->second.first);
 		return true;
 	}
 	if (_search_by_names)
@@ -338,7 +389,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 		ui = _by_name.find(symbol);
 		if (ui != _by_name.end())
 		{
-			value = const_cast<_TVALUE&>(ui->second);
+			value = const_cast<_TVALUE&>(ui->second.first);
 			return true;
 		}
 	}
@@ -358,7 +409,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 			prefix::const_iterator pf = _prefix->find(sprefix);
 			if (pf == _prefix->end())
 				continue;
-			value = _TVALUE(new _TVALUE::tpvalue(*(ui->second)));
+			value = _TVALUE(new _TVALUE::tpValue(*(ui->second.first)));
 			(*value)->_number *= pf->first->getFactor(_prefix->base());
 			return true;
 		}
@@ -378,7 +429,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 				typename prefix::mapName::const_iterator pf = _prefix->find_by_name(sprefix);
 				if (pf == _prefix->end_by_name())
 					continue;
-				value = _TVALUE(new _TVALUE::tpvalue(*(ui->second)));
+				value = _TVALUE(new _TVALUE::tpValue(*(ui->second.first)));
 				(*value)->_number *= pf->first->getFactor(_prefix->base());
 				return true;
 			}
@@ -388,24 +439,168 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 	if (canCreate)
 	{
 		_last_defined.push_back(symbol.getString());
-		value = (*this)[symbol.getString()];
+		value = (*this)[symbol.getString()].first;
 	}
 	return canCreate;
 }
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
-inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val)
+inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val, bool automatic)
 {
-	_by_name.insert(base::value_type(std::string(name), const_cast<_TVALUE&>(val)));
+	std::pair<_TVALUE, bool>p(const_cast<_TVALUE&>(val), automatic);
+	_by_name.insert(base::value_type(std::string(name), p));
+	for (int i = 0; i < _last_defined.size(); ++i)
+		(*this)[_last_defined[i]].second = automatic;
 	_last_defined.clear();
 	return true;
 }
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
-inline std::list<std::string>& system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::last_defined()
+inline typename system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::vstring&
+	system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::last_defined()
 {
 	return _last_defined;
+}
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const _TVALUE& refVal, _TypeValue& val, std::string& sunit, bool bPrefix) const
+{
+	bool bRet;
+	if (refVal->dimensionless())
+	{
+		sunit.clear();
+		val = refVal->_number;
+		bRet = false;
+	}
+	else
+	{
+		bRet = false;
+		if (this)
+		{
+			struct s_powunit {
+				s_powunit(const std::string& s, const tpUnit& u, tpUnit::_tpInt p)
+					: symbol(s), unit(u), pow(p) { }
+
+				std::string symbol;
+				tpUnit unit;
+				tpUnit::_tpInt pow;
+			};
+
+			struct s_unit {
+				typedef std::vector<s_powunit> vector;
+
+				s_unit(const std::string& s, const tpValue& _unit, tpUnit::_tpInt _pow)
+					: symbol(s), unit(_unit), ppow(1), pow(_pow) { }
+
+				bool operator <(const s_unit& right) const {
+					return unit._unit.nDims() == right.unit._unit.nDims()
+						&& (vunit.size() < right.vunit.size()
+							|| vunit.size() == right.vunit.size() && (0 < ppow && ppow < right.ppow || ppow < 0 && right.ppow < ppow
+								|| ppow == right.ppow && unit._number < right.unit._number))
+						|| unit._unit.nDims() < right.unit._unit.nDims();
+				}
+
+				void insert() {
+					vector::iterator i;
+					for (i = vunit.begin(); i != vunit.end(); ++i)
+					{
+						if (0 < pow && pow < i->pow || pow < 0 && i->pow < pow)
+							break;
+					}
+					vunit.insert(i, s_powunit(symbol, unit._unit, pow));
+				}
+
+				void set(const std::string& s, const tpValue& u, tpUnit::_tpInt p) {
+					insert();
+					symbol = s;
+					unit = u;
+					pow = p;
+					ppow *= p;
+				}
+
+				std::string str(const prefix* pr) {
+					insert();
+					std::stringstream ss;
+					factor = 1;
+					for (int i = 0; i < vunit.size(); ++i)
+					{
+						if (vunit[i].pow < 0)
+							ss << (i ? "/" : "1/");
+						else if (i)
+							ss << " ";
+						if (!i && pr)
+						{
+							const prefix::prefix* ppr = pr->find_prefix(unit._number, vunit[i].pow);
+							if (ppr)
+							{
+								factor = pr->getFactor(ppr, vunit[i].pow);
+								ss << ppr->symbol();
+							}
+						}
+						ss << vunit[i].symbol;
+						if (1 < vunit[i].pow || vunit[i].pow < -1)
+						{
+							ss << "^";
+							if (vunit[i].pow < 0)
+								ss << -vunit[i].pow;
+							else
+								ss << vunit[i].pow;
+						}
+					}
+					return ss.str();
+				}
+
+				std::string symbol;
+				tpValue unit;
+				vector vunit;
+				tpUnit::_tpInt pow;
+				tpUnit::_tpInt ppow;
+				tpValue::_TypeValue factor;
+			};
+
+			std::vector<s_unit> vunit;
+			for (base::const_iterator iu = begin(); iu != end(); ++iu)
+			{
+				if (!iu->second.second)
+					continue;
+				tpUnit::_tpInt pow = refVal->_unit.compare(iu->second.first->_unit);
+				if (pow)
+				{
+					for (int i = 0; i < vunit.size(); ++i)
+					{
+						tpUnit::_tpInt pow2 = vunit[i].unit._unit.compare(iu->second.first->_unit);
+						if (pow2)
+							vunit[i].set(iu->first, vunit[i].unit / iu->second.first->pow(pow2), pow2);
+					}
+					vunit.push_back(s_unit(iu->first, **refVal / iu->second.first->pow(pow), pow));
+					if (pow == 1 && vunit.back().unit.dimensionless())
+						break;
+				}
+			}
+			int min;
+			for (int i = 0; i < vunit.size(); ++i)
+			{
+				if (!i)
+					min = i;
+				else if (vunit[i] < vunit[min])
+					min = i;
+			}
+			if (bRet = vunit.size())
+			{
+				sunit = vunit[min].str(bPrefix ? _prefix : nullptr);
+				val = vunit[min].unit._number / vunit[min].factor;
+			}
+		}
+
+		if (!bRet)
+		{
+			sunit = refVal->_unit.get_dimension();
+			val = refVal->_number;
+		}
+		bRet = true;
+	}
+	return bRet;
 }
 
 
@@ -440,7 +635,7 @@ inline std::list<std::string>& system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::symbol()
-	: parser::symbol<_TVALUE, _ITSTRING, _MAP>(), _define_system(nullptr), _save_last_define(false)
+	: parser::symbol<_TVALUE, _ITSTRING, _MAP>(), _define_system(nullptr), _save_last_define(false), _default_system(nullptr)
 {
 }
 
@@ -516,14 +711,14 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system(const tp
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
-inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val, const tpChar* group)
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const tpChar* name, const _TVALUE& val, bool automatic, const tpChar* group)
 {
 	if (!_define_system)
 		return false;
 
 	std::string sname(name ? name : "");
-	std::list<std::string> last_defined = _define_system->last_defined();
-	bool bRet = _define_system->add_by_name(sname.c_str(), val);
+	system::vstring last_defined = _define_system->last_defined();
+	bool bRet = _define_system->add_by_name(sname.c_str(), val, automatic);
 	if (bRet)
 	{
 		if (group)
@@ -571,6 +766,22 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 		}
 	}
 	return bRet;
+}
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_default_system(const tpChar* name)
+{
+	if (name)
+	{
+		map_system::const_iterator cs = _msystems.find(name);
+		if (cs != _msystems.end())
+			_default_system = cs->second;
+		else
+			_default_system = nullptr;
+	}
+	else
+		_default_system = nullptr;
+	return _default_system;
 }
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
@@ -657,13 +868,13 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 		map_dimension::const_iterator di = _dimension.find(symbol);
 		if (di != _dimension.end())
 		{
-			value = _TVALUE(new _TVALUE::tpvalue(di->first));
+			value = _TVALUE(new _TVALUE::tpValue(di->first));
 			return true;
 		}
 		map_dimension::mapName::const_iterator din = _dimension.find_by_name(symbol);
 		if (din != _dimension.end_by_name())
 		{
-			value = _TVALUE(new _TVALUE::tpvalue(din->second));
+			value = _TVALUE(new _TVALUE::tpValue(din->second));
 			return true;
 		}
 	}
@@ -678,10 +889,54 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 	return vret;
 }
 
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::defining_unit() const
 {
 	return _define_system;
+}
+
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpChar* path, const tpChar* varname, _TypeValue& val, std::string& units, bool bPrefix) const
+{
+	if (!varname)
+		return false;
+	if (!path)
+	{
+		if (_default_insert)
+		{
+			_tpMap::const_iterator iv = _default_insert->find(varname);
+			if (iv != _default_insert->end())
+				return value(iv->second, val, units);
+		}
+		for (_tpMMap::const_iterator im = _map.begin(); im != _map.end(); ++im)
+		{
+			if (im->second == _default_insert)
+				continue;
+			_tpMap::const_iterator iv = im->second->find(varname);
+			if (iv != im->second->end())
+				return value(iv->second, val, units);
+		}
+	}
+	else
+	{
+		_tpMMap::const_iterator im = _map.find(path);
+		if (im != _map.end())
+		{
+			_tpMap::const_iterator iv = im->second->find(varname);
+			if (iv != im->second->end())
+				return value(iv->second, val, units);
+		}
+	}
+	return false;
+}
+
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const _TVALUE& refVal, _TypeValue& val, std::string& sunit, bool bPrefix) const
+{
+	return _default_system->value(refVal, val, sunit, bPrefix);
 }
 
 

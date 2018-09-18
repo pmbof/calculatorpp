@@ -44,23 +44,23 @@ calculator<_BLOCK, _OPRTABLE>::~calculator()
 
 
 template<class _BLOCK, class _OPRTABLE>
-inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group)
+inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group, bool automatic)
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
 	calculate(expression);
-	return _pBlock->variables()->add_by_name(name, _pBlock->tresult(), group);
+	return _pBlock->variables()->add_by_name(name, _pBlock->tresult(), automatic, group);
 }
 
 
 
 template<class _BLOCK, class _OPRTABLE>
-inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expression)
+inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expression, bool automatic)
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
 	calculate(expression);
-	return _pBlock->variables()->add_by_name(nullptr, _pBlock->tresult());
+	return _pBlock->variables()->add_by_name(nullptr, _pBlock->tresult(), automatic);
 }
 
 

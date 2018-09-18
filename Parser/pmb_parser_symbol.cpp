@@ -86,8 +86,8 @@ inline void symbol<_TVALUE, _ITSTRING, _MAP>::add_set_search(const std::string& 
 template<class _TVALUE, class _ITSTRING, class _MAP>
 inline void symbol<_TVALUE, _ITSTRING, _MAP>::select_search(const std::string& set) const
 {
-	_tpMMapSearch::const_iterator i = _setSearch.find(set);
-	if(i != _setSearch.end())
+	_tpMMapSearch::const_iterator i = _set_search.find(set);
+	if(i != _set_search.end())
 	{
 		_default_insert = i->second.first;
 		_default_search = &i->second.second;

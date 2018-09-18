@@ -129,7 +129,7 @@ inline typename transporter<_VALUE, _NREF>::thisc& transporter<_VALUE, _NREF>::o
 			if (right._prv)
 			{
 				if (right._prv->variable)
-					_prv->pvalue = right._prv->pvalue ? new tpvalue(*right._prv->pvalue) : nullptr;
+					_prv->pvalue = right._prv->pvalue ? new tpValue(*right._prv->pvalue) : nullptr;
 				else
 					_prv->pvalue = right.release();
 			}
@@ -370,7 +370,7 @@ template<class _TVALUE, typename _NARGS>
 inline void transporter_args<_TVALUE, _NARGS>::placeForResult()
 {
 	if (_result.isNull())
-		_result = new transporter::tpvalue;
+		_result = new transporter::tpValue;
 }
 
 template<class _TVALUE, typename _NARGS>

@@ -404,6 +404,41 @@ inline rational<_INT> rational<_INT>::operator/(const _INT& right) const
 	return rational<_INT>(n, d);
 }
 
+template<typename _INT>
+inline bool rational<_INT>::zero() const
+{
+	return !numerator;
+}
+
+template<typename _INT>
+inline bool rational<_INT>::unit() const
+{
+	return numerator == denominator;
+}
+
+template<typename _INT>
+inline bool rational<_INT>::natural() const
+{
+	return denominator == 1 && 0 <= numerator || denominator == numerator || denominator == -1 && numerator < 0;
+}
+
+template<typename _INT>
+inline bool rational<_INT>::integer() const
+{
+	return denominator == 1 || denominator == -1;
+}
+
+template<typename _INT>
+inline _INT rational<_INT>::proportionality(const rational<_INT>& right) const
+{
+	_INT vret;
+	if (numerator % right.numerator == 0 && right.denominator % denominator == 0)
+		vret = numerator / right.numerator * right.denominator / denominator;
+	else
+		vret = 0;
+	return vret;
+}
+
 
 
 
@@ -752,11 +787,12 @@ inline bool unit<_INT, _CHAR, _SZSTR>::compressVector(power_dimension* dim, ndim
 {
 	for (ndim i = 0; i < *nDim; ++i)
 	{
-		if ((!dim[i] || dim[i].dim == nullptr) && i + 1 < *nDim)
+		if ((!dim[i] || dim[i].dim == nullptr))
 		{
 			for (int j = i + 1; j < *nDim; ++j)
 				dim[j - 1] = dim[j];
-			--i;
+			if (i + 1 < *nDim)
+				--i;
 			--*nDim;
 		}
 	}
@@ -833,6 +869,75 @@ inline void unit<_INT, _CHAR, _SZSTR>::clear()
 	_capacity = _nDims = ndim(0);
 }
 
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline _INT unit<_INT, _CHAR, _SZSTR>::compare(const unit& right) const
+{
+	if (_nDims < right._nDims)
+		return 0;
+	bool found = false;
+	_INT proportionality = 0;
+	for (ndim r = 0; r < right._nDims; ++r)
+	{
+		_INT prop = 0;
+		for (ndim l = 0; l < _nDims; ++l)
+		{
+			if (_dim[l].dim == right._dim[r].dim)
+			{
+				prop = _dim[l].proportionality(right._dim[r]);
+				break;
+			}
+		}
+		if (prop)
+		{
+			if (!found)
+				proportionality = prop;
+			else if (prop < proportionality)
+				proportionality = prop;
+			found = true;
+		}
+		else
+			return 0;
+	}
+	return proportionality;
+}
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline std::string unit<_INT, _CHAR, _SZSTR>::get_dimension() const
+{
+	std::string str;
+	for (ndim d = 0; d < _nDims; ++d)
+	{
+		if (!_dim[d].zero())
+		{
+			std::stringstream ss;
+			std::string sdim(_dim[d].dim->symbol(), _dim[d].dim->symbol_size());
+			if (!_dim[d].unit())
+			{
+				sdim += "^";
+				ss << _dim[d].numerator;
+				if (!_dim[d].natural())
+				{
+					sdim += "(";
+					sdim += ss.str();
+					if (!_dim[d].integer())
+					{
+						ss.str("");
+						sdim += "/";
+						ss << _dim[d].denominator;
+					}
+					sdim += ")";
+				}
+				else
+					sdim += ss.str();
+			}
+			sdim = "[" + sdim + "]";
+			str += sdim;
+		}
+	}
+	return str;
+}
+
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
 inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::operator*(const unit& right) const
@@ -881,6 +986,12 @@ inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _INT& p) 
 }
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
+inline bool unit<_INT, _CHAR, _SZSTR>::dimensionless() const
+{
+	return !_nDims;
+}
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
 inline bool unit<_INT, _CHAR, _SZSTR>::one_dimension() const
 {
 	return _nDims == 1 && _dim[0].numerator == _dim[0].denominator;
@@ -898,6 +1009,13 @@ inline const typename unit<_INT, _CHAR, _SZSTR>::dimension*
 	unit<_INT, _CHAR, _SZSTR>::get_dimension(ndim nd) const
 {
 	return _dim[nd].dim;
+}
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline const typename unit<_INT, _CHAR, _SZSTR>::power_dimension*
+	unit<_INT, _CHAR, _SZSTR>::get_powdimension(ndim nd) const
+{
+	return _dim + nd;
 }
 
 
@@ -1020,6 +1138,12 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const dimension * dim)
 {
 }
 
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _TYPE& n, const unit& u)
+	: _number(n), _unit(u)
+{
+}
+
 
 
 
@@ -1093,7 +1217,9 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::substraction(const _MyT& left
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::exponentiation(const _MyT& left, const _MyT& right)
 {
-	_number = pow(left._number, right._number);
+	if (!right._unit.dimensionless())
+		throw "exponent must be dimensionless";
+	_number = ::pow(left._number, right._number);
 	_unit = left._unit.pow(right._number);
 }
 
@@ -1159,6 +1285,23 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg2(const _MyT& opposite, co
 	_number = ::atan2(opposite._number, adjacent._number);
 }
 
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
+	magnitude<_TYPE, _INT, _CHAR, _SZSTR>::pow(_TypeInt p) const
+{
+	return magnitude(::pow(_number, p), _unit.pow(p));
+}
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
+	magnitude<_TYPE, _INT, _CHAR, _SZSTR>::operator/(const magnitude<_TYPE, _INT, _CHAR, _SZSTR>& right) const
+{
+	if (!right._number)
+		throw "Divide by zero";
+	return magnitude(_number / right._number, _unit / right._unit);
+}
+
 
 
 // Check:
@@ -1193,7 +1336,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::integer() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::dimensionless() const
 {
-	return !_unit.nDims();
+	return _unit.dimensionless();
 }
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>

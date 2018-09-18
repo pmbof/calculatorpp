@@ -96,6 +96,13 @@ struct rational
 	rational operator*(const _INT& right) const;
 	rational operator/(const _INT& right) const;
 
+	bool zero() const;
+	bool unit() const;
+	bool natural() const;
+	bool integer() const;
+
+	_INT proportionality(const rational<_INT>& right) const;
+
 	template<typename _INT>
 	friend rational<_INT> operator+(const _INT& left, const rational<_INT>& right);
 	template<typename _INT>
@@ -215,15 +222,19 @@ struct unit
 	unit pow(const _INT& p) const;
 	unit root(const _INT& p) const;
 
+	bool dimensionless() const;
 	bool one_dimension() const;
 	const dimension* operator[](ndim nd) const;
 	const dimension* get_dimension(ndim nd) const;
+	const power_dimension* get_powdimension(ndim nd) const;
 
 	void clean();
 
 	void clear();
 
-	std::string getDimension() const;
+	_INT compare(const unit& right) const;
+
+	std::string get_dimension() const;
 
 private:
 	ndim calcNewDim(const unit& right) const;
@@ -281,6 +292,7 @@ public:
 	explicit magnitude(const _MyT* src);
 	explicit magnitude(const _CHAR* str, const _SZSTR& len);
 	explicit magnitude(const dimension* dim);
+	explicit magnitude(const _TYPE& n, const unit& u);
 
 	// Operators:
 	void positive(const _MyT& right);
@@ -312,6 +324,9 @@ public:
 	void atg(const _MyT& arg);
 	void atg2(const _MyT& opposite, const _MyT& adjacent);
 
+
+	magnitude pow(_TypeInt p) const;
+	magnitude operator/(const magnitude& right) const;
 
 	// check:
 	bool zero() const;

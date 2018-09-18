@@ -15,7 +15,7 @@ template<class _TVALUE>
 struct operation
 {
 	typename typedef _TVALUE transporter_args;
-	typedef typename _TVALUE::tpvalue VALUE;
+	typedef typename _TVALUE::tpValue VALUE;
 	typedef void(*tpFunc)(transporter_args& args);
 
 

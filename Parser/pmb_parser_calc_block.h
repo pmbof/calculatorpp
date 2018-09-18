@@ -45,7 +45,7 @@ public:
 	typedef typename iterator::nargs nargs;
 	typedef std::map<nargs, iterator*> map_nargs_iterator;
 	typedef util::map<std::string, map_nargs_iterator, istring> mapfnc;
-	typedef typename transporter::tpvalue tpvalue;
+	typedef typename transporter::tpValue tpValue;
 
 	typedef typename iterator::tnode tnode;
 	typedef typename _BIN_FNCTABLE::build_in_function build_in_function;
@@ -114,8 +114,8 @@ public:
 	transporter_args& getValues();
 	void next();
 	typename const transporter& tresult() const;
-	typename const tpvalue& result() const;
-	typename const tpvalue::_TypeValue& nresult() const;
+	typename const tpValue& result() const;
+	typename const tpValue::_TypeValue& nresult() const;
 	const tnode* rootNode() const;
 
 	stack* actualStack();

@@ -366,7 +366,7 @@ inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter&
 
 
 template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
-inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpvalue& 
+inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpValue& 
 	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::result() const
 {
 	if (!_lastResult || _lastResult->getValues().result().isNull())
@@ -375,7 +375,7 @@ inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpvalue&
 }
 
 template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
-inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpvalue::_TypeValue&
+inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpValue::_TypeValue&
 	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::nresult() const
 {
 	if (!_lastResult || _lastResult->getValues().result().isNull())
@@ -535,7 +535,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 			else if (childs[arg]->getType() == ndNumber)
 			{
 				const istring& snumber = childs[arg]->getString(st->_expr);
-				*vals[arg] = new transporter::tpvalue(snumber, childs[arg]->len());
+				*vals[arg] = new transporter::tpValue(snumber, childs[arg]->len());
 			}
 			else if (!st->_it_calc->is_varDependent() && st->_it_calc->lastNode() != childs[arg] && st->_it_calc->lastJoinNode() != childs[arg])
 			{

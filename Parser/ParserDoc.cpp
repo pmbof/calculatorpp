@@ -260,9 +260,9 @@ BOOL CParserDoc::OnNewDocument()
 	prefix->insert("G",    9, "giga");
 	prefix->insert("M",    6, "mega");
 	prefix->insert("k",    3, "kilo");
-	prefix->insert("h",    2, "hecto");
-	prefix->insert("da",   1, "deka");
-	prefix->insert("d",   -1, "deci");
+	prefix->insert("h",    2, "hecto", false);
+	prefix->insert("da",   1, "deka",  false);
+	prefix->insert("d",   -1, "deci",  false);
 	prefix->insert("c",   -2, "centi");
 	prefix->insert("m",   -3, "mili");
 	prefix->insert("mhu", -6, "micro");
@@ -327,13 +327,13 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_unit("hour", "h = 60min");
 		m_calculator.add_unit("day", "d = 24h");
 		// degree = pi / 180 rad
-		m_calculator.add_unit("degree = pi/180 rad");
-		m_calculator.add_unit("ton", "t = 10^3kg");
+		m_calculator.add_unit("degree = pi/180 rad", false);
+		m_calculator.add_unit("ton", "t = 10^3kg", false);
 		m_calculator.add_unit("neper", "Np = 1");
 
 
 		m_symbols.set_system("SI");
-		m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency");
+		m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency", false);
 		m_calculator.add_unit("newton", "N = kg m/s^2", "force");
 		m_calculator.add_unit("pascal", "Pa = N/m^2", "pressure, stress");
 		m_calculator.add_unit("joule", "J = N m", "energy, work, quantity of heat");
@@ -349,12 +349,12 @@ BOOL CParserDoc::OnNewDocument()
 		// °C    = ???                   Celsius temperature
 		m_calculator.add_unit("lumen", "lm = cd sr", "luminous flux");
 		m_calculator.add_unit("lux", "lx = lm/m^2", "illuminance");
-		m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)");
+		m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)", false);
 		m_calculator.add_unit("gray", "Gy = J/kg", "absorbed dose, specific energy (imparted), kerma");
 		m_calculator.add_unit("sievert", "Sv = J/kg", "dose equivalent");
 		m_calculator.add_unit("katal", "kat = mol/s", "catalytic activity");
 
-		m_calculator.add_unit("litre", "L = 1dm^3", "volume");
+		m_calculator.add_unit("litre", "L = 1dm^3", "volume", false);
 
 		m_symbols.set_system("cgs");
 		m_calculator.add_unit("gal", "Gal = cm/s^2", "acceleration");
@@ -402,7 +402,7 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_unit("british_thermal_unit", "Btu = 1055 J");
 		m_calculator.add_unit("calorie", "cal = 4.184 J");
 		m_calculator.add_unit("large_calorie", "Cal = kcal = 1000 cal");
-		m_symbols.add_by_name("food_calorie", _block.tresult());
+		m_symbols.add_by_name("food_calorie", _block.tresult(), false);
 		m_calculator.add_unit("horse_power", "hp = 745.7 W");
 
 		m_symbols.set_system("No prefix");
@@ -447,6 +447,10 @@ BOOL CParserDoc::OnNewDocument()
 		return true;
 	}
 
+	m_symbols.set_default_system("SI");
+	double val;
+	std::string sunit;
+	m_symbols.value(nullptr, "c", val, sunit);
 	m_countIterators = 1;
 
 	m_expr = "a (sin(b + 3, zl), 4 ^ 7 * z^i * 2^3 + 1*2 + 3 + 4 +5, beta(c-3)alpha,  (8*(9*(h + 5))^(j-k)) )(2c) = - a*b+c";

@@ -15,6 +15,7 @@ template<class _TVALUE, class _ITSTRING = item<char, short>::string, class _MAP 
 class symbol
 {
 public:
+	typedef typename _TVALUE::_TypeValue _TypeValue;
 	typedef _MAP _tpMap;
 	typedef std::map<std::string, _MAP*> _tpMMap;
 	typedef std::list<_MAP*> _tpLstMap;
@@ -43,7 +44,7 @@ protected:
 	_tpMMap _map;
 	mutable _MAP* _default_insert;
 
-	_tpMMapSearch _setSearch;
+	_tpMMapSearch _set_search;
 	mutable const _tpLstMap* _default_search;
 };
 

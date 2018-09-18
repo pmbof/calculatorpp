@@ -18,9 +18,10 @@ class transporter
 {
 public:
 	typedef typename transporter<_VALUE, _NREF> thisc;
-	typedef _VALUE tpvalue;
+	typedef _VALUE tpValue;
 	typedef _VALUE* ptr_value;
 	typedef _NREF nref;
+	typedef typename _VALUE::_TypeValue _TypeValue;
 
 public:
 	transporter();
@@ -71,7 +72,7 @@ public:
 	typedef typename transporter_args<_TVALUE, _NARGS> thisc;
 	typedef typename _TVALUE transporter;
 	typedef typename _NARGS nargs;
-	typedef typename transporter::tpvalue tpvalue;
+	typedef typename transporter::tpValue tpValue;
 	typedef typename transporter::ptr_value ptr_tpvalue; 
 
 public:
