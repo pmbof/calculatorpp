@@ -448,9 +448,19 @@ BOOL CParserDoc::OnNewDocument()
 	}
 
 	m_symbols.set_default_system("SI");
+
+	const char* symb[] = { "c", "g", "G", "h", "e" };
 	double val;
 	std::string sunit;
-	m_symbols.value(nullptr, "c", val, sunit);
+	for (int i = 0; i < sizeof(symb) / sizeof(*symb); ++i)
+	{
+		bool bFound = m_symbols.value(nullptr, symb[i], val, sunit);
+		if (!bFound)
+			log->trace(pmb::logError, "%d. symbol %s not found!\n", i, symb[i]);
+		else
+			log->trace(pmb::logDebug, "%d. %s = %f%s\n", i, symb[i], val, sunit.c_str());
+	}
+
 	m_countIterators = 1;
 
 	m_expr = "a (sin(b + 3, zl), 4 ^ 7 * z^i * 2^3 + 1*2 + 3 + 4 +5, beta(c-3)alpha,  (8*(9*(h + 5))^(j-k)) )(2c) = - a*b+c";

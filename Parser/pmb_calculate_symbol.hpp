@@ -600,7 +600,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const _TVALUE
 		}
 		bRet = true;
 	}
-	return bRet;
+	return true;
 }
 
 
@@ -768,6 +768,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 	return bRet;
 }
 
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_default_system(const tpChar* name)
 {
@@ -855,12 +856,15 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 		}
 	}
 
-	for (map_system::const_iterator is = _msystems.begin(); is != _msystems.end(); ++is)
+	if (!canCreate)
 	{
-		if (is->second == _define_system)
-			continue;
-		if (is->second->find(symbol, value, false))
-			return true;
+		for (map_system::const_iterator is = _msystems.begin(); is != _msystems.end(); ++is)
+		{
+			if (is->second == _define_system)
+				continue;
+			if (is->second->find(symbol, value, false))
+				return true;
+		}
 	}
 
 	if (_define_system && !canCreate)
