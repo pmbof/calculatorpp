@@ -283,6 +283,7 @@ BOOL CParserDoc::OnNewDocument()
 	prefix->insert("k", 10, "kilo");
 	m_symbols.add_prefix("memory", prefix);
 
+	// adding system units without prefix
 	m_symbols.add_system("No prefix");
 	// adding Internation System of Units (SI):
 	m_symbols.add_system("SI", "decimal");
@@ -326,7 +327,6 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_unit("minute", "min = 60s");
 		m_calculator.add_unit("hour", "h = 60min");
 		m_calculator.add_unit("day", "d = 24h");
-		// degree = pi / 180 rad
 		m_calculator.add_unit("degree = pi/180 rad", false);
 		m_calculator.add_unit("ton", "t = 10^3kg", false);
 		m_calculator.add_unit("neper", "Np = 1");
@@ -450,7 +450,8 @@ BOOL CParserDoc::OnNewDocument()
 	m_symbols.set_default_system("SI");
 	double val;
 	std::string sunit;
-	m_symbols.value(nullptr, "c", val, sunit);
+	m_calculator.calculate("distancia_sol_tierra = c * 8min");
+	m_symbols.value(nullptr, "distancia_sol_tierra", val, sunit);
 	m_countIterators = 1;
 
 	m_expr = "a (sin(b + 3, zl), 4 ^ 7 * z^i * 2^3 + 1*2 + 3 + 4 +5, beta(c-3)alpha,  (8*(9*(h + 5))^(j-k)) )(2c) = - a*b+c";
