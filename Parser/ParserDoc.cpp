@@ -283,6 +283,7 @@ BOOL CParserDoc::OnNewDocument()
 	prefix->insert("k", 10, "kilo");
 	m_symbols.add_prefix("memory", prefix);
 
+	// adding system units without prefix
 	m_symbols.add_system("No prefix");
 	// adding Internation System of Units (SI):
 	m_symbols.add_system("SI", "decimal");
@@ -326,7 +327,6 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_unit("minute", "min = 60s");
 		m_calculator.add_unit("hour", "h = 60min");
 		m_calculator.add_unit("day", "d = 24h");
-		// degree = pi / 180 rad
 		m_calculator.add_unit("degree = pi/180 rad", false);
 		m_calculator.add_unit("ton", "t = 10^3kg", false);
 		m_calculator.add_unit("neper", "Np = 1");
