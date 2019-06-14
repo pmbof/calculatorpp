@@ -39,6 +39,19 @@ exception<_ITEM>::~exception()
 
 
 
+template<class _ITEM>
+inline void exception<_ITEM>::reset()
+{
+	if (_item && _deletable)
+	{
+		delete _item;
+		_item = nullptr;
+	}
+	_message.clear();
+}
+
+
+
 
 template<class _ITEM>
 inline std::string exception<_ITEM>::message(typename _ITEM::_CPTRCHAR expr) const
