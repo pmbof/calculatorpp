@@ -87,6 +87,8 @@ private:
 		bnode(bnode* parent);
 		~bnode();
 
+		void clear();
+
 		block* _root;
 		bnode* _parent;
 
@@ -106,6 +108,7 @@ public:
 	block(const _BIN_FNCTABLE* bin_fnc_table, symbol* variables);
 	~block();
 
+	void clear();
 	void init(tptree* tree);
 	
 	iterator* begin(_CPTRCHAR expr);

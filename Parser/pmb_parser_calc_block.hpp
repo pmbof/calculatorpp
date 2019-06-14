@@ -202,11 +202,17 @@ inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::bnode::~bnode()
 		}
 	}
 
-	for (lststack::iterator s = _stack.begin(); s != _stack.end(); ++s)
-		delete *s;
+	clear();
 }
 
 
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::bnode::clear()
+{
+	for (lststack::iterator s = _stack.begin(); s != _stack.end(); ++s)
+		delete* s;
+	_stack.clear();
+}
 
 
 
@@ -270,9 +276,18 @@ inline block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::~block()
 
 
 template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline void	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::clear()
+{
+	if (_ndActual)
+		_ndActual->clear();
+}
+
+
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
 inline void	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::init(tptree* tree)
 {
 	_ndActual = _root;
+	clear();
 	_ndActual->_stack.push_back(new stack(tree));
 }
 
