@@ -12,6 +12,9 @@
 #include "ParserDoc.h"
 #include "ParserView.h"
 
+#include "pmb_log.h"
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -57,11 +60,13 @@ CParserApp::CParserApp()
 CParserApp theApp;
 
 
-#include "pmb_log.h"
 // CParserApp initialization
 
 BOOL CParserApp::InitInstance()
 {
+	free((void*)m_pszAppName);
+	m_pszAppName = _tcsdup(_T("Calculator++"));
+
 	std::map<std::string, CString> mapcmd;
 	{
 		bool bCmd = false,
@@ -139,7 +144,7 @@ BOOL CParserApp::InitInstance()
 		{
 			WCHAR buffer[512];
 			if (GetEnvironmentVariable(L"APPDATA", buffer, sizeof(buffer)))
-				logfile = CStringA(buffer) + CStringA("\\") + logfile;
+				logfile = CStringA(buffer) + CStringA("\\PMB\\Calculatorpp\\") + logfile;
 		}
 		else
 			logfile = mapcmd["logPath"] + "\\" + logfile;
@@ -192,7 +197,7 @@ BOOL CParserApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Calculator"));
+	SetRegistryKey(_T("PMB"));
 	LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
 
 
@@ -244,6 +249,8 @@ BOOL CParserApp::InitInstance()
 
 	return TRUE;
 }
+
+
 
 int CParserApp::ExitInstance()
 {

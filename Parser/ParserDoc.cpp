@@ -491,6 +491,10 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("g(x) = 1 + 4 x^2 + x", false, 0));
 	test.push_back(tuple("a = f(5) - f(-1)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 - 1)));
 	test.push_back(tuple("f(1)", true, 1 + 4 + 1));
+	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
+	test.push_back(tuple("Mt = 5.972 10^24kg", true, 8));
+	test.push_back(tuple("Rt = 6371 km", true, 8));
+	test.push_back(tuple("vo = (2G Mt / Rt)^(1/2)", true, 8));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");
@@ -498,12 +502,17 @@ BOOL CParserDoc::OnNewDocument()
 	for (int i = 0; i < test.size(); ++i)
 	{
 		bool bResult = false;
+		if (i == test.size() - 1)
+			bResult = false;
 		try
 		{
 			m_calculator.calculate(m_expr = std::get<0>(test[i]));
 			bResult = true;
 			if (_block.nresult() != std::get<2>(test[i]) || !std::get<1>(test[i]))
 			{
+				result();
+				std::stringstream sr;
+				sr << _block.result()._number;
 				if (std::get<1>(test[i]))
 					log->trace(pmb::logError, "%s = %f != %f\n", m_expr, _block.result(), std::get<2>(test[i]));
 				else
@@ -515,6 +524,7 @@ BOOL CParserDoc::OnNewDocument()
 		}
 		catch (pmb::parser::exception<item>& ex)
 		{
+			m_result.clear();
 			if (!bResult || std::get<1>(test[i]))
 			{
 				log->trace(pmb::logError, "Exception \"%s\": %s = <NULL> =! %f\n", ex.message(m_expr).c_str(), m_expr, std::get<2>(test[i]));
@@ -583,6 +593,30 @@ bool CParserDoc::nextStep()
 {
 	return false;// m_parser.nextStep();
 }
+
+
+void CParserDoc::update(const char* expr)
+{
+	bool bResult = false;
+	try
+	{
+		m_calculator.calculate(m_expr = expr);
+		m_error.reset();
+		bResult = true;
+		result();
+	}
+	catch (pmb::parser::exception<item>& ex)
+	{
+		m_result.clear();
+		if (!bResult)
+		{
+			pmb::log::instance()->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str());
+			m_error = ex;
+		}
+	}
+	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
+}
+
 
 const tree* CParserDoc::getTree() const
 {
@@ -710,6 +744,25 @@ void CParserDoc::Dump(CDumpContext& dc) const
 	CDocument::Dump(dc);
 }
 #endif //_DEBUG
+
+
+void CParserDoc::result()
+{
+	try
+	{
+		const pmb::parser::debug::number_double& n = _block.result();
+		std::stringstream sres;
+		sres << n._number;
+		if (!n.dimensionless())
+			sres << n._unit.get_dimension();
+		m_result = sres.str();
+	}
+	catch (pmb::parser::exception<item>& ex)
+	{
+		m_result.clear();
+	}
+}
+
 
 
 // CParserDoc commands

@@ -97,7 +97,7 @@ int CParserView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ReleaseDC(pDC);
 
 	m_style.color[0] = RGB(0xFF, 0xFF, 0xFF); // back color
-	m_style.color[1] = RGB(0x60, 0x60, 0x60); // numbers
+	m_style.color[1] = RGB(0x40, 0x40, 0x40); // numbers
 	m_style.color[2] = RGB(0x60, 0x00, 0x00); // operators
 	m_style.color[3] = RGB(0x00, 0x00, 0x00); // variables
 	m_style.color[4] = RGB(0x00, 0x00, 0x60); // build in functions
@@ -198,12 +198,13 @@ void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
 
 	CPen pen;
 	if (!bCalc)
-		pen.CreatePen(PS_SOLID, 2, m_style.color[2]);
+		pen.CreatePen(PS_SOLID, 1, m_style.color[2]);
 
 	COLORREF oldColor;
 	CFont* oldFont = nullptr;
 	CPen* oldPen = bCalc ? nullptr : pDC->SelectObject(&pen);
 	CRect tr(m_p0.x, m_p0.y, m_p0.x, m_p0.y + m_style.maxHeight);
+	int max_x = m_p0.x;
 	int end = 0;
 	for (nd = nd->getFirstNode(); nd; nd = nd->getNextNode())
 	{
@@ -401,7 +402,21 @@ void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
 			}
 		}
 		tr.left = tr.right;
+		if (max_x < tr.right)
+			max_x = tr.right;
 		end = nd->getEnd();
+	}
+
+	if (!bCalc && !pDoc->m_result.empty())
+	{
+		tr.left = max_x + 10;
+		tr.right = wr.Width() - 1;
+		tr.InflateRect(1, 1);
+		pDC->FillSolidRect(tr, RGB(0xD0, 0xD0, 0xD0));
+		tr.DeflateRect(1, 1);
+		CString sr(" = ");
+		sr += pDoc->m_result.c_str();
+		pDC->DrawText(sr, tr, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 	}
 
 	if (oldFont)
@@ -522,7 +537,7 @@ void CParserView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 	else
 	{
-		m_tooltip.SetTitle(0, NULL);
+		m_tooltip.SetTitle(0, nullptr);
 		m_tooltip.UpdateTipText(L"", this);
 		m_tooltipId = -1;
 	}
@@ -566,6 +581,8 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	HideCaret();
 
+	bool bModified = false;
+
 	int old0 = m_style.caret[0];
 	int old1 = m_style.caret[1];
 	switch (nChar)
@@ -582,12 +599,56 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	case VK_END:
 		m_style.caret[1] = m_expr.size();
 		break;
+	case VK_DELETE:
+		if (m_style.caret[1] < m_expr.size() - 1)
+		{
+			bModified = true;
+			std::string nexpr = m_expr.substr(0, m_style.caret[1]);
+			if (m_style.caret[1] + 1 < m_expr.size())
+				nexpr += m_expr.substr(m_style.caret[1]);
+			m_expr = nexpr;
+		}
+		break;
+	case VK_BACK:
+		if (0 < m_style.caret[1])
+		{
+			bModified = true;
+			std::string nexpr = m_expr.substr(0, m_style.caret[1] - 1);
+			if (m_style.caret[1] < m_expr.size())
+				nexpr += m_expr.substr(m_style.caret[1]);
+			m_expr = nexpr;
+			--m_style.caret[1];
+		}
+		break;
+	case VK_RETURN:
+		break;
+	default:
+		if ('0' <= nChar && nChar <= '9' || nChar == '.' || 'A' <= nChar && nChar <= 'Z' || 'a' <= nChar && nChar <= 'z'
+			|| nChar == '!' || nChar == '%' || nChar == '^' || nChar == '*' || nChar == '(' || nChar == ')' || nChar == '-' || nChar == VK_ADD || nChar == '=' 
+			|| nChar == '/' || nChar == '\\' || nChar == '<' || nChar == '>' || nChar == VK_SPACE)
+		{
+			bModified = true;
+			std::string nexpr;
+			if (0 < m_style.caret[1])
+				nexpr = m_expr.substr(0, m_style.caret[1]);
+			nexpr += (char)nChar;
+			if (m_style.caret[1] < m_expr.size())
+				nexpr += m_expr.substr(m_style.caret[1]);
+			m_expr = nexpr;
+			++m_style.caret[1];
+		}
+		break;
 	}
 	if (m_style.caret[1] < 0)
 		m_style.caret[1] = 0;
 	else if (m_expr.size() < m_style.caret[1])
 		m_style.caret[1] = m_expr.size();
 
+	if (bModified)
+	{
+		GetDocument()->update(m_expr.c_str());
+		InvalidateRect(nullptr, 1);
+	}
 	if (m_style.caret[1] != old1)
 	{
 		CDC* pDC = GetDC();

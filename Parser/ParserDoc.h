@@ -109,6 +109,7 @@ public:
 	int	m_countIterators;
 
 	const char* m_expr;
+	std::string m_result;
 	const pmb::parser::debug::auto_iterator<0, pmb::parser::debug::iterator, item, ndtype>* m_iterators;
 	const pmb::parser::debug::iterator* m_iterator;
 	const tnode* getNewNode() const;
@@ -132,6 +133,8 @@ public:
 public:
 	bool nextStep();
 
+	void update(const char* expr);
+
 // Overrides
 public:
 	virtual BOOL OnNewDocument();
@@ -150,6 +153,7 @@ public:
 #endif
 
 protected:
+	void result();
 
 // Generated message map functions
 protected:
