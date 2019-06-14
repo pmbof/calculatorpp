@@ -1249,6 +1249,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::addition(const _MyT& left, co
 	if (left._unit != right._unit)
 		throw "incompatible units";
 	_number = left._number + right._number;
+	_unit = left._unit;
 }
 
 
@@ -1258,6 +1259,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::substraction(const _MyT& left
 	if (left._unit != right._unit)
 		throw "incompatible units";
 	_number = left._number - right._number;
+	_unit = left._unit;
 }
 
 

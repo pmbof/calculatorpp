@@ -424,7 +424,7 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_constant("h c", "hc = h c");
 		m_calculator.add_constant("elementary charge", "e = 1.602176634 10^(-19) C");
 		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu0 = 4 pi 10^(-7) m/A");
-		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon0 = mhu0 / c^2");
+		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon0 = 1 / (mhu0 c^2)");
 		m_calculator.add_constant("avogadro constant", "NA = 6.02214076 10^23 1/mol");
 		m_calculator.add_constant("boltzmann constant", "k = 1.380649 10^(-23) J/K");
 		m_calculator.add_constant("gas constant", "R = NA k");
@@ -434,7 +434,7 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_constant("proton mass", "mp = 1.007 mu");
 		m_calculator.add_constant("neutron mass", "mn = 1.008 mu");
 		m_calculator.add_constant("luminous efficacy", "Kcd = 683 lm/W");
-		m_calculator.add_constant("standard gravity", "g = 9.80665 m/s^2");
+		m_calculator.add_constant("standard gravity", "go = 9.80665 m/s^2");
 		m_calculator.add_constant("hubble constant", "H0 = 2.25 10^(-18) 1/s");
 		m_symbols.set_system_constants();
 	}
@@ -494,7 +494,10 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("Mt = 5.972 10^24kg", true, 8));
 	test.push_back(tuple("Rt = 6371 km", true, 8));
-	test.push_back(tuple("vo = (2G Mt / Rt)^(1/2)", true, 8));
+	test.push_back(tuple("vo = (2G Mt / Rt)^(1/2)", true, 11185.8));
+	test.push_back(tuple("Lata_choclo = 2.1lb", true, 11185.8));
+	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
+	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");
@@ -750,11 +753,12 @@ void CParserDoc::result()
 {
 	try
 	{
-		const pmb::parser::debug::number_double& n = _block.result();
+		const pmb::parser::debug::number_double& val = _block.result();
+		double number;
+		std::string sunit;
+		m_symbols.value(val, number, sunit, true);
 		std::stringstream sres;
-		sres << n._number;
-		if (!n.dimensionless())
-			sres << n._unit.get_dimension();
+		sres << number << sunit;
 		m_result = sres.str();
 	}
 	catch (pmb::parser::exception<item>& ex)

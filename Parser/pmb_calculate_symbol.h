@@ -195,7 +195,7 @@ public:
 
 	vstring& last_defined();
 
-	bool value(const _TVALUE& refVal, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
+	bool value(const tpValue& refVal, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
 
 protected:
 	const map_dimension* _dimension;
@@ -268,7 +268,7 @@ public:
 	bool defining_unit() const;
 
 	bool value(const tpChar* path, const tpChar* varname, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
-	bool value(const _TVALUE& refVal, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
+	bool value(const tpValue& refVal, _TypeValue& val, std::string& sunit, bool bPrefix = true) const;
 
 protected:
 	map_dimension _dimension;
