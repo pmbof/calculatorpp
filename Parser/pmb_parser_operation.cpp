@@ -184,7 +184,14 @@ void operation<_TVALUE>::operator()(_TVALUE& values) const
 	}
 	if (!_canCreateLVariable && !_canCreateRVariable)
 		values.placeForResult();
-	(*_fnc)(values);
+	try
+	{
+		(*_fnc)(values);
+	}
+	catch (const char* ex)
+	{
+		throw exception(ex);
+	}
 }
 
 
