@@ -76,6 +76,8 @@ struct rational
 
 	rational();
 	rational(const _INT& _numerator, const _INT& _denominator);
+	template <typename _N>
+	explicit rational(const _N& number);
 
 	static void normalize(_INT& _numerator, _INT& _denominator);
 	void normalize();
@@ -95,6 +97,12 @@ struct rational
 	rational operator/(const rational<_INT>& right) const;
 	rational operator*(const _INT& right) const;
 	rational operator/(const _INT& right) const;
+
+	template <typename _N>
+	rational operator*(const _N& right) const;
+
+	template <typename _N>
+	rational operator/(const _N& right) const;
 
 	bool zero() const;
 	bool unit() const;
@@ -138,8 +146,10 @@ struct power_dimension: rational<_INT>
 	power_dimension& operator =(const power_dimension& right);
 	power_dimension& operator +=(const power_dimension& right);
 
-	power_dimension operator*(const _INT& right) const;
-	power_dimension operator/(const _INT& right) const;
+	template<typename _N>
+	power_dimension operator*(const _N& right) const;
+	template<typename _N>
+	power_dimension operator/(const _N& right) const;
 
 	template<typename _INT, typename _CHAR, typename _SZSTR>
 	friend power_dimension<_INT, _CHAR, _SZSTR> operator*(const _INT& left, const power_dimension<_INT, _CHAR, _SZSTR>& right);
@@ -219,8 +229,10 @@ struct unit
 
 	unit operator*(const unit& right) const;
 	unit operator/(const unit& right) const;
-	unit pow(const _INT& p) const;
-	unit root(const _INT& p) const;
+	template<typename _N>
+	unit pow(const _N& p) const;
+	template<typename _N>
+	unit root(const _N& p) const;
 
 	bool dimensionless() const;
 	bool one_dimension() const;

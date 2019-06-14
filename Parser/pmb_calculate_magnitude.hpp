@@ -235,6 +235,17 @@ inline rational<_INT>::rational(const _INT & _numerator, const _INT & _denominat
 
 
 template<typename _INT>
+template<typename _N>
+inline rational<_INT>::rational(const _N& number)
+{
+	for (denominator = 1; number * denominator != (numerator = (_N)(number)* denominator); denominator *= 10)
+		;
+	normalize();
+}
+
+
+
+template<typename _INT>
 inline void rational<_INT>::normalize(_INT& _numerator, _INT& _denominator)
 {
 	static const _INT prime[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997 };
@@ -280,6 +291,11 @@ inline void rational<_INT>::normalize(_INT& _numerator, _INT& _denominator)
 				_numerator = 1;
 			}
 		}
+	}
+	if (_denominator < 0 && 0 < _numerator)
+	{
+		_numerator = -_numerator;
+		_denominator = -_denominator;
 	}
 }
 
@@ -363,7 +379,7 @@ inline rational<_INT> rational<_INT>::operator-(const rational<_INT>& right) con
 template<typename _INT>
 inline rational<_INT> rational<_INT>::operator*(const rational<_INT>& right) const
 {
-	_INT n = numerator * right.denominator;
+	_INT n = numerator * right.numerator;
 	_INT d = denominator * right.denominator;
 	normalize(n, d);
 	return rational<_INT>(n, d);
@@ -403,6 +419,32 @@ inline rational<_INT> rational<_INT>::operator/(const _INT& right) const
 	normalize(n, d);
 	return rational<_INT>(n, d);
 }
+
+
+
+template<typename _INT>
+template<typename _N>
+inline rational<_INT> rational<_INT>::operator*(const _N& right) const
+{
+	rational<_INT> nright(right);
+	return *this * nright;
+}
+
+
+
+template<typename _INT>
+template<typename _N>
+inline rational<_INT> rational<_INT>::operator/(const _N& right) const
+{
+	if (!right)
+		throw "divide by zero";
+	rational<_INT> nright(right);
+	return *this / nright;
+}
+
+
+
+
 
 template<typename _INT>
 inline bool rational<_INT>::zero() const
@@ -562,7 +604,8 @@ inline power_dimension<_INT, _CHAR, _SZSTR>& power_dimension<_INT, _CHAR, _SZSTR
 
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
-inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator*(const _INT& right) const
+template<typename _N>
+inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator*(const _N& right) const
 {
 	rational<_INT> result = *static_cast<const rational<_INT>*>(this) * right;
 	return power_dimension(result, dim);
@@ -570,7 +613,8 @@ inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>
 
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
-inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator/(const _INT& right) const
+template<typename _N>
+inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator/(const _N& right) const
 {
 	rational<_INT> result = *static_cast<rational<_INT>*>(this) / right;
 	return power_dimension(result, dim);
@@ -919,13 +963,14 @@ inline std::string unit<_INT, _CHAR, _SZSTR>::get_dimension() const
 				if (!_dim[d].natural())
 				{
 					sdim += "(";
-					sdim += ss.str();
 					if (!_dim[d].integer())
 					{
+						sdim += ss.str();
 						ss.str("");
 						sdim += "/";
 						ss << _dim[d].denominator;
 					}
+					sdim += ss.str();
 					sdim += ")";
 				}
 				else
@@ -960,7 +1005,8 @@ inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::operator/(const unit
 
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
-inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _INT& p) const
+template<typename _N>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _N& p) const
 {
 	power_dimension* dim = p ? new power_dimension[_nDims] : nullptr;
 	for (ndim i = 0; p && i < _nDims; ++i)
@@ -974,7 +1020,8 @@ inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _INT& p) c
 
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
-inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _INT& p) const
+template<typename _N>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _N& p) const
 {
 	power_dimension* dim = p ? new power_dimension[_nDims] : nullptr;
 	for (ndim i = 0; p && i < _nDims; ++i)
