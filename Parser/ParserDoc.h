@@ -118,7 +118,6 @@ public:
 	const tnode* getNodeRoot() const;
 	const tree* getTree2() const;
 
-
 	const tnode* getNextUnknowNode(const tnode* nd) const;
 
 protected:

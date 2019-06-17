@@ -50,11 +50,12 @@ private:
 	} m_style;
 
 	CPoint m_p0;
+	bool m_bShowResult;
 
 private:
 	void drawNode(CDC* pDC, const item* nd, const CString& expr, bool bError);
 
-	void draw(CDC* pDC, bool bCalc = false, int* x_pos = nullptr);
+	void draw_line(CDC* pDC, bool bCalc = false, int* x_pos = nullptr);
 
 // Implementation
 public:
@@ -87,6 +88,7 @@ public:
 	virtual void OnInitialUpdate();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
 
 #ifndef _DEBUG  // debug version in ParserView.cpp

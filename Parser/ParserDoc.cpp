@@ -492,12 +492,13 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("a = f(5) - f(-1)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 - 1)));
 	test.push_back(tuple("f(1)", true, 1 + 4 + 1));
 	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
-	test.push_back(tuple("Mt = 5.972 10^24kg", true, 8));
-	test.push_back(tuple("Rt = 6371 km", true, 8));
-	test.push_back(tuple("vo = (2G Mt / Rt)^(1/2)", true, 11185.8));
 	test.push_back(tuple("Lata_choclo = 2.1lb", true, 11185.8));
 	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
+	test.push_back(tuple("Mt = 5.972 10^24kg", true, 8));
+	test.push_back(tuple("Rt = 6371 km", true, 8));
+	test.push_back(tuple("vo = (2G Mt / Rt)^(1/2)", true, 11185.8));
+	test.push_back(tuple("2.7172", true, 2.7172));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");
@@ -505,15 +506,15 @@ BOOL CParserDoc::OnNewDocument()
 	for (int i = 0; i < test.size(); ++i)
 	{
 		bool bResult = false;
-		if (i == test.size() - 1)
+		if (i == test.size() - 2)
 			bResult = false;
 		try
 		{
 			m_calculator.calculate(m_expr = std::get<0>(test[i]));
+			result();
 			bResult = true;
 			if (_block.nresult() != std::get<2>(test[i]) || !std::get<1>(test[i]))
 			{
-				result();
 				std::stringstream sr;
 				sr << _block.result()._number;
 				if (std::get<1>(test[i]))
@@ -617,7 +618,7 @@ void CParserDoc::update(const char* expr)
 			m_error = ex;
 		}
 	}
-	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
+	AfxGetMainWnd()->PostMessage(MM_CHANGEEXPRESSION, WPARAM(m_symbols.get()));
 }
 
 
@@ -794,6 +795,7 @@ void CParserDoc::opr_exponentiation(transporter_args& args)
 
 void CParserDoc::opr_root(transporter_args& args)
 {
+	args.result()->root(**args.left(), **args.right());
 }
 
 void CParserDoc::opr_multiplication(transporter_args& args)
@@ -810,6 +812,7 @@ void CParserDoc::opr_division(transporter_args& args)
 
 void CParserDoc::opr_modulo(transporter_args& args)
 {
+	args.result()->modulo(**args.left(), **args.right());
 }
 
 void CParserDoc::opr_addition(transporter_args& args)
@@ -829,6 +832,7 @@ void CParserDoc::opr_assignation(transporter_args& args)
 
 void CParserDoc::opr_result(transporter_args& args)
 {
+	args.result() = args.left();
 }
 
 
@@ -880,14 +884,17 @@ void CParserDoc::binf_round(transporter_args& args)
 
 void CParserDoc::binf_lg(transporter_args& args)
 {
+	args.result()->lg(**args[0]);
 }
 
 void CParserDoc::binf_ln(transporter_args& args)
 {
+	args.result()->ln(**args[0]);
 }
 
 void CParserDoc::binf_log(transporter_args& args)
 {
+	args.result()->log(**args[0], **args[1]);
 }
 
 void CParserDoc::binf_exp(transporter_args& args)
@@ -896,19 +903,17 @@ void CParserDoc::binf_exp(transporter_args& args)
 
 void CParserDoc::binf_sin(transporter_args& args)
 {
-	if (!args.left()->dimensionless())
-		throw operation::exception("must be dimensionless");
-	if (!args.left()->scalar())
-		throw operation::exception("must be scaler");
 	args.result()->sin(**args[0]);
 }
 
 void CParserDoc::binf_cos(transporter_args& args)
 {
+	args.result()->cos(**args[0]);
 }
 
 void CParserDoc::binf_tg(transporter_args& args)
 {
+	args.result()->tg(**args[0]);
 }
 
 void CParserDoc::binf_sec(transporter_args& args)
@@ -925,11 +930,13 @@ void CParserDoc::binf_cotg(transporter_args& args)
 
 void CParserDoc::binf_asin(transporter_args& args)
 {
+	args.result()->asin(**args[0]);
 }
 
 
 void CParserDoc::binf_acos(transporter_args& args)
 {
+	args.result()->acos(**args[0]);
 }
 
 void CParserDoc::binf_atg(transporter_args& args)

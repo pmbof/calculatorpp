@@ -60,5 +60,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg LRESULT OnRedrawtree(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnChargeNewdoc(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnChangeExpression(WPARAM wParam, LPARAM lParam);
 };
 

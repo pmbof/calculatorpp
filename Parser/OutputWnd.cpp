@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(COutputWnd, CDockablePane)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_MESSAGE(MM_CHARGEPROPERTIES, &COutputWnd::OnChargeNewdoc)
+	ON_MESSAGE(MM_CHANGEEXPRESSION, &COutputWnd::OnChangeExpression)
 END_MESSAGE_MAP()
 
 int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -276,6 +277,16 @@ void COutputList::OnViewOutput()
 
 
 afx_msg LRESULT COutputWnd::OnChargeNewdoc(WPARAM wParam, LPARAM lParam)
+{
+	FillStadisticsWindow();
+	m_wndOutputResult.RedrawWindow();
+	return 0;
+}
+
+
+
+
+afx_msg LRESULT COutputWnd::OnChangeExpression(WPARAM wParam, LPARAM lParam)
 {
 	FillStadisticsWindow();
 	m_wndOutputResult.RedrawWindow();

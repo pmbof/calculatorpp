@@ -57,6 +57,7 @@ protected:
 	BOOL CreateDockingWindows();
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
 	afx_msg LRESULT OnChargeNewdoc(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnMmChangeExpression(WPARAM wParam, LPARAM lParam);
 };
 
 

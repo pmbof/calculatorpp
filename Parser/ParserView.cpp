@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP(CParserView, CView)
 	ON_WM_KEYDOWN()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_SETCURSOR()
+	ON_WM_CHAR()
 END_MESSAGE_MAP()
 
 // CParserView construction/destruction
@@ -127,8 +128,13 @@ int CParserView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_tooltip.AddTool(this, L"");
 	m_tooltipId = -1;
 	EnableToolTips(TRUE);
+
+	m_bShowResult = true;
 	return 0;
 }
+
+
+
 
 void CParserView::OnInitialUpdate()
 {
@@ -166,11 +172,11 @@ void CParserView::OnInitialUpdate()
 
 void CParserView::OnDraw(CDC* pDC)
 {
-	draw(pDC, false);
+	draw_line(pDC, false);
 }
 
 
-void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
+void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 {
 	CParserDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -199,6 +205,8 @@ void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
 	CPen pen;
 	if (!bCalc)
 		pen.CreatePen(PS_SOLID, 1, m_style.color[2]);
+
+	bool bResult = false;
 
 	COLORREF oldColor;
 	CFont* oldFont = nullptr;
@@ -333,6 +341,7 @@ void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
 				const pmb::parser::nodes::unknown<item, ndtype>* uk = static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(nd);
 				if (uk->isValid() && !uk->isCallFunction())
 				{
+					pDC->SelectObject(&pen);
 					const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
 					if (!strcmp(opr->getSymbol(), "="))
 					{
@@ -341,6 +350,7 @@ void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
 						pDC->LineTo(tr.right, tr.top + tr.Height() / 2 - 2);
 						pDC->MoveTo(tr.left, tr.top + tr.Height() / 2 + 2);
 						pDC->LineTo(tr.right, tr.top + tr.Height() / 2 + 2);
+						bResult = !opr->isBinary() && opr->isLeftToRight();
 					}
 					else if (!strcmp(opr->getSymbol(), "*"))
 					{
@@ -407,15 +417,22 @@ void CParserView::draw(CDC* pDC, bool bCalc, int* x_pos)
 		end = nd->getEnd();
 	}
 
-	if (!bCalc && !pDoc->m_result.empty())
+	if (!bCalc && (m_bShowResult || bResult) && (!pDoc->m_result.empty() || !pDoc->m_error.empty()))
 	{
 		tr.left = max_x + 10;
 		tr.right = wr.Width() - 1;
 		tr.InflateRect(1, 1);
-		pDC->FillSolidRect(tr, RGB(0xD0, 0xD0, 0xD0));
+		pDC->FillSolidRect(tr, pDoc->m_error.empty() ? RGB(0xD0, 0xD0, 0xD0) : RGB(0xD0, 0x00, 0x00));
 		tr.DeflateRect(1, 1);
-		CString sr(" = ");
-		sr += pDoc->m_result.c_str();
+		CString sr;
+		if (pDoc->m_error.empty())
+		{
+			if (!bResult)
+				sr = " = ";
+			sr += pDoc->m_result.c_str();
+		}
+		else
+			sr = pDoc->m_error.message(pDoc->m_expr).c_str();
 		pDC->DrawText(sr, tr, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 	}
 
@@ -609,6 +626,60 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			m_expr = nexpr;
 		}
 		break;
+	default:
+		break;
+	}
+	if (m_style.caret[1] < 0)
+		m_style.caret[1] = 0;
+	else if (m_expr.size() < m_style.caret[1])
+		m_style.caret[1] = m_expr.size();
+
+	if (bModified)
+	{
+		GetDocument()->update(m_expr.c_str());
+		InvalidateRect(nullptr, 1);
+	}
+	if (m_style.caret[1] != old1)
+	{
+		CDC* pDC = GetDC();
+		draw_line(pDC, true);
+		ReleaseDC(pDC);
+		SetCaretPos(m_style.caretPos);
+
+		if (!(GetKeyState(VK_LSHIFT) & 0x8000))
+		{
+			m_style.caret[0] = m_style.caret[1];
+			m_style.caretPos0 = m_style.caretPos;
+		}
+	}
+
+	ShowCaret();
+	CView::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+
+
+
+void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	HideCaret();
+
+	bool bModified = false;
+
+	int old0 = m_style.caret[0];
+	int old1 = m_style.caret[1];
+	switch (nChar)
+	{
+	case VK_DELETE:
+		if (m_style.caret[1] < m_expr.size() - 1)
+		{
+			bModified = true;
+			std::string nexpr = m_expr.substr(0, m_style.caret[1]);
+			if (m_style.caret[1] + 1 < m_expr.size())
+				nexpr += m_expr.substr(m_style.caret[1]);
+			m_expr = nexpr;
+		}
+		break;
 	case VK_BACK:
 		if (0 < m_style.caret[1])
 		{
@@ -624,8 +695,10 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		break;
 	default:
 		if ('0' <= nChar && nChar <= '9' || nChar == '.' || 'A' <= nChar && nChar <= 'Z' || 'a' <= nChar && nChar <= 'z'
-			|| nChar == '!' || nChar == '%' || nChar == '^' || nChar == '*' || nChar == '(' || nChar == ')' || nChar == '-' || nChar == VK_ADD || nChar == '=' 
-			|| nChar == '/' || nChar == '\\' || nChar == '<' || nChar == '>' || nChar == VK_SPACE)
+			|| nChar == '!' || nChar == '%' || nChar == '^' || nChar == '*' || nChar == '(' || nChar == ')' || nChar == '-' || nChar == VK_ADD || nChar == '='
+			|| nChar == '+' || nChar == '[' || nChar == '{' || nChar == ']' || nChar == '}' || nChar == '|'
+			|| nChar == '/' || nChar == '\\' || nChar == '<' || nChar == '>' || nChar == VK_SPACE
+			|| nChar == ',' || nChar == ':'  || nChar == ';')
 		{
 			bModified = true;
 			std::string nexpr;
@@ -652,7 +725,7 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if (m_style.caret[1] != old1)
 	{
 		CDC* pDC = GetDC();
-		draw(pDC, true);
+		draw_line(pDC, true);
 		ReleaseDC(pDC);
 		SetCaretPos(m_style.caretPos);
 
@@ -664,9 +737,9 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	}
 
 	ShowCaret();
-	CView::OnKeyDown(nChar, nRepCnt, nFlags);
-}
 
+	CView::OnChar(nChar, nRepCnt, nFlags);
+}
 
 
 
@@ -678,7 +751,7 @@ void CParserView::OnLButtonDown(UINT nFlags, CPoint point)
 	{
 		CDC* pDC = GetDC();
 		int x = point.x;
-		draw(pDC, true, &x);
+		draw_line(pDC, true, &x);
 		ReleaseDC(pDC);
 		SetCaretPos(m_style.caretPos);
 
@@ -699,3 +772,5 @@ BOOL CParserView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_IBEAM));
 	return TRUE;
 }
+
+

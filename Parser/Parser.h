@@ -9,11 +9,13 @@
 
 #include "resource.h"       // main symbols
 
-#define MM_REDRAWTREE		(WM_USER + 1)
-#define MM_CHARGENEWDOC		(WM_USER + 2)
-#define MM_CHARGEPROPERTIES	(WM_USER + 3)
-#define MM_SETNODE			(WM_USER + 4)
-#define MM_NEXTUNKNOW		(WM_USER + 5)
+#define MM_REDRAWTREE				(WM_USER + 1)
+#define MM_CHARGENEWDOC				(WM_USER + 2)
+#define MM_CHARGEPROPERTIES			(WM_USER + 3)
+#define MM_SETNODE					(WM_USER + 4)
+#define MM_NEXTUNKNOW				(WM_USER + 5)
+#define MM_CHANGEEXPRESSION			(WM_USER + 6)
+
 
 int get_DeltaTimeMS(const SYSTEMTIME& s0, const SYSTEMTIME& s1);
 // CParserApp:

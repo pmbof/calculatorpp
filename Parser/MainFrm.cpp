@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(MM_CHARGENEWDOC, &CMainFrame::OnChargeNewdoc)
+	ON_MESSAGE(MM_CHANGEEXPRESSION, &CMainFrame::OnMmChangeExpression)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -419,5 +420,13 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 afx_msg LRESULT CMainFrame::OnChargeNewdoc(WPARAM wParam, LPARAM lParam)
 {
 	SendMessageToDescendants(MM_CHARGEPROPERTIES, wParam, lParam);
+	return 0;
+}
+
+
+
+afx_msg LRESULT CMainFrame::OnMmChangeExpression(WPARAM wParam, LPARAM lParam)
+{
+	SendMessageToDescendants(MM_CHANGEEXPRESSION, wParam, lParam);
 	return 0;
 }
