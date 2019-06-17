@@ -109,7 +109,14 @@ void build_in_function<_TVARGS, _CHAR, _STRLEN>::operator()(transporter_args& ar
 	}
 
 	args.placeForResult();
-	(*_ptrFnc)(args);
+	try
+	{
+		(*_ptrFnc)(args);
+	}
+	catch (const char* ex)
+	{
+		throw exception(ex);
+	}
 }
 
 
