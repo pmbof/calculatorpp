@@ -174,9 +174,7 @@ void operation<_TVALUE>::operator()(_TVALUE& values) const
 	}
 	if (!_binary)
 	{
-		if (values.capacity() != 1)
-			throw exception(1 < values.capacity() ? "too many value for unitary operator %item" : _leftToRight ? "missing left value for operator %item" : "missing right value for operator %item");
-		else if (nvals != 1)
+		if (nvals < 1)
 		{
 			if (!_canCreateLVariable && !_canCreateRVariable)
 				throw exception("missing value for operator %item");
