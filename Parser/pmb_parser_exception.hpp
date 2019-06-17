@@ -43,11 +43,16 @@ template<class _ITEM>
 inline void exception<_ITEM>::reset()
 {
 	if (_item && _deletable)
-	{
 		delete _item;
-		_item = nullptr;
-	}
+	_item = nullptr;
 	_message.clear();
+}
+
+
+template<class _ITEM>
+inline bool exception<_ITEM>::empty()
+{
+	return !_item;
 }
 
 

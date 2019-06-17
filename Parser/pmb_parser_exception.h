@@ -20,6 +20,8 @@ public:
 
 	void reset();
 
+	bool empty();
+
 	std::string message(typename _ITEM::_CPTRCHAR expr) const;
 	const _ITEM* item() const;
 
