@@ -182,12 +182,14 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 	log* plg = log::beginFunction(logDebug, "pmb::parser::algorithm::calculate");
 	_BLOCK& block = *_pBlock;
 
+	bool bIter = false;
 	for (block.init(_tree); block; block.next())
 	{
 		typename _BLOCK::iterator* it_calc = block.begin(_expr);
 
 		for ( ; *it_calc; ++(*it_calc))
 		{
+			bIter = true;
 			const typename node_calc* uc = static_cast<const typename node_calc*>(it_calc->node());
 			if (uc && uc->isCalcType())
 			{
@@ -202,7 +204,7 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 
 				if (uc->getType() == ndUnknown)
 				{
-					const nodes::unknown<cItem, cNdType>* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uc);
+					const typename node_unknown* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uc);
 					if (uk->isValid())
 					{
 						transporter_args& args = block.getValues();
@@ -221,7 +223,7 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 									}
 									catch (build_in_function::exception& ex)
 									{
-										throw exception<cItem>(uc, ex.message());
+										throw exception<cItem>(uk->isLeftToRight() ? uc->getRight() : uc->getLeft(), ex.message());
 									}
 								}
 								else
@@ -272,6 +274,11 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 					throw exception<cItem>(uc, "unknown symbol %item");
 				TRACE_NODE(logDebug, "\t\t- Calculated finale status:", _expr, uc);
 			}
+		}
+		if (!bIter)
+		{
+			block.setValue();
+			bIter = true;
 		}
 	}
 	plg->endFunction(logDebug);

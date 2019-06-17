@@ -115,6 +115,7 @@ public:
 	operator bool () const;
 	bool calculate();
 	transporter_args& getValues();
+	void setValue();
 	void next();
 	typename const transporter& tresult() const;
 	typename const tpValue& result() const;

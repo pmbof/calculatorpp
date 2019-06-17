@@ -576,6 +576,32 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 
 
 
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::setValue()
+{
+	stack* st = _ndActual->_stack.back();
+	const tnode* nd = st->_it_calc->node();
+	if (nd)
+	{
+		if (nd->getType() == ndNumber)
+		{
+			typename transporter_args& values = st->_it_calc->getValues();
+			values.placeForResult();
+			values.result() = new transporter::tpValue(nd->getString(st->_expr), nd->len());
+			st->_it_calc->calculated(true);
+		}
+		else if (nd->getType() == ndAlpha)
+		{
+			typename transporter_args& values = st->_it_calc->getValues();
+			if (!find_variable(nd->getString(st->_expr), values.result(), false))
+				throw exception<cItem>(nd, "undefined symbol %item");
+			st->_it_calc->calculated(true);
+		}
+	}
+}
+
+
+
 
 
 template <class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
