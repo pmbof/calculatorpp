@@ -328,11 +328,19 @@ public:
 	void abs(const _MyT& arg);
 	void sgn(const _MyT& arg);
 
+	// logarithmic functions:
+	void ln(const _MyT& arg);
+	void lg(const _MyT& arg);
+	void log(const _MyT& arg, const _MyT& base);
+
 	// trigonometric functions:
 	void sin(const _MyT& arg);
+	void cos(const _MyT& arg);
 	void tg(const _MyT& arg);
 
 	// inverse trigonometric functions:
+	void asin(const _MyT& arg);
+	void acos(const _MyT& arg);
 	void atg(const _MyT& arg);
 	void atg2(const _MyT& opposite, const _MyT& adjacent);
 

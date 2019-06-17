@@ -1199,6 +1199,7 @@ template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::positive(const _MyT& right)
 {
 	_number = +right._number;
+	_unit = right._unit;
 }
 
 
@@ -1206,12 +1207,15 @@ template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::negative(const _MyT& right)
 {
 	_number = -right._number;
+	_unit = right._unit;
 }
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::factorial(const _MyT& right)
 {
+	if (!right._unit.dimensionless())
+		throw "factorial operator must be dimensionless";
 	long res = 1;
 	for (int i = 2; i <= right._number; ++i)
 		res *= i;
@@ -1276,8 +1280,13 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::exponentiation(const _MyT& le
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::root(const _MyT& left, const _MyT& right)
 {
-	_number = pow(left._number, 1 / right._number);
-	_unit = left.root(right._number);
+	if (!right._unit.dimensionless())
+		throw "exponent must be dimensionless";
+	if (right.zero())
+		throw "illegal root, divide by zero";
+	_TYPE exp = 1 / right._number;
+	_number = ::pow(left._number, exp);
+	_unit = left._unit.pow(exp);
 }
 
 
@@ -1307,23 +1316,107 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sgn(const _MyT& arg)
 }
 
 
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::ln(const _MyT& arg)
+{
+	if (!arg._unit.dimensionless())
+		throw "argument for function natural logarithm must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
+	_number = ::log(arg._number);
+}
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::lg(const _MyT& arg)
+{
+	if (!arg._unit.dimensionless())
+		throw "argument for function logarithm must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
+	_number = ::log10(arg._number);
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::log(const _MyT& arg, const _MyT& base)
+{
+	if (!arg._unit.dimensionless())
+		throw "argument for function logarithm must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
+	if (!base._unit.dimensionless())
+		throw "base for function logarithm must be dimensionless";
+	if (!base.scalar())
+		throw "must be scaler";
+	_number = ::log(arg._number) / ::log(base._number);
+}
+
+
+
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sin(const _MyT& arg)
 {
+	if (!arg._unit.dimensionless())
+		throw "argument for function sine must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
 	_number = ::sin(arg._number);
+}
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::cos(const _MyT& arg)
+{
+	if (!arg._unit.dimensionless())
+		throw "argument for function cosine must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
+	_number = ::cos(arg._number);
 }
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::tg(const _MyT & arg)
 {
+	if (!arg._unit.dimensionless())
+		throw "argument for function tangent must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
 	_number = ::tan(arg._number);
+}
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::asin(const _MyT& arg)
+{
+	if (!arg._unit.dimensionless())
+		throw "argument for function arc sine must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
+	_number = ::asin(arg._number);
+}
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::acos(const _MyT& arg)
+{
+	if (!arg._unit.dimensionless())
+		throw "argument for function arc cosine must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
+	_number = ::acos(arg._number);
 }
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg(const _MyT & arg)
 {
+	if (!arg._unit.dimensionless())
+		throw "argument for function arc tangent must be dimensionless";
+	if (!arg.scalar())
+		throw "must be scaler";
 	_number = ::atan(arg._number);
 }
 
@@ -1331,6 +1424,10 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg(const _MyT & arg)
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg2(const _MyT& opposite, const _MyT& adjacent)
 {
+	if (opposite._unit != adjacent._unit)
+		throw "arguments for function arc tanget2 must be equal units";
+	if (!opposite.scalar() || !adjacent.scalar())
+		throw "must be scaler";
 	_number = ::atan2(opposite._number, adjacent._number);
 }
 
