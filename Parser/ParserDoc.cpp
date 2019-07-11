@@ -33,18 +33,20 @@ const operation CParserDoc::_operation[] = {
 	operation("+", 250, false, false, "positive", "positive", &CParserDoc::opr_positive),
 	operation("-", 250, false, false, "negative", "negative", &CParserDoc::opr_negative),
 	operation("!", 250, true, false, "factorial", "factorial", &CParserDoc::opr_factorial),
+	operation("\\", 210, false, false, "square root", " square root", &CParserDoc::opr_sqrroot),
 	operation("^", 200, true, true, "power", "exponentiation", &CParserDoc::opr_exponentiation),
-	operation("¨", 200, true, true, "root", "root", &CParserDoc::opr_root),
+	operation("\\", 200, true, true, "root", "root", &CParserDoc::opr_root),
 	operation("*", 110, true, true, "product", "multiplication", &CParserDoc::opr_multiplication),
 	operation("/", 110, true, true, "cocient", "division", &CParserDoc::opr_division),
 	operation("", 100, true, true, "product implicit", "multiplication implicit or call function", &CParserDoc::opr_multiplication, true),
 	operation(" ", 100, true, true, "product space", "multiplication space or call function", &CParserDoc::opr_multiplication, true),
 	operation(" ", 100, false, true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication, true),
-	operation("\\", 100, true, true, "modulo", "congruence relation", &CParserDoc::opr_modulo),
+	operation("&", 100, true, true, "modulo", "congruence relation", &CParserDoc::opr_modulo),
 	operation("-", 50, true, true, "substract", "substraction", &CParserDoc::opr_subtraction),
 	operation("+", 50, true, true, "add", "addition", &CParserDoc::opr_addition),
 	operation("=", 10, false, true, "assignation", "assignation", &CParserDoc::opr_assignation, false, true, false),
-	operation("=", 0, true, false, "result", "result", &CParserDoc::opr_result)
+	operation("=", 0, true, false, "result", "result", &CParserDoc::opr_result),
+	operation("=:", 0, false, true, "result modify", "result modify", &CParserDoc::opr_result_modify)
 };
 
 
@@ -478,7 +480,7 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("f(2, 3, 1)", true, 1 + 4 * 2 * 2 + 3));
 	test.push_back(tuple("f(x) = 1 + 4 x^2 + x", false, 0));
 	test.push_back(tuple("a0 = f(5) - f(2)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 * 2 * 2 + 2)));
-	test.push_back(tuple("k = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
+	test.push_back(tuple("k2 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("a1 = 5 test(9 - 8, 1 + 1, 6 - 3, 2 * 2)", true, 50));
 	test.push_back(tuple("a2 = 5 test(1, 2, 3, 4)", true, 50));
 	test.push_back(tuple("10 - 10 * 10 + 10", true, 10 - 10 * 10 + 10));
@@ -489,7 +491,7 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("a6 = sin pi/6", true, sin(pi / 6)));
 	test.push_back(tuple("g(x) = 1 + 4 x^2 + x", false, 0));
-	test.push_back(tuple("a = f(5) - f(-1)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 - 1)));
+	test.push_back(tuple("a7 = f(5) - f(-1)", true, 1 + 4 * 5 * 5 + 5 - (1 + 4 - 1)));
 	test.push_back(tuple("f(1)", true, 1 + 4 + 1));
 	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 	test.push_back(tuple("Lata_choclo = 2.1lb", true, 11185.8));
@@ -497,8 +499,8 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
 	test.push_back(tuple("Mt = 5.972 10^24kg", true, 8));
 	test.push_back(tuple("Rt = 6371 km", true, 8));
-	test.push_back(tuple("vo = (2G Mt / Rt)^(1/2)", true, 11185.8));
-	test.push_back(tuple("2.7172", true, 2.7172));
+	test.push_back(tuple("vo = 2\\(2G Mt / Rt)", true, 11185.8));
+//	test.push_back(tuple("2.7172", true, 2.7172));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");
@@ -632,6 +634,11 @@ const tnode* CParserDoc::getNodeRoot() const
 	return m_calculator.getTree() ? m_calculator.getTree()->getRootNode() : nullptr;
 }
 
+const tnode* CParserDoc::getNodeResult() const
+{
+	return m_calculator.getResultNode() ? m_calculator.getResultNode()->getRootNode() : nullptr;
+}
+
 const tnode* CParserDoc::getNewNode() const
 {
 	return false; // m_parser.getNewNode();
@@ -759,8 +766,15 @@ void CParserDoc::result()
 		std::string sunit;
 		m_symbols.value(val, number, sunit, true);
 		std::stringstream sres;
-		sres << number << sunit;
+		sres << number;
+		CStringA sn(sres.str().c_str());
+		sn.Replace("e+", " 10^");
+		sn.Replace("e-", " 10^-");
+		sn.Replace("e", " 10^");
+		sres.str("");
+		sres << sn << sunit;
 		m_result = sres.str();
+		m_calculator.parser_result(m_result.c_str());
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
@@ -786,6 +800,11 @@ void CParserDoc::opr_factorial(transporter_args& args)
 	if (!args.left()->integer())
 		throw operation::exception("must be a integer");
 	args.result()->factorial(**args.left());
+}
+
+void CParserDoc::opr_sqrroot(transporter_args& args)
+{
+	args.result()->sqrroot(**args.left());
 }
 
 void CParserDoc::opr_exponentiation(transporter_args& args)
@@ -835,6 +854,10 @@ void CParserDoc::opr_result(transporter_args& args)
 	args.result() = args.left();
 }
 
+void CParserDoc::opr_result_modify(transporter_args& args)
+{
+	opr_division(args);
+}
 
 
 

@@ -10,29 +10,8 @@ namespace pmb
 
 template <class _BLOCK, class _OPRTABLE>
 calculator<_BLOCK, _OPRTABLE>::calculator(_tdOprTable* operation_table, _BLOCK* pBlock)///_tdSymbols* symbols)
-	: _base(operation_table, pBlock)
+	: _base(operation_table, pBlock), _result(nullptr)
 {
-/*	_symbols->addSetVariable("Units");
-	_symbols->addSetVariable("Constants");
-	_symbols->addSetVariable("Variables");
-
-	_base::_tdSymbols::_tpList lst;
-	lst.push_back("Units");
-	lst.push_back("Constants");
-	lst.push_back("Variables");
-	_symbols->addSetSearch("Units", "Units", lst);
-
-	lst.clear();
-	lst.push_back("Constants");
-	lst.push_back("Units");
-	lst.push_back("Variables");
-	_symbols->addSetSearch("Constants", "Constants", lst);
-
-	lst.clear();
-	lst.push_back("Variables");
-	lst.push_back("Constants");
-	lst.push_back("Units");
-	_symbols->addSetSearch("Variables", "Variables", lst);*/
 }
 
 
@@ -40,6 +19,20 @@ calculator<_BLOCK, _OPRTABLE>::calculator(_tdOprTable* operation_table, _BLOCK* 
 template <class _BLOCK, class _OPRTABLE>
 calculator<_BLOCK, _OPRTABLE>::~calculator()
 {
+	clear();
+}
+
+
+template<class _BLOCK, class _OPRTABLE>
+void calculator<_BLOCK, _OPRTABLE>::clear()
+{
+	if (_result)
+	{
+		delete _result;
+		_result = nullptr;
+		_rexpr = nullptr;
+	}
+	_base::clear();
 }
 
 
@@ -48,7 +41,7 @@ inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name,
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
-	calculate(expression);
+	_base::calculate(expression);
 	return _pBlock->variables()->add_by_name(name, _pBlock->tresult(), automatic, group);
 }
 
@@ -59,7 +52,7 @@ inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expre
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
-	calculate(expression);
+	_base::calculate(expression);
 	return _pBlock->variables()->add_by_name(nullptr, _pBlock->tresult(), automatic);
 }
 
@@ -70,9 +63,66 @@ bool calculator<_BLOCK, _OPRTABLE>::add_constant(const typename tpChar* name, co
 {
 	if (!_pBlock->variables()->is_set_variable())
 		return false;
-	calculate(expression);
+	_base::calculate(expression);
 	return _pBlock->variables()->add_constant(name);
 }
+
+
+
+template<class _BLOCK, class _OPRTABLE>
+bool calculator<_BLOCK, _OPRTABLE>::calculate(const tpChar* expr)
+{
+	if (_result)
+	{
+		delete _result;
+		_result = nullptr;
+		_rexpr = nullptr;
+	}
+	return _base::calculate(expr);
+}
+
+
+
+template<class _BLOCK, class _OPRTABLE>
+bool calculator<_BLOCK, _OPRTABLE>::parser_result(const tpChar* rexpr)
+{
+	if (_result)
+	{
+		delete _result;
+		_result = nullptr;
+		_rexpr = nullptr;
+	}
+
+	if (!rexpr)
+		return false;
+	
+	const tpChar* expr = _expr;
+	_base::tptree* tree = _tree;
+	_tree = nullptr;
+	bool bRet = parser(rexpr);
+	if (bRet)
+	{
+		_result = _tree;
+		_rexpr = _expr;
+	}
+	else
+		delete _tree;
+	_expr = expr;
+	_tree = tree;
+	return bRet;
+}
+
+
+
+template<class _BLOCK, class _OPRTABLE>
+const typename calculator<_BLOCK, _OPRTABLE>::tptree* calculator<_BLOCK, _OPRTABLE>::getResultNode() const
+{
+	return _result;
+}
+
+
+
+
 
 
 

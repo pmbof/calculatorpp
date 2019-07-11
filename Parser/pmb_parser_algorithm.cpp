@@ -47,6 +47,7 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::clear()
 	{
 		delete _tree;
 		_tree = nullptr;
+		_expr = nullptr;
 	}
 }
 
@@ -63,14 +64,19 @@ template <class _BLOCK, class _OPRTABLE, class _IT>
 bool algorithm<_BLOCK, _OPRTABLE, _IT>::parser(const typename tpChar* expr)
 {
 	log* pLg = log::beginFunction(pmb::logDebug, "pmb::parser::algorithm::parser");
+	if (_tree)
+	{
+		delete _tree;
+		_tree = nullptr;
+		_expr = nullptr;
+	}
+
 	if (!expr)
 	{
 		pLg->trace(logError, "expression is NULL").endFunction(logError);
 		return false;
 	}
 
-	if(_tree)
-		delete _tree;
 	_expr = expr;
 	_tree = new tptree;
 

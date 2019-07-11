@@ -39,7 +39,7 @@ typedef pmb::parser::calc::iterator<transporter_args, tree> citerator;
 typedef pmb::parser::operation<transporter_args> operation;
 typedef pmb::parser::operation_table<operation, tnode> operation_table;
 
-typedef pmb::calculate::units::symbol<char, unsigned char, transporter, item::string> symbol;
+typedef pmb::calculate::units::symbol<citerator::titem::CHAR, unsigned char, transporter, citerator::titem::string> symbol;
 typedef pmb::parser::calc::block<citerator, build_in_function_table, symbol> block;
 
 typedef symbol::prefix_base prefix_base;
@@ -55,6 +55,7 @@ class CParserDoc : public CDocument
 	static void opr_positive(transporter_args& args);
 	static void opr_negative(transporter_args& args);
 	static void opr_factorial(transporter_args& args);
+	static void opr_sqrroot(transporter_args& args);
 	static void opr_exponentiation(transporter_args& args);
 	static void opr_root(transporter_args& args);
 	static void opr_multiplication(transporter_args& args);
@@ -64,6 +65,7 @@ class CParserDoc : public CDocument
 	static void opr_subtraction(transporter_args& args);
 	static void opr_assignation(transporter_args& args);
 	static void opr_result(transporter_args& args);
+	static void opr_result_modify(transporter_args& args);
 
 
 	static const build_in_function _build_in_function[];
@@ -116,6 +118,7 @@ public:
 	const tnode* getNewNodeUnknow() const;
 	const tree* getTree() const;
 	const tnode* getNodeRoot() const;
+	const tnode* getNodeResult() const;
 	const tree* getTree2() const;
 
 	const tnode* getNextUnknowNode(const tnode* nd) const;

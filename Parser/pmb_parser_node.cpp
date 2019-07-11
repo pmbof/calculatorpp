@@ -181,7 +181,7 @@ template <class _ITEM, class _NDTYPE>
 const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextNode() const
 {
 	const cnode* ret = this && _right ? _right->getFirstLeftNode():
-		this && _parent && _parent->_left == this ? _parent: NULL;
+		this && _parent && _parent->_left == this ? _parent: nullptr;
 	if(!ret && this && _parent)
 	{
 		ret = _parent;
@@ -193,25 +193,26 @@ const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextNode() const
 
 
 template <class _ITEM, class _NDTYPE>
-int node<_ITEM, _NDTYPE>::nArguments(bool toRight) const
-{
-	const cnode* ret = toRight && _right ? _right : !toRight && _left ? _left : NULL;
-	return ret ? ret->_type != ndParentheses ? 1 : reinterpret_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(ret)->countListChildNodes() : 0;
-}
-
-
-template <class _ITEM, class _NDTYPE>
 node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextNode()
 {
-	cnode* ret = this && _right ? _right->getFirstLeftNode():
-		this && _parent && _parent->_left == this ? _parent: NULL;
-	if(!ret && this && _parent)
+	cnode* ret = this && _right ? _right->getFirstLeftNode() :
+		this && _parent && _parent->_left == this ? _parent : nullptr;
+	if (!ret && this && _parent)
 	{
 		ret = _parent;
 		for (cnode* right = this; ret && ret->_right == right; ret = ret->_parent)
 			right = ret;
 	}
 	return ret;
+}
+
+
+
+template <class _ITEM, class _NDTYPE>
+int node<_ITEM, _NDTYPE>::nArguments(bool toRight) const
+{
+	const cnode* ret = toRight && _right ? _right : !toRight && _left ? _left : NULL;
+	return ret ? ret->_type != ndParentheses ? 1 : reinterpret_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(ret)->countListChildNodes() : 0;
 }
 
 

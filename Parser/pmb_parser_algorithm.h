@@ -183,24 +183,6 @@ public:
 	typedef typename _BLOCK::symbol symbol;
 	typedef typename _BLOCK::CHAR tpChar;
 
-protected:
-/*	struct stack
-	{
-		stack(algorithm* alg) {
-			_node = alg->_tree->getRootNode();
-			_functionDef = alg->_functionDef = alg->isFunctionDef(_node, alg->_fncName, alg->_fncArgs);
-		}
-		stack(node* nd) : _node(nd), _functionDef(false) {}
-
-		node* _node;
-		bool _functionDef;
-	};
-
-	typedef std::list<stack> lststack;
-
-	typedef typename _BLOCK::map_args map_args;
-	typedef typename _BLOCK::vector_args vector_args;*/
-
 public:
 	algorithm(_tdOprTable* operation_table, _BLOCK* pBlock);
 	~algorithm();
