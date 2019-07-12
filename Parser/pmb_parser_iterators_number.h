@@ -23,20 +23,24 @@ struct number: public _baseIterator
 		int base = 10;
 		if(s() == '0' && s(1) && s(2))
 		{
-			s += 2;
-			switch(s(-1))
+			++s;
+			switch(s(1))
 			{
 			case 'x':
 				base = 16;
+				++s;
 				break;
 			case 'o':
 				base = 8;
+				++s;
 				break;
 			case 'b':
 				base = 2;
+				++s;
 				break;
 			default:
-				s -= 2;
+				--s;
+				break;
 			}
 		}
 
@@ -50,7 +54,7 @@ struct number: public _baseIterator
 				bDecimal = true;
 			else if(s.lower() == 'e')
 			{
-				if(s(1) < '0' || '9' < s(1))
+				if((s(1) < '0' || '9' < s(1)) && (s(1) != '+' && s(1) != '-' || s(2) < '0' || '9' < s(2)))
 					break;
 				bDecimal = false;
 				bExponential = true;
