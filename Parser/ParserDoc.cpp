@@ -425,20 +425,20 @@ BOOL CParserDoc::OnNewDocument()
 		m_calculator.add_constant("gravitational constant", "G = 6.67408 10^(-11) N m^2/kg^2");
 		m_calculator.add_constant("planck constant", "h = 6.62607015 10^(-34) J s");
 		m_calculator.add_constant("h c", "hc = h c");
-		m_calculator.add_constant("elementary charge", "e = 1.602176634 10^(-19) C");
-		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu0 = 4 pi 10^(-7) m/A");
-		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon0 = 1 / (mhu0 c^2)");
+		m_calculator.add_constant("elementary charge", "e.0 = 1.602176634 10^(-19) C");
+		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu.0 = 4 pi 10^(-7) m/A");
+		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon.0 = 1 / (mhu.0 c^2)");
 		m_calculator.add_constant("avogadro constant", "NA = 6.02214076 10^23 1/mol");
 		m_calculator.add_constant("boltzmann constant", "k = 1.380649 10^(-23) J/K");
 		m_calculator.add_constant("gas constant", "R = NA k");
 		m_calculator.add_constant("wien displacement constant", "b = 2.897771955 mm/K");
-		m_calculator.add_constant("atomic mass constant", "mu = 1.660 10^(-27) kg");
-		m_calculator.add_constant("electron mass", "me = 9.109 10^(-31) kg");
-		m_calculator.add_constant("proton mass", "mp = 1.007 mu");
-		m_calculator.add_constant("neutron mass", "mn = 1.008 mu");
+		m_calculator.add_constant("atomic mass constant", "m.u = 1.660 10^(-27) kg");
+		m_calculator.add_constant("electron mass", "m.e = 9.109 10^(-31) kg");
+		m_calculator.add_constant("proton mass", "m.p = 1.007 m.u");
+		m_calculator.add_constant("neutron mass", "m.n = 1.008 m.u");
 		m_calculator.add_constant("luminous efficacy", "Kcd = 683 lm/W");
-		m_calculator.add_constant("standard gravity", "go = 9.80665 m/s^2");
-		m_calculator.add_constant("hubble constant", "H0 = 2.25 10^(-18) 1/s");
+		m_calculator.add_constant("standard gravity", "g.0 = 9.80665 m/s^2");
+		m_calculator.add_constant("hubble constant", "H.0 = 2.25 10^(-18) 1/s");
 		m_symbols.set_system_constants();
 	}
 	catch (pmb::parser::exception<item>& ex)
@@ -498,9 +498,9 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("Lata_choclo = 2.1lb", true, 11185.8));
 	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
-	test.push_back(tuple("Mt = 5.972 10^24kg", true, 8));
-	test.push_back(tuple("Rt = 6371 km", true, 8));
-	test.push_back(tuple("vo = 2\\(2G Mt / Rt)", true, 11185.8));
+	test.push_back(tuple("M.Earth = 5.972 10^24kg", true, 8));
+	test.push_back(tuple("R.Earth = 6371 km", true, 8));
+	test.push_back(tuple("v.Escape = \\(2G M.Earth / R.Earth)", true, 11185.8));
 //	test.push_back(tuple("2.7172", true, 2.7172));
 
 	int errors = 0;

@@ -148,6 +148,8 @@ private:
 		{
 			node_alpha(const tnode* nd);
 
+			void set(sset* ss) override;
+
 			short font() const override;
 			short color() const override;
 		};
@@ -308,6 +310,7 @@ private:
 		{
 			node_operator_division_inline(const tnode* nd);
 
+			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
 			short font() const override;

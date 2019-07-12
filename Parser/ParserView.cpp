@@ -160,7 +160,7 @@ void CParserView::OnInitialUpdate()
 	pDC->SelectObject(oldFont);
 
 	m_fstyle = PMB_STYLE_CPPEDIT_MULTILINE;
-	m_bEditing = true;
+	m_bEditing = false;
 
 	m_expr = GetDocument()->m_expr;
 	m_style.caretPos = m_p0;
@@ -577,15 +577,121 @@ short CParserView::line::node_space::color() const
 
 
 
+
+
+
 CParserView::line::node_alpha::node_alpha(const tnode* nd)
 	: node(nd)
 {
 }
 
+
+void CParserView::line::node_alpha::set(sset* ss)
+{
+	const tnode* lnd = ss->nd->getLeft();
+	const tnode* rnd = ss->nd->getRight();
+
+	ss->parents.push_back(this);
+	if (ss->pnd)
+	{
+		top = ss->pnd->top;
+		bottom = ss->pnd->bottom;
+		left = right = ss->pnd->right;
+		_middle = ss->pnd->_middle;
+	}
+	else
+	{
+		top = ss->pline->top;
+		bottom = ss->pline->bottom;
+
+		left = right = ss->pline->left;
+		_middle = top + Height() / 2;
+	}
+
+	if (lnd)
+	{
+		ASSERT(false); // because doble left in  a.0
+		const tnode* nd = ss->nd;
+		ss->nd = lnd;
+		ss->pnd = this;
+		_left = new_instance(lnd);
+		_left->set(ss);
+		ss->nd = nd;
+	}
+
+	CRect rl;
+	if (lnd)
+	{
+		ASSERT(false); // because doble left in  a.0
+		rl = _left->rec_rect();
+		left = rl.right;
+		right = left;
+		top = rl.top;
+		bottom = rl.bottom;
+		_middle = _left->_middle;
+	}
+	if (_ini < _end)
+	{
+		CFont* oldFont = ss->pDC->SelectObject(ss->pline->_parent->m_style.font + font());
+		CString sn(ss->pstr + _ini, _end - _ini);
+
+		int pt = sn.Find(L".");
+		if (0 < pt && pt + 1 < sn.GetLength())
+			sn = sn.Mid(0, pt);
+		else 
+			pt = -1;
+
+		CRect cr(this);
+		ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
+		right = left + cr.Width();
+		if (lnd && rl.Height() != cr.Height())
+		{
+			top = _middle - cr.Height() / 2 - cr.Height() % 2;
+			bottom = top + cr.Height();
+		}
+		else if (!lnd)
+		{
+			top = _middle - cr.Height() / 2;
+			bottom = top + cr.Height();
+		}
+		LOGFONT lf;
+		ss->pline->_parent->m_style.font[font()].GetLogFont(&lf);
+		if (lf.lfItalic)
+			right += 2;
+		ss->pDC->SelectObject(oldFont);
+		if (0 < pt)
+		{
+			_right = new node_alpha(ss->nd);;
+			static_cast<node_alpha*>(_right)->_ini += pt + (ss->bEditing ? 0 : 1);
+
+			ss->pnd = this;
+			_right->set(ss);
+			_right->rec_move(lf.lfItalic ? -2 : 0, Height() / 2);
+			rnd = nullptr;
+		}
+	}
+	if (rnd)
+	{
+		const tnode* nd = ss->nd;
+		ss->nd = rnd;
+		ss->pnd = this;
+		bnode* lright;
+		for (lright = this; static_cast<node_alpha*>(lright)->bnode::_right; lright = static_cast<node_alpha*>(lright)->bnode::_right)
+			;
+		static_cast<node_alpha*>(lright)->bnode::_right = new_instance(rnd);
+		static_cast<node_alpha*>(lright)->bnode::_right->set(ss);
+		ss->nd = nd;
+	}
+	check_error(ss);
+	ss->parents.pop_back();
+}
+
+
 short CParserView::line::node_alpha::font() const
 {
 	return 1;
 }
+
 
 short CParserView::line::node_alpha::color() const
 {
@@ -769,8 +875,8 @@ void CParserView::line::node_parenthesis::set(sset* ss)
 		ss->nd = nd;
 		ss->pnd = pnd;
 		CRect rr = _right->rec_rect();
-		top = rr.top;
-		bottom = rr.bottom;
+		top = rr.top - 2;
+		bottom = rr.bottom + 2;
 		_middle = _right->_middle;
 	}
 	check_error(ss);
@@ -793,13 +899,18 @@ void CParserView::line::node_parenthesis::draw(sdraw* sd) const
 	pen.CreatePen(PS_SOLID, 1, sd->pline->_parent->m_style.color[color()]);
 	CPen* oldPen = sd->pDC->SelectObject(&pen);
 	CRect r(this);
-	r.right += 10 * Width();
-	r.top -= 5 * Height();
-	r.bottom += 5 * Height();
+	r.top -= Height();
+	r.bottom += Height();
 	if (_right)
-		sd->pDC->Arc(r, CPoint(right, top), CPoint(right, bottom));
+	{
+		r.right = ++r.left + 3 * Height();
+		sd->pDC->Arc(r, CPoint(right, top + 1), CPoint(right, bottom - 1));
+	}
 	else
-		sd->pDC->Arc(r, CPoint(left, top), CPoint(left, bottom));
+	{
+		r.left = --r.right - 3 * Height();
+		sd->pDC->Arc(r, CPoint(left, bottom - 1), CPoint(left, top + 1));
+	}
 	sd->pDC->SelectObject(oldPen);
 	if (_right)
 	{
@@ -808,7 +919,6 @@ void CParserView::line::node_parenthesis::draw(sdraw* sd) const
 		_right->draw(sd);
 		sd->pnd = pnd;
 	}
-	sd->pDC->DrawFocusRect(this);
 	sd->end_expr(this);
 }
 
@@ -1363,7 +1473,7 @@ void CParserView::line::node_operator_root::set(sset* ss)
 			rl = _left->rec_rect();
 			left = rl.right;
 			right = left + 2;
-			top = rl.top;
+			top = rl.top - 1;
 			bottom = rl.bottom;
 		}
 		{
@@ -1381,7 +1491,7 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		_right = new_instance(rnd);
 		_right->set(ss);
 		CRect rr = _right->rec_rect();
-		top = rr.top;
+		top = rr.top - 2;
 		bottom = rr.bottom;
 		rright = rr.right;
 		if (_left)
@@ -1428,15 +1538,15 @@ void CParserView::line::node_operator_root::draw(sdraw* sd) const
 		int t = _left ? _left->bottom : top + Height() / 3;
 		sd->pDC->MoveTo(left + 1, t);
 		sd->pDC->LineTo(left + 1 + Width() / 2, bottom);
-		sd->pDC->LineTo(right - 1, top);
+		sd->pDC->LineTo(right - 1, top + 1);
 
 		const bnode* pnd = sd->pnd;
 		sd->pnd = this;
 		_right->draw(sd);
 		sd->pnd = pnd;
-		sd->pDC->MoveTo(right - 1, top);
-		sd->pDC->LineTo(rright - 4, top);
-		sd->pDC->LineTo(rright - 1, top + 5);
+		sd->pDC->MoveTo(right - 1, top + 1);
+		sd->pDC->LineTo(rright - 4, top + 1);
+		sd->pDC->LineTo(rright - 1, top + 6);
 		sd->pDC->SelectObject(oldPen);
 	}
 	sd->end_expr(this);
@@ -1641,6 +1751,35 @@ CParserView::line::node_operator_division_inline::node_operator_division_inline(
 }
 
 
+void CParserView::line::node_operator_division_inline::set(sset* ss)
+{
+	node::set(ss);
+	CRect rl;
+	if (_left)
+		rl = _left->rec_rect();
+	if (_right)
+	{
+		CRect rr = _right->rec_rect();
+		if (_left)
+			max_rect(rr, rl);
+		if (Height() < rr.Height())
+		{
+			top = _middle - rr.Height() / 2;
+			bottom = top + rr.Height();
+		}
+	}
+	else if (_left)
+	{
+		if (Height() < rl.Height())
+		{
+			top = _middle - rl.Height() / 2;
+			bottom = top + rl.Height();
+		}
+	}
+}
+
+
+
 void CParserView::line::node_operator_division_inline::draw(sdraw* sd) const
 {
 	sd->begin_expr(this);
@@ -1657,13 +1796,13 @@ void CParserView::line::node_operator_division_inline::draw(sdraw* sd) const
 	if (sd->bEditing)
 	{
 		sd->pDC->MoveTo(left + 1, bottom - 2);
-		sd->pDC->LineTo(right - 3, top - 2);
+		sd->pDC->LineTo(right - 3, top + 2);
 		sd->pDC->SetPixel(right - 2, bottom - 2, color());
 	}
 	else
 	{
 		sd->pDC->MoveTo(left + 1, bottom - 2);
-		sd->pDC->LineTo(right - 2, top - 2);
+		sd->pDC->LineTo(right - 2, top + 2);
 	}
 	sd->pDC->SelectObject(oldPen);
 	if (_right)
