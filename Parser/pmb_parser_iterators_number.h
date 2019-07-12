@@ -60,11 +60,11 @@ struct number: public _baseIterator
 				bExponential = true;
 			}
 		}
-		if(n < s)
+		if(bDecimal && n + 1 < (typename _IT::idx)s || !bDecimal && n < s)
 			return node<_ITEM, _NDTYPE>::newNodeNumber(n, s._i);
 		else if(n0 < s)
 			--s;
-		return n0 < s ? node<_ITEM, _NDTYPE>::newNodeNumber(n0, s._i) : NULL;
+		return n0 < s ? node<_ITEM, _NDTYPE>::newNodeNumber(n0, s._i) : nullptr;
 	}
 
 protected:
