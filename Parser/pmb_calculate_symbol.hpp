@@ -564,6 +564,8 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 			{
 				if (!iu->second.second)
 					continue;
+				if (!*iu->second.first)
+					continue;
 				tpUnit::_tpInt pow = refVal._unit.compare(iu->second.first->_unit);
 				if (pow)
 				{
