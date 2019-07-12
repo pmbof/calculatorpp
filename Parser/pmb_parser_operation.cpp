@@ -12,27 +12,6 @@ namespace parser
 {
 
 
-/*template<class _TVALUE, class _NODE>
-const operation<_TVALUE> operation_table<_TVALUE, _NODE>::_opr[] = {
-	pmb::parser::operation<_TVALUE>("+", 250, false, "positive", "positive", &_TVALUE::tpvalue::positive, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("-", 250, false, "negative", "negative", &_TVALUE::tpvalue::negative, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("!", 250, true, "factorial", "factorial", &_TVALUE::tpvalue::factorial, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("^", 200, true, "power", "exponentiation", &_TVALUE::tpvalue::exponentiation, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("¨", 200, true, "root", "root", &_TVALUE::tpvalue::root, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("", 110, true, "product implicit", "multiplication implicit or call function", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place, true),
-	pmb::parser::operation<_TVALUE>(" ", 110, true, "product space", "multiplication space or call function", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place, true),
-	pmb::parser::operation<_TVALUE>(" ", 110, false, "product space inverse", "multiplication space or call function right to left", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place, true),
-	pmb::parser::operation<_TVALUE>("*", 100, true, "product", "multiplication", &_TVALUE::tpvalue::multiplication, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("/", 100, true, "cocient", "division", &_TVALUE::tpvalue::division, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("\\", 100, true, "modulo", "congruence relation", &_TVALUE::tpvalue::modulo, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("+", 50, true, "add", "addition", &_TVALUE::tpvalue::addition, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("-", 50, true, "substract", "substraction", &_TVALUE::tpvalue::substraction, &_TVALUE::tpvalue::place),
-	pmb::parser::operation<_TVALUE>("=", 10, false, "assignation", "assignation", &_TVALUE::tpvalue::assignation, &_TVALUE::tpvalue::assignation_place, true, false),
-	pmb::parser::operation<_TVALUE>("=", 0, true, "result", "result", &_TVALUE::tpvalue::result, &_TVALUE::tpvalue::place)
-};
-
-template<class _TVALUE, class _NODE>
-const int operation_table<_TVALUE, _NODE>::_oprSize = 14;*/
 
 
 template<class _TVALUE>
@@ -100,6 +79,12 @@ template<class _TVALUE>
 const char* operation<_TVALUE>::getSymbol() const
 {
 	return _symbol;
+}
+
+template<class _TVALUE>
+int operation<_TVALUE>::getSymbolLen() const
+{
+	return _len;
 }
 
 template<class _TVALUE>
@@ -213,11 +198,13 @@ operation_table<_OPR, _NODE>::operation_table(const operation* opr, size_t size)
 }
 
 
+
+
 template<class _OPR, class _NODE>
 const typename operation_table<_OPR, _NODE>::operation*
 	operation_table<_OPR, _NODE>::find(const _NODE* nd, const char* expr) const
 {
-	for(int i = 0; i < _oprSize; ++i)
+	for(size_t i = 0; i < _oprSize; ++i)
 	{
 		if((_opr[i].isBinary() && nd->getLeft() && nd->getRight() || 
 				!_opr[i].isBinary() && _opr[i].isLeftToRight() && nd->getLeft() && !nd->getRight() || 
@@ -225,8 +212,10 @@ const typename operation_table<_OPR, _NODE>::operation*
 					&& _opr[i].compare(nd->getCharPtr(expr), nd->len()))
 			return _opr + i;
 	}
-	return NULL;
+	return nullptr;
 }
+
+
 
 
 template<class _OPR, class _NODE>
@@ -236,11 +225,17 @@ const typename operation_table<_OPR, _NODE>::operation*
 	return _opr + i;
 }
 
+
+
+
 template<class _OPR, class _NODE>
 typename operation_table<_OPR, _NODE>::size_t operation_table<_OPR, _NODE>::size() const
 {
 	return _oprSize;
 }
+
+
+
 
 
 

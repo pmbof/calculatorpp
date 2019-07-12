@@ -37,6 +37,7 @@ const operation CParserDoc::_operation[] = {
 	operation("^", 200, true, true, "power", "exponentiation", &CParserDoc::opr_exponentiation),
 	operation("\\", 200, true, true, "root", "root", &CParserDoc::opr_root),
 	operation("*", 110, true, true, "product", "multiplication", &CParserDoc::opr_multiplication),
+	operation("/.", 110, true, true, "inline cocient", "division", &CParserDoc::opr_division),
 	operation("/", 110, true, true, "cocient", "division", &CParserDoc::opr_division),
 	operation("", 100, true, true, "product implicit", "multiplication implicit or call function", &CParserDoc::opr_multiplication, true),
 	operation(" ", 100, true, true, "product space", "multiplication space or call function", &CParserDoc::opr_multiplication, true),

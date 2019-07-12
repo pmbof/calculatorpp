@@ -474,7 +474,7 @@ template<typename _INT>
 inline _INT rational<_INT>::proportionality(const rational<_INT>& right) const
 {
 	_INT vret;
-	if (numerator % right.numerator == 0 && right.denominator % denominator == 0)
+	if (right.numerator && denominator && numerator % right.numerator == 0 && right.denominator % denominator == 0)
 		vret = numerator / right.numerator * right.denominator / denominator;
 	else
 		vret = 0;
@@ -1277,16 +1277,26 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::exponentiation(const _MyT& le
 }
 
 
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sqrroot(const _MyT& right)
+{
+	_TYPE exp = (_TYPE)1 / 2;
+	_number = ::sqrt(right._number);
+	_unit = right._unit.pow(exp);
+}
+
+
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::root(const _MyT& left, const _MyT& right)
 {
-	if (!right._unit.dimensionless())
+	if (!left._unit.dimensionless())
 		throw "exponent must be dimensionless";
-	if (right.zero())
+	if (left.zero())
 		throw "illegal root, divide by zero";
-	_TYPE exp = 1 / right._number;
-	_number = ::pow(left._number, exp);
-	_unit = left._unit.pow(exp);
+	_TYPE exp = 1 / left._number;
+	_number = ::pow(right._number, exp);
+	_unit = right._unit.pow(exp);
 }
 
 

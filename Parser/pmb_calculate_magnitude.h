@@ -319,6 +319,7 @@ public:
 	void substraction(const _MyT& left, const _MyT& right);
 
 	void exponentiation(const _MyT& left, const _MyT& right);
+	void sqrroot(const _MyT& right);
 	void root(const _MyT& left, const _MyT& right);
 
 	void assignation(const _MyT& left, const _MyT& right);

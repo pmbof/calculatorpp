@@ -394,6 +394,8 @@ CParserView::line::node* CParserView::line::node::new_instance(const tnode* nd)
 				nnd = new node_operator_plus(nd);
 			else if (!strcmp(opr->getSymbol(), "-"))
 				nnd = new node_operator_minus(nd);
+			else if (!strcmp(opr->getSymbol(), "/."))
+				nnd = new node_operator_division_inline(nd);
 			else if (!strcmp(opr->getSymbol(), "/"))
 				nnd = new node_operator_division(nd);
 			else if (!strcmp(opr->getSymbol(), "^"))
@@ -691,7 +693,7 @@ short CParserView::line::node_list::color() const
 
 
 CParserView::line::node_parenthesis::node_parenthesis(const tnode* nd)
-	: node(nd)
+	: node(nd), _nparenthesis(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
 {
 }
 
@@ -730,6 +732,21 @@ void CParserView::line::node_parenthesis::set(sset* ss)
 		ss->pnd = pnd;
 	}
 
+	if (_nparenthesis < 0)
+	{
+		short nprt = _nparenthesis;
+		for (lbnode::const_reverse_iterator p = ss->parents.rbegin(); p != ss->parents.rend(); ++p)
+		{
+			if ((*p)->parenthesis())
+			{
+				nprt += (*p)->nparenthesis();
+				if (0 <= nprt)
+				{
+
+				}
+			}
+		}
+	}
 	CFont* oldFont = ss->pDC->SelectObject(ss->pline->_parent->m_style.font + font());
 	CString sn(ss->pstr + _ini, ss->nd->len());
 
@@ -1359,7 +1376,6 @@ void CParserView::line::node_operator_root::set(sset* ss)
 			bottom = top + cr.Height();
 			ss->pDC->SelectObject(oldFont);
 		}
-		//_middle = _left->_middle;
 		ss->nd = rnd;
 		ss->pnd = this;
 		_right = new_instance(rnd);
@@ -1369,7 +1385,12 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		bottom = rr.bottom;
 		rright = rr.right;
 		if (_left)
-			_left->rec_move(0, rr.top - rl.top);
+		{
+			if (2 * rl.Height() < 3 * (rr.Height() - rl.Height()) * (rr.Height() < rl.Height() ? -1 : 1))
+				_left->rec_move(0, rr.top - rl.top);
+			else
+				_left->rec_move(0, rr.top - rl.top - rl.Height() / 2);
+		}
 		check_error(ss);
 		ss->parents.pop_back();
 	}
@@ -1404,18 +1425,18 @@ void CParserView::line::node_operator_root::draw(sdraw* sd) const
 		pen.CreatePen(PS_SOLID, 1, sd->pline->_parent->m_style.color[color()]);
 		CPen* oldPen = sd->pDC->SelectObject(&pen);
 
-		int t = _left ? _left->bottom : top + 10;
-		sd->pDC->MoveTo(left, t);
-		sd->pDC->LineTo(left + Width() / 2, bottom);
-		sd->pDC->LineTo(right, top);
+		int t = _left ? _left->bottom : top + Height() / 3;
+		sd->pDC->MoveTo(left + 1, t);
+		sd->pDC->LineTo(left + 1 + Width() / 2, bottom);
+		sd->pDC->LineTo(right - 1, top);
 
 		const bnode* pnd = sd->pnd;
 		sd->pnd = this;
 		_right->draw(sd);
 		sd->pnd = pnd;
-		sd->pDC->MoveTo(right, top);
-		sd->pDC->LineTo(rright - 3, top);
-		sd->pDC->LineTo(rright, top + 5);
+		sd->pDC->MoveTo(right - 1, top);
+		sd->pDC->LineTo(rright - 4, top);
+		sd->pDC->LineTo(rright - 1, top + 5);
 		sd->pDC->SelectObject(oldPen);
 	}
 	sd->end_expr(this);
@@ -1608,6 +1629,64 @@ short CParserView::line::node_operator_product::color() const
 {
 	return 2;
 }
+
+
+
+
+
+
+CParserView::line::node_operator_division_inline::node_operator_division_inline(const tnode* nd)
+	: node(nd)
+{
+}
+
+
+void CParserView::line::node_operator_division_inline::draw(sdraw* sd) const
+{
+	sd->begin_expr(this);
+	if (_left)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		_left->draw(sd);
+		sd->pnd = pnd;
+	}
+	CPen pen;
+	pen.CreatePen(PS_SOLID, 1, sd->pline->_parent->m_style.color[color()]);
+	CPen* oldPen = sd->pDC->SelectObject(&pen);
+	if (sd->bEditing)
+	{
+		sd->pDC->MoveTo(left + 1, bottom - 2);
+		sd->pDC->LineTo(right - 3, top - 2);
+		sd->pDC->SetPixel(right - 2, bottom - 2, color());
+	}
+	else
+	{
+		sd->pDC->MoveTo(left + 1, bottom - 2);
+		sd->pDC->LineTo(right - 2, top - 2);
+	}
+	sd->pDC->SelectObject(oldPen);
+	if (_right)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		_right->draw(sd);
+		sd->pnd = pnd;
+	}
+	sd->end_expr(this);
+}
+
+
+short CParserView::line::node_operator_division_inline::font() const
+{
+	return 2;
+}
+
+short CParserView::line::node_operator_division_inline::color() const
+{
+	return 2;
+}
+
 
 
 
@@ -2505,7 +2584,7 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			bModified = true;
 			std::string nexpr = m_expr.substr(0, m_style.caret[1]);
 			if (m_style.caret[1] + 1 < m_expr.size())
-				nexpr += m_expr.substr(m_style.caret[1]);
+				nexpr += m_expr.substr(m_style.caret[1] + 1);
 			m_expr = nexpr;
 		}
 		break;
@@ -2556,16 +2635,6 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	int old1 = m_style.caret[1];
 	switch (nChar)
 	{
-	case VK_DELETE:
-		if (m_style.caret[1] < m_expr.size() - 1)
-		{
-			bModified = true;
-			std::string nexpr = m_expr.substr(0, m_style.caret[1]);
-			if (m_style.caret[1] + 1 < m_expr.size())
-				nexpr += m_expr.substr(m_style.caret[1]);
-			m_expr = nexpr;
-		}
-		break;
 	case VK_BACK:
 		if (0 < m_style.caret[1])
 		{

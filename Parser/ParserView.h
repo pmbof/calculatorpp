@@ -304,6 +304,17 @@ private:
 		};
 
 
+		struct node_operator_division_inline : node
+		{
+			node_operator_division_inline(const tnode* nd);
+
+			void draw(sdraw* sd) const override;
+
+			short font() const override;
+			short color() const override;
+		};
+
+
 		struct node_operator_division : node
 		{
 			node_operator_division(const tnode* nd);

@@ -47,6 +47,7 @@ public:
 
 
 	const char* getSymbol() const;
+	int getSymbolLen() const;
 	const char* getName() const;
 	const char* getDescription() const;
 	bool isLeftToRight() const;
@@ -99,6 +100,8 @@ protected:
 	const operation* _opr;
 	size_t _oprSize;
 };
+
+
 
 }
 }
