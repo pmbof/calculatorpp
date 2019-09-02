@@ -211,7 +211,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextNode()
 template <class _ITEM, class _NDTYPE>
 int node<_ITEM, _NDTYPE>::nArguments(bool toRight) const
 {
-	const cnode* ret = toRight && _right ? _right : !toRight && _left ? _left : NULL;
+	const cnode* ret = toRight && _right ? _right : !toRight && _left ? _left : nullptr;
 	return ret ? ret->_type != ndParentheses ? 1 : reinterpret_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(ret)->countListChildNodes() : 0;
 }
 
@@ -631,32 +631,17 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_parentheses(node<_ITEM, _NDTY
 		if (0 <= newOpened)
 			insertEmptyUnknown(newNode)->insertToRight(newNode);
 		else
-			insertToRight(newNode);
+			insertParenthesesClose(newNode);
 		break;
 	case ndSpace:
 		{
 			_type = ndUnknown;
 			insertToRight(newNode);
-//			cnode* parent = deleteThisNode();
-//			if(parent)
-//				parent->insertToRight(newNode);
 		}
 		break;
 	default:
 		insertToRight(newNode);
 		break;
-	}
-
-	if (newOpened < 0)
-	{
-		short closed;
-		node* lastParentOpened;
-		cnode* rpar = newNode->foundOpenParentheses(closed, lastParentOpened);
-		if (!rpar)
-		{
-			TRACE_NODE(logError, "Error: too many parentheses closed.", nullptr, newNode);
-			throw exception<_ITEM>(newNode, "too many parentheses closed");
-		}
 	}
 	return newNode;
 }
@@ -673,6 +658,7 @@ void node<_ITEM, _NDTYPE>::insertWithLowPriority(node<_ITEM, _NDTYPE>* newNode)
 	if(top)
 		top->insertInThisNode(newNode);
 }
+
 
 
 template <class _ITEM, class _NDTYPE>
@@ -742,6 +728,45 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_unknown(cnode* newNode)
 
 
 
+template<class _ITEM, typename _NDTYPE>
+node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insertParenthesesClose(node* newParenthesesClose)
+{
+	node* pNode = this;
+	for (short close = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(newParenthesesClose)->getOpened(); close < 0; )
+	{
+		for (; pNode && (pNode->_type != ndParentheses || static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(pNode)->getOpened() < 0); pNode = pNode->_parent)
+			;
+		if (!pNode)
+			throw exception<_ITEM>(newParenthesesClose, "no open parenthesis found", true);
+
+		nodes::parentheses<_ITEM, _NDTYPE>* pParentheses = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(pNode);
+		short open = pParentheses->getOpened();
+		node* pnewParenClose = nullptr;
+		if (-close < open)
+			pNode = pParentheses->split_right(-close);
+		else if (open < -close)
+			pnewParenClose = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(newParenthesesClose)->split(open);
+		newParenthesesClose->_parent = pNode->_parent;
+		newParenthesesClose->_left = pNode;
+		if (newParenthesesClose->_parent)
+		{
+			if (newParenthesesClose->_parent->_right == pNode)
+				newParenthesesClose->_parent->_right = newParenthesesClose;
+			else if (newParenthesesClose->_parent->_left == pNode)
+				newParenthesesClose->_parent->_left = newParenthesesClose;
+		}
+		pNode->_parent = newParenthesesClose;
+
+		pNode = newParenthesesClose->_parent;
+		if (pnewParenClose)
+			newParenthesesClose = pnewParenClose;
+		close += open;
+	}
+	return pNode;
+}
+
+
+
 template <class _ITEM, class _NDTYPE>
 node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insertUnknownListInParentheses(cnode* newUnknown)
 {
@@ -751,26 +776,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insertUnknownListInParentheses(cnode
 	if (0 <= static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(this)->getOpened())
 		insertToRight(newUnknown);
 	else
-	{
-		short closed;
-		node* lastParentOpened;
-		cnode* rpar = foundOpenParentheses(closed, lastParentOpened);
-		if(!rpar)
-		{
-			TRACE_NODE(logError, "Error: too many parentheses closed.", nullptr, newUnknown);
-			throw exception<_ITEM>(newUnknown, "too many parentheses closed.", true);
-		}
-		if (lastParentOpened)
-		{
-			if (lastParentOpened->getType() != ndParentheses)
-				throw exception<_ITEM>(this, "parent node not is parentheses %item");
-			rpar = static_cast<nodes::parentheses<_ITEM, _NDTYPE>*>(lastParentOpened)->split(closed);
-		}
-		if (newUnknown->_type == ndList)
-			rpar->insertWithLowPriority(newUnknown);
-		else
-			rpar->insertInThisNode(newUnknown);
-	}
+		insertInThisNode(newUnknown);
 	return newUnknown;
 }
 
@@ -855,17 +861,26 @@ bool node<_ITEM, _NDTYPE>::checkParentheses() const
 
 	const cnode* open = nullptr;
 	const cnode* close = nullptr;
-	for (const cnode* right = getRootNode(); right; right = right->_right)
+	// falta checkear todos los nodos:
+	for (const cnode* right = getRootNode(); right; )
 	{
 		if (right->getType() == ndParentheses)
 		{
 			short o = static_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(right)->getOpened();
 			if (o < 0)
+			{
 				close = right;
-			else if (0 < o)
+				right = right->_left;
+			}
+			else
+			{
 				open = right;
+				right = right->_right;
+			}
 			opened += o;
 		}
+		else
+			right = right->_right;
 	}
 	if (opened)
 	{

@@ -339,6 +339,26 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 					_cursor->_transporter.moveToRight();
 			}
 		}
+		else if (parent->getType() == ndParentheses && _cursor->_node->getType() == ndParentheses)
+		{
+			if (static_cast<const nodes::parentheses<_TREE::cItem, typename _TREE::cNdType>*>(parent)->getOpened() < 0
+				&& 0 <= static_cast<const nodes::parentheses<_TREE::cItem, typename _TREE::cNdType>*>(_cursor->_node)->getOpened())
+			{
+				const tnode* parent2 = parent->getParent();
+				if (parent2)
+				{
+					if (parent2->getType() == ndList
+						|| parent2->getType() == ndUnknown && !static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent2)->isCallFunction()
+						&& (!_cursor->_nodeLast || _cursor->_nodeLast->getType() != ndList) && static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent2)->isBinary())
+					{
+						if (false && parent2->getLeft() == _cursor->_node->getParent())
+							_cursor->_transporter.add_back();
+						else if (false && parent2->getRight() == _cursor->_node->getParent())
+							_cursor->_transporter.add_front();
+					}
+				}
+			}
+		}
 		else if (parent->getType() != ndParentheses && _cursor->_node->getType() == ndParentheses)
 		{
 			if (parent->getType() == ndList

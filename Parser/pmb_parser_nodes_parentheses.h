@@ -24,7 +24,8 @@ public:
 
 	int countListChildNodes() const;
 
-	parentheses* split(short count);
+	parentheses* split(unsigned short count);
+	parentheses* split_right(unsigned short count);
 
 protected:
 	char _prtype;

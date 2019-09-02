@@ -65,16 +65,29 @@ inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::begin(_CPTRCHAR ex
 			{
 				// uk is *    (operator call functions)
 				uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft());
-				if (!uk->isBinary()
-					|| !uk->getLeft() || uk->getLeft()->getType() != ndAlpha   // function name
-					|| !uk->getRight() || uk->getRight()->getType() != ndParentheses // (  or  ()
-					|| static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() != 0  // ()
-					&& static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() != 1  // (
-					|| !uk->getRight()->getRight() && static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() == 1
-					|| uk->getRight()->getRight() && static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight())->getOpened() == 0)
+
+				bool bBinary = uk->isBinary();
+				bool bFunctionName = bBinary && uk->getLeft() && uk->getLeft()->getType() == ndAlpha;
+				bool bParentheses = bFunctionName && uk->getRight() && uk->getRight()->getType() == ndParentheses;
+				if (bParentheses)
+				{
+					const nodes::parentheses<cItem, cNdType>* parentheses = static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight());
+					if (parentheses->getOpened() == -1)																		// )
+					{
+						bParentheses = parentheses->getLeft() && parentheses->getLeft()->getType() == ndParentheses;		// (
+						if (bParentheses)
+						{
+							parentheses = static_cast<const nodes::parentheses<cItem, cNdType>*>(parentheses->getLeft());
+							bParentheses = parentheses->getOpened() == 1;													// (
+						}
+					}
+					else
+						bParentheses = parentheses->getOpened() == 0;														// ()
+				}
+				if (!bParentheses)
 				{
 					_fncName.clear();
-					return; /// false
+					return;
 				}
 				else
 				{
@@ -84,20 +97,19 @@ inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::stack::begin(_CPTRCHAR ex
 					_fncName = uk->getLeft()->getString(_expr);
 					if (!_fncName)
 						return;
-					_it_calc->function(uk->firstCalc()); // uk->getRight() is (
-					uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getRight());
-					const nodes::unknown<cItem, cNdType>* first = uk;
+					_it_calc->function(uk->firstCalc()); // uk->getRight() is ) or ()
+					const nodes::parentheses<cItem, cNdType>* parentheses = static_cast<const nodes::parentheses<cItem, cNdType>*>(uk->getRight());
+					if (parentheses->getOpened() == -1)
+						parentheses = static_cast<const nodes::parentheses<cItem, cNdType>*>(parentheses->getLeft());
 					// getting function's parameters
-					for (uk = uk ? static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getRight()) : nullptr;
-							uk && (uk->getType() == ndList && uk->getLeft() && uk->getLeft()->getType() == ndList);
-							uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft()))
+					const nodes::calc<cItem, cNdType>* ncl = parentheses ? static_cast<const nodes::calc<cItem, cNdType>*>(parentheses->getRight()) : nullptr;
+					for (; ncl && (ncl->getType() == ndList && ncl->getLeft() && ncl->getLeft()->getType() == ndList); ncl = static_cast<const nodes::calc<cItem, cNdType>*>(ncl->getLeft()))
 						;
-					for (const tnode* lstparam = uk; lstparam;
-							lstparam = lstparam->getRight() && lstparam->getRight()->getType() == ndParentheses ? lstparam->getRight() : 
-							lstparam->getParent() == first && lstparam->getRight() ? lstparam->getRight()->getRight() : lstparam->getParent())
+					for (const tnode* lstparam = ncl; lstparam && lstparam != parentheses;
+							lstparam = lstparam->getParent() == parentheses && lstparam->getRight() ? lstparam->getRight()->getRight() : lstparam->getParent())
 					{
 						if ((lstparam->getType() != ndAlpha && lstparam->getType() != ndList && lstparam->getType() != ndParentheses)
-								|| lstparam->getType() == ndParentheses && (static_cast<const nodes::parentheses<cItem, cNdType>*>(lstparam)->getOpened() != -1
+								|| lstparam->getType() == ndParentheses && (static_cast<const nodes::parentheses<cItem, cNdType>*>(lstparam)->getOpened() != 1
 								|| lstparam->getLeft() || lstparam->getRight()))
 						{
 							_it_calc->function(nullptr);
@@ -497,6 +509,11 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 		bool bForAlpha[2];
 		bool bCanCreateVariable[2];
 		const nodes::unknown<cItem, cNdType>* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(st->_it_calc->node());
+
+		bool bCloseParentheses = uk->getType() == ndParentheses && static_cast<const nodes::parentheses<cItem, cNdType>*>(static_cast<const nodes::calc<cItem, cNdType>*>(uk))->getOpened() < 0;
+		if (bCloseParentheses)
+				uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft());
+
 		if (uk->getType() == ndUnknown && uk->isValid())
 		{
 			nArgs = uk->isBinary() ? 2 : 1;
@@ -528,7 +545,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 		{
 			nArgs = 1;
 			childs[0] = uk->getRight();
-			vals[0] = &values.right();
+			vals[0] = bCloseParentheses ? &values.left() : &values.right();
 			bForAlpha[0] = true;
 			bCanCreateVariable[0] = false;
 		}
@@ -562,11 +579,27 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 					else
 						st->_it_calc->prev()->_transporter.join_r2l(values, true, true);
 				}
-				else
+				else if (!bCloseParentheses)
 				{
-					pmb::log::instance()->trace(logError, "node = 0x%08X\nchilds[%d] = 0x%08X\nlast node = 0x%08X\nlast join node = 0x%08X\nprev node = 0x%08X\n",
-						uk, arg, childs[arg], st->_it_calc->lastNode(), st->_it_calc->lastJoinNode(), st->_it_calc->prev() ? st->_it_calc->prev()->_node : nullptr);
-					throw exception<cItem>(uk, childs[arg] == uk->getLeft() && !uk->isCallFunction() ? "can not get lvalue for %item" : uk->isCallFunction() ? "can get arguments for call function" : "can not get rvalue for %item");
+					TRACE_NODE(logError, "Error in node: ", st->_expr, uk, false, false);
+					if (uk->getType() == ndUnknown || uk->getType() == ndList)
+					{
+						pmb::log::instance()->trace(logError, "node uk = 0x%08X\nchilds[%d] = 0x%08X\nlast node = 0x%08X\nlast join node = 0x%08X\nprev node = 0x%08X\n",
+							uk, arg, childs[arg], st->_it_calc->lastNode(), st->_it_calc->lastJoinNode(), st->_it_calc->prev() ? st->_it_calc->prev()->_node : nullptr);
+						throw exception<cItem>(uk, childs[arg] == uk->getLeft() && !uk->isCallFunction() ? "can not get lvalue for %item" : uk->isCallFunction() ? "can get arguments for call function" : "can not get rvalue for %item");
+					}
+					else if (uk->getType() == ndParentheses)
+					{
+						pmb::log::instance()->trace(logError, "node parentheses = 0x%08X\nchilds[%d] = 0x%08X\nlast node = 0x%08X\nlast join node = 0x%08X\nprev node = 0x%08X\n",
+							uk, arg, childs[arg], st->_it_calc->lastNode(), st->_it_calc->lastJoinNode(), st->_it_calc->prev() ? st->_it_calc->prev()->_node : nullptr);
+						throw exception<cItem>(uk, childs[arg] == uk->getLeft() ? "can not get lvalue for %item" : "can not get rvalue for %item");
+					}
+					else
+					{
+						pmb::log::instance()->trace(logError, "node = 0x%08X\nchilds[%d] = 0x%08X\nlast node = 0x%08X\nlast join node = 0x%08X\nprev node = 0x%08X\n",
+							uk, arg, childs[arg], st->_it_calc->lastNode(), st->_it_calc->lastJoinNode(), st->_it_calc->prev() ? st->_it_calc->prev()->_node : nullptr);
+						throw exception<cItem>(uk, childs[arg] == uk->getLeft() ? "can not get lvalue for %item" : "can not get rvalue for %item");
+					}
 				}
 			}
 		}

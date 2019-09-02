@@ -46,19 +46,23 @@ char parentheses<_ITEM, _NDTYPE>::getClass() const
 	return _prtype;
 }
 
+
+
 template<class _ITEM, class _NDTYPE>
 int parentheses<_ITEM, _NDTYPE>::countListChildNodes() const
 {
-	int count = _right ? 1: 0;
-	for (const node<_ITEM, _NDTYPE>* pList = _right; pList && pList->getType() == ndList; ++count, pList = pList->getLeft())
+	int count = _opened < 0 && _left ? 1: 0;
+	for (const node<_ITEM, _NDTYPE>* pList = _opened < 0 ? _left->getRight() : _right; pList && pList->getType() == ndList; ++count, pList = pList->getLeft())
 		;
 	return count;
 }
 
+
+
 template<class _ITEM, class _NDTYPE>
-parentheses<_ITEM, _NDTYPE>* parentheses<_ITEM, _NDTYPE>::split(short count)
+parentheses<_ITEM, _NDTYPE>* parentheses<_ITEM, _NDTYPE>::split_right(unsigned short count)
 {
-	parentheses* newParentheses = new parentheses(_end - count, _end, _prtype, count);
+	parentheses* newParentheses = new parentheses(_end - count, _end, _prtype, _opened < 0 ? -count : count);
 	insertInRight(newParentheses);
 	_opened -= count;
 	_end -= count;
@@ -66,22 +70,19 @@ parentheses<_ITEM, _NDTYPE>* parentheses<_ITEM, _NDTYPE>::split(short count)
 }
 
 
-/*
-template<class _ITEM, class _NDTYPE>
-_TVALUE& parentheses<_ITEM, _NDTYPE>::getValue()
-{
-	return *this;
-	//return _value;  prueba 2018-05-07
-}
 
 
 template<class _ITEM, class _NDTYPE>
-const _TVALUE& parentheses<_ITEM, _NDTYPE>::getValue() const
+parentheses<_ITEM, _NDTYPE>* parentheses<_ITEM, _NDTYPE>::split(unsigned short count)
 {
-	return *this;
-	//return _value;  prueba 2018-05-07
+	parentheses* newParentheses = new parentheses(_end - count, _end, _prtype, _opened < 0 ? -count: count);
+	_opened += count;
+	_end -= count;
+	return newParentheses;
 }
-*/
+
+
+
 
 }
 }

@@ -107,6 +107,7 @@ protected:
 	void replaceThisNode(node* newNode);
 	void upLeftToThisNode();
 	void insertWithLowPriority(node* newNode);
+	node* insertParenthesesClose(node* newParenthesesClose);
 	node* insertUnknownListInParentheses(node* newUnknown);
 
 	node* foundOpenParentheses(short& closed, node*& lastParentOpened);
