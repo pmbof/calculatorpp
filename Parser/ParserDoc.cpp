@@ -47,7 +47,7 @@ const operation CParserDoc::_operation[] = {
 	operation("+", 50, true, true, "add", "addition", &CParserDoc::opr_addition),
 	operation("=", 10, false, true, "assignation", "assignation", &CParserDoc::opr_assignation, false, true, false),
 	operation("=", 0, true, false, "result", "result", &CParserDoc::opr_result),
-	operation("=:", 0, false, true, "result modify", "result modify", &CParserDoc::opr_result_modify)
+	operation("=.", 0, true, true, "result modify", "result modify", &CParserDoc::opr_result_modify)
 };
 
 
@@ -501,7 +501,7 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("M.Earth = 5.972 10^24kg", true, 8));
 	test.push_back(tuple("R.Earth = 6371 km", true, 8));
 	test.push_back(tuple("v.Escape = \\(2G M.Earth / R.Earth)", true, 11185.8));
-//	test.push_back(tuple("2.7172", true, 2.7172));
+	test.push_back(tuple("k = 6^2 / 9 + 8 * ((5 + 7) * (1/4))", true, 2.7172));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");
@@ -509,7 +509,7 @@ BOOL CParserDoc::OnNewDocument()
 	for (int i = 0; i < test.size(); ++i)
 	{
 		bool bResult = false;
-		if (i == test.size() - 2)
+		if (i == 1)
 			bResult = false;
 		try
 		{

@@ -70,6 +70,30 @@ private:
 		};
 
 
+		enum bnodetypes : char
+		{
+			bndOther,
+			bndSpace,
+			bndAlpha,
+			bndFunction,
+			bndBIFunction,
+			bndNumber,
+			bndString,
+			bndList,
+			bndParentheses,
+			bndUnknow,
+			bndOprEqual,
+			bndOprResult,
+			bndResult,
+			bndOprRoot,
+			bndOprPower,
+			bndOprProduct,
+			bndOprDivisionIl,
+			bndOprDivision,
+			bndOprPlus,
+			bndOprMinus
+		};
+
 		struct bnode : CRect
 		{
 		protected:
@@ -86,8 +110,10 @@ private:
 
 			virtual bool empty() const = 0;
 
-			virtual bool parenthesis() const = 0;
-			virtual short nparenthesis() const = 0;
+			virtual bnodetypes type() const = 0;
+
+			virtual bool parentheses() const = 0;
+			virtual short nparentheses() const = 0;
 
 			bnode& operator= (const CRect& right);
 
@@ -126,8 +152,8 @@ private:
 
 			bool empty() const override;
 
-			bool parenthesis() const override;
-			short nparenthesis() const override;
+			bool parentheses() const override;
+			short nparentheses() const override;
 
 		protected:
 			item::SIZETP _ini;
@@ -141,6 +167,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -152,6 +180,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -161,6 +191,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -170,6 +202,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -179,6 +213,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -188,6 +224,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -197,24 +235,28 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
-		struct node_parenthesis : node
+		struct node_parentheses : node
 		{
-			node_parenthesis(const tnode* nd);
+			node_parentheses(const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
-			bool parenthesis() const override;
-			short nparenthesis() const override;
+			bool parentheses() const override;
+			short nparentheses() const override;
 
 			short font() const override;
 			short color() const override;
 
+			bnodetypes type() const override;
+
 		protected:
-			short _nparenthesis;
+			short _nparentheses;
 		};
 
 
@@ -224,6 +266,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -236,6 +280,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -248,6 +294,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -263,6 +311,7 @@ private:
 			short font() const override;
 			short color() const override;
 
+			bnodetypes type() const override;
 		protected:
 			bool _bNodes;
 		};
@@ -278,6 +327,8 @@ private:
 			short font() const override;
 			short color() const override;
 
+			bnodetypes type() const override;
+
 		protected:
 			long rright;
 		};
@@ -292,6 +343,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -303,6 +356,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -315,6 +370,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -327,6 +384,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -338,6 +397,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 
@@ -349,6 +410,8 @@ private:
 
 			short font() const override;
 			short color() const override;
+
+			bnodetypes type() const override;
 		};
 
 	public:

@@ -376,7 +376,7 @@ CParserView::line::node* CParserView::line::node::new_instance(const tnode* nd)
 		nnd = new node_list(nd);
 		break;
 	case pmb::parser::ndParentheses:
-		nnd = new node_parenthesis(nd);
+		nnd = new node_parentheses(nd);
 		break;
 	case pmb::parser::ndUnknown:
 	{
@@ -386,7 +386,7 @@ CParserView::line::node* CParserView::line::node::new_instance(const tnode* nd)
 			const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
 			if (!strcmp(opr->getSymbol(), "="))
 				nnd = new node_operator_equal(nd);
-			else if (!strcmp(opr->getSymbol(), "=:"))
+			else if (!strcmp(opr->getSymbol(), "=."))
 				nnd = new node_operator_result(nd);
 			else if (!strcmp(opr->getSymbol(), "*"))
 				nnd = new node_operator_product(nd);
@@ -538,13 +538,13 @@ bool CParserView::line::node::empty() const
 }
 
 
-bool CParserView::line::node::parenthesis() const
+bool CParserView::line::node::parentheses() const
 {
 	return false;
 }
 
 
-short CParserView::line::node::nparenthesis() const
+short CParserView::line::node::nparentheses() const
 {
 	return 0;
 }
@@ -573,6 +573,12 @@ short CParserView::line::node_space::color() const
 {
 	return 2;
 }
+
+CParserView::line::bnodetypes CParserView::line::node_space::type() const
+{
+	return bndSpace;
+}
+
 
 
 
@@ -698,6 +704,13 @@ short CParserView::line::node_alpha::color() const
 	return 3;
 }
 
+CParserView::line::bnodetypes CParserView::line::node_alpha::type() const
+{
+	return bndAlpha;
+}
+
+
+
 
 
 
@@ -716,6 +729,13 @@ short CParserView::line::node_function::color() const
 {
 	return 4;
 }
+
+CParserView::line::bnodetypes CParserView::line::node_function::type() const
+{
+	return bndFunction;
+}
+
+
 
 
 
@@ -736,6 +756,13 @@ short CParserView::line::node_buildin_function::color() const
 	return 5;
 }
 
+CParserView::line::bnodetypes CParserView::line::node_buildin_function::type() const
+{
+	return bndBIFunction;
+}
+
+
+
 
 
 
@@ -755,6 +782,13 @@ short CParserView::line::node_number::color() const
 	return 1;
 }
 
+CParserView::line::bnodetypes CParserView::line::node_number::type() const
+{
+	return bndNumber;
+}
+
+
+
 
 
 
@@ -773,6 +807,14 @@ short CParserView::line::node_string::color() const
 {
 	return 8;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_string::type() const
+{
+	return bndString;
+}
+
+
 
 
 
@@ -795,16 +837,23 @@ short CParserView::line::node_list::color() const
 }
 
 
+CParserView::line::bnodetypes CParserView::line::node_list::type() const
+{
+	return bndList;
+}
 
 
 
-CParserView::line::node_parenthesis::node_parenthesis(const tnode* nd)
-	: node(nd), _nparenthesis(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
+
+
+
+CParserView::line::node_parentheses::node_parentheses(const tnode* nd)
+	: node(nd), _nparentheses(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
 {
 }
 
 
-void CParserView::line::node_parenthesis::set(sset* ss)
+void CParserView::line::node_parentheses::set(sset* ss)
 {
 	const tnode* lnd = ss->nd->getLeft();
 	const tnode* rnd = ss->nd->getRight();
@@ -826,6 +875,9 @@ void CParserView::line::node_parenthesis::set(sset* ss)
 		_middle = top + Height() / 2;
 	}
 
+	CFont* oldFont = ss->pDC->SelectObject(ss->pline->_parent->m_style.font + font());
+	CString sn(ss->pstr + _ini, ss->nd->len());
+
 	if (lnd)
 	{
 		const tnode* nd = ss->nd;
@@ -836,33 +888,12 @@ void CParserView::line::node_parenthesis::set(sset* ss)
 		_left->set(ss);
 		ss->nd = nd;
 		ss->pnd = pnd;
+
+		CRect rr = _left->rec_rect();
+		left = right = rr.left;
+		top = rr.top;
+		bottom = rr.bottom;
 	}
-
-	if (_nparenthesis < 0)
-	{
-		short nprt = _nparenthesis;
-		for (lbnode::const_reverse_iterator p = ss->parents.rbegin(); p != ss->parents.rend(); ++p)
-		{
-			if ((*p)->parenthesis())
-			{
-				nprt += (*p)->nparenthesis();
-				if (0 <= nprt)
-				{
-
-				}
-			}
-		}
-	}
-	CFont* oldFont = ss->pDC->SelectObject(ss->pline->_parent->m_style.font + font());
-	CString sn(ss->pstr + _ini, ss->nd->len());
-
-	CRect cr(this);
-	ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-	right = left + cr.Width();
-	LOGFONT lf;
-	ss->pline->_parent->m_style.font[font()].GetLogFont(&lf);
-	if (lf.lfItalic)
-		right += 2;
 
 	if (rnd)
 	{
@@ -874,24 +905,36 @@ void CParserView::line::node_parenthesis::set(sset* ss)
 		_right->set(ss);
 		ss->nd = nd;
 		ss->pnd = pnd;
+
 		CRect rr = _right->rec_rect();
-		top = rr.top - 2;
-		bottom = rr.bottom + 2;
-		_middle = _right->_middle;
+		left = right = rr.right;
+		top = rr.top;
+		bottom = rr.bottom;
 	}
+
+	CRect cr(this);
+	ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
+	right = left + cr.Width();
+	LOGFONT lf;
+	ss->pline->_parent->m_style.font[font()].GetLogFont(&lf);
+	if (lf.lfItalic)
+		right += 2;
+	if (lnd)
+		_left->rec_move(right - left, 0);
+
 	check_error(ss);
 	ss->parents.pop_back();
 }
 
 
 
-void CParserView::line::node_parenthesis::draw(sdraw* sd) const
+void CParserView::line::node_parentheses::draw(sdraw* sd) const
 {
 	sd->begin_expr(this);
 	if (_left)
 	{
 		const bnode* pnd = sd->pnd;
-		sd->pnd = this;
+//		sd->pnd = this;
 		_left->draw(sd);
 		sd->pnd = pnd;
 	}
@@ -901,15 +944,28 @@ void CParserView::line::node_parenthesis::draw(sdraw* sd) const
 	CRect r(this);
 	r.top -= Height();
 	r.bottom += Height();
-	if (_right)
+
+	if (sd->bEditing || !sd->pnd || sd->pnd->type() != bndOprDivision && sd->pnd->type() != bndOprRoot && sd->pnd->type() != bndOprPower || 1 < _nparentheses || _nparentheses < -1)
 	{
-		r.right = ++r.left + 3 * Height();
-		sd->pDC->Arc(r, CPoint(right, top + 1), CPoint(right, bottom - 1));
-	}
-	else
-	{
-		r.left = --r.right - 3 * Height();
-		sd->pDC->Arc(r, CPoint(left, bottom - 1), CPoint(left, top + 1));
+		short np = !sd->bEditing && sd->pnd && (sd->pnd->type() == bndOprDivision || sd->pnd->type() == bndOprRoot || sd->pnd->type() == bndOprPower) ? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
+		if (_left)
+		{
+			for (short n = 0; n < np; ++n)
+			{
+				r.right = ++r.left + 3 * Height();
+				sd->pDC->Arc(r, CPoint(right, top + 1), CPoint(right, bottom - 1));
+				r.left = r.left + Width() / np;
+			}
+		}
+		else
+		{
+			for (short n = 0; n < np; ++n)
+			{
+				r.left = --r.right - 3 * Height();
+				sd->pDC->Arc(r, CPoint(left, bottom - 1), CPoint(left, top + 1));
+				r.right = r.right - Width() / np;
+			}
+		}
 	}
 	sd->pDC->SelectObject(oldPen);
 	if (_right)
@@ -923,27 +979,35 @@ void CParserView::line::node_parenthesis::draw(sdraw* sd) const
 }
 
 
-bool CParserView::line::node_parenthesis::parenthesis() const
+bool CParserView::line::node_parentheses::parentheses() const
 {
 	return true;
 }
 
 
-short CParserView::line::node_parenthesis::nparenthesis() const
+short CParserView::line::node_parentheses::nparentheses() const
 {
-	return _nparenthesis;
+	return _nparentheses;
 }
 
 
-short CParserView::line::node_parenthesis::font() const
+short CParserView::line::node_parentheses::font() const
 {
 	return 0;
 }
 
-short CParserView::line::node_parenthesis::color() const
+short CParserView::line::node_parentheses::color() const
 {
 	return 6;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_parentheses::type() const
+{
+	return bndParentheses;
+}
+
+
 
 
 
@@ -963,6 +1027,14 @@ short CParserView::line::node_unknown::color() const
 {
 	return 2;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_unknown::type() const
+{
+	return bndUnknow;
+}
+
+
 
 
 
@@ -1103,6 +1175,14 @@ short CParserView::line::node_operator_equal::color() const
 {
 	return 2;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_operator_equal::type() const
+{
+	return bndOprEqual;
+}
+
+
 
 
 
@@ -1256,6 +1336,13 @@ short CParserView::line::node_operator_result::color() const
 {
 	return 2;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_operator_result::type() const
+{
+	return bndOprResult;
+}
+
 
 
 
@@ -1412,6 +1499,12 @@ short CParserView::line::node_result::color() const
 }
 
 
+CParserView::line::bnodetypes CParserView::line::node_result::type() const
+{
+	return bndResult;
+}
+
+
 
 
 
@@ -1564,6 +1657,12 @@ short CParserView::line::node_operator_root::color() const
 }
 
 
+CParserView::line::bnodetypes CParserView::line::node_operator_root::type() const
+{
+	return bndOprRoot;
+}
+
+
 
 
 
@@ -1687,6 +1786,14 @@ short CParserView::line::node_operator_power::color() const
 }
 
 
+CParserView::line::bnodetypes CParserView::line::node_operator_power::type() const
+{
+	return bndOprPower;
+}
+
+
+
+
 
 
 
@@ -1739,6 +1846,14 @@ short CParserView::line::node_operator_product::color() const
 {
 	return 2;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_operator_product::type() const
+{
+	return bndOprProduct;
+}
+
+
 
 
 
@@ -1824,6 +1939,11 @@ short CParserView::line::node_operator_division_inline::font() const
 short CParserView::line::node_operator_division_inline::color() const
 {
 	return 2;
+}
+
+CParserView::line::bnodetypes CParserView::line::node_operator_division_inline::type() const
+{
+	return bndOprDivisionIl;
 }
 
 
@@ -1949,6 +2069,13 @@ short CParserView::line::node_operator_division::color() const
 }
 
 
+CParserView::line::bnodetypes CParserView::line::node_operator_division::type() const
+{
+	return bndOprDivision;
+}
+
+
+
 
 
 
@@ -2004,6 +2131,12 @@ short CParserView::line::node_operator_plus::color() const
 }
 
 
+CParserView::line::bnodetypes CParserView::line::node_operator_plus::type() const
+{
+	return bndOprPlus;
+}
+
+
 
 
 
@@ -2050,6 +2183,13 @@ short CParserView::line::node_operator_minus::color() const
 {
 	return 2;
 }
+
+
+CParserView::line::bnodetypes CParserView::line::node_operator_minus::type() const
+{
+	return bndOprMinus;
+}
+
 
 
 
@@ -2358,7 +2498,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 				if (uk->isValid() && !uk->isCallFunction())
 				{
 					const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
-					if (!strcmp(opr->getSymbol(), "=:") && (!pDoc->m_result.empty() && pDoc->m_error.empty()))
+					if (!strcmp(opr->getSymbol(), "=.") && (!pDoc->m_result.empty() && pDoc->m_error.empty()))
 					{
 						of = pDC->SelectObject(m_style.font);
 						sn = pDoc->m_result.c_str();
@@ -2411,14 +2551,14 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 				{
 					pDC->SelectObject(&pen);
 					const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
-					if (!strcmp(opr->getSymbol(), "=") || !strcmp(opr->getSymbol(), "=:"))
+					if (!strcmp(opr->getSymbol(), "=") || !strcmp(opr->getSymbol(), "=."))
 					{
 						bDrawText = false;
 						pDC->MoveTo(tr.left, tr.top + tr.Height() / 2 - 2);
 						pDC->LineTo(tr.right, tr.top + tr.Height() / 2 - 2);
 						pDC->MoveTo(tr.left, tr.top + tr.Height() / 2 + 2);
 						pDC->LineTo(tr.right, tr.top + tr.Height() / 2 + 2);
-						bResult = !opr->isBinary() && opr->isLeftToRight() || !strcmp(opr->getSymbol(), "=:");
+						bResult = !opr->isBinary() && opr->isLeftToRight() || !strcmp(opr->getSymbol(), "=.");
 						if (bResult && (!pDoc->m_result.empty() && pDoc->m_error.empty()))
 						{
 							of = pDC->SelectObject(m_style.font);
