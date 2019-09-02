@@ -202,7 +202,7 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 				if (block.insert_function())
 				{
 					_tree->trace(_expr);
-					_tree = NULL;
+					_tree = nullptr;
 					plg->trace(logDebug, "\t\t\t. End calculate. Function definition!\n");
 					break;
 				}

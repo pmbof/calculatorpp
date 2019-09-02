@@ -254,10 +254,9 @@ BOOL CParserApp::InitInstance()
 
 int CParserApp::ExitInstance()
 {
-	delete pmb::log::instance();
-
-	//TODO: handle additional resources you may have added
 	AfxOleTerm(FALSE);
+
+	pmb::log::destroy();
 
 	return CWinAppEx::ExitInstance();
 }
