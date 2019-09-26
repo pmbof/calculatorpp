@@ -435,6 +435,7 @@ log& log::traceN(LPCSTR str, int n, LPCSTR str2)
 		c[i] = '0' + i % 10;
 	c[n] = '\0';
 	*this << str << c << str2;
+	delete[] c;
 	_cs.Unlock();
 	return *this;
 }
