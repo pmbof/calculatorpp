@@ -511,7 +511,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 		const nodes::unknown<cItem, cNdType>* uk = static_cast<const nodes::unknown<cItem, cNdType>*>(st->_it_calc->node());
 
 		bool bCloseParentheses = uk->getType() == ndParentheses && static_cast<const nodes::parentheses<cItem, cNdType>*>(static_cast<const nodes::calc<cItem, cNdType>*>(uk))->getOpened() < 0;
-		if (bCloseParentheses)
+		if (bCloseParentheses && uk->getLeft())
 				uk = static_cast<const nodes::unknown<cItem, cNdType>*>(uk->getLeft());
 
 		if (uk->getType() == ndUnknown && uk->isValid())
