@@ -39,6 +39,7 @@ const operation CParserDoc::_operation[] = {
 	operation("*", 110, true, true, "product", "multiplication", &CParserDoc::opr_multiplication),
 	operation("/.", 110, true, true, "inline cocient", "division", &CParserDoc::opr_division),
 	operation("/", 110, true, true, "cocient", "division", &CParserDoc::opr_division),
+	operation("/!", 110, true, true, "com", "division", &CParserDoc::opr_division),
 	operation("", 100, true, true, "product implicit", "multiplication implicit or call function", &CParserDoc::opr_multiplication, true),
 	operation(" ", 100, true, true, "product space", "multiplication space or call function", &CParserDoc::opr_multiplication, true),
 	operation(" ", 100, false, true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication, true),
@@ -477,6 +478,9 @@ BOOL CParserDoc::OnNewDocument()
 
 	const double pi = 4 * atan(1);
 	vector test;
+	test.push_back(tuple("M.Earth = 5.972 10^24kg", true, 8));
+	test.push_back(tuple("R.Earth = 6371 km", true, 8));
+	test.push_back(tuple("v.Escape = \\(2G M.Earth / R.Earth)", true, 11185.8));
 	test.push_back(tuple("f(x, y, z) = z + 4 x^2 + y", false, 0));
 	test.push_back(tuple("f(2, 3, 1)", true, 1 + 4 * 2 * 2 + 3));
 	test.push_back(tuple("f(x) = 1 + 4 x^2 + x", false, 0));
@@ -498,10 +502,8 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("Lata_choclo = 2.1lb", true, 11185.8));
 	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
-	test.push_back(tuple("M.Earth = 5.972 10^24kg", true, 8));
-	test.push_back(tuple("R.Earth = 6371 km", true, 8));
-	test.push_back(tuple("v.Escape = \\(2G M.Earth / R.Earth)", true, 11185.8));
-	test.push_back(tuple("k = 6^2 / 9 + 8 * ((5 + 7) * (1/4))", true, 2.7172));
+	test.push_back(tuple("k = (1/4)^2", true, 28));
+	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");
@@ -509,7 +511,7 @@ BOOL CParserDoc::OnNewDocument()
 	for (int i = 0; i < test.size(); ++i)
 	{
 		bool bResult = false;
-		if (i == 1)
+		if (i == 2)
 			bResult = false;
 		try
 		{
@@ -857,7 +859,9 @@ void CParserDoc::opr_result(transporter_args& args)
 
 void CParserDoc::opr_result_modify(transporter_args& args)
 {
-	opr_division(args);
+	if (args.right()->zero())
+		throw operation::exception("divided by zero");
+	args.result()->division(**args.left(), **args.right());
 }
 
 
