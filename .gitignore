@@ -1,0 +1,35 @@
+# Global excludes across all subdirectories
+*.o
+*.obj
+*.so
+*.so.[0-9]
+*.so.[0-9].[0-9]
+*.sl
+*.sl.[0-9]
+*.sl.[0-9].[0-9]
+*.dylib
+*.dll
+*.exp
+*.a
+*.mo
+*.pot
+*.sdf
+*.suo
+
+objfiles.txt
+.deps/
+*.gcno
+*.gcda
+*.gcov
+*.gcov.out
+*.exe
+*.bak
+*.log
+
+# Local excludes in root directory
+ipch/
+Debug/
+.vs/
+Parser/Debug/
+Application/Debug/
+Application/Release/
