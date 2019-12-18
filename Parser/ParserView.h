@@ -115,6 +115,8 @@ private:
 			virtual bool parentheses() const = 0;
 			virtual short nparentheses() const = 0;
 
+			bool is_left_parentheses(const bnode* parent) const;
+
 			bnode& operator= (const CRect& right);
 
 			bnode* node_mright();

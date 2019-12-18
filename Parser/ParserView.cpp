@@ -231,6 +231,12 @@ void CParserView::line::bnode::clear()
 }
 
 
+bool CParserView::line::bnode::is_left_parentheses(const bnode* parent) const
+{
+	return _left == parent || _left && _left->_left == parent;
+}
+
+
 CParserView::line::bnode& CParserView::line::bnode::operator=(const CRect& right)
 {
 	*static_cast<CRect*>(this) = right;
@@ -934,7 +940,7 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 	if (_left)
 	{
 		const bnode* pnd = sd->pnd;
-//		sd->pnd = this;
+		//sd->pnd = nullptr;
 		_left->draw(sd);
 		sd->pnd = pnd;
 	}
@@ -945,9 +951,12 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 	r.top -= Height();
 	r.bottom += Height();
 
-	if (sd->bEditing || !sd->pnd || sd->pnd->type() != bndOprDivision && sd->pnd->type() != bndOprRoot && sd->pnd->type() != bndOprPower || 1 < _nparentheses || _nparentheses < -1)
+	if (sd->bEditing || !sd->pnd || sd->pnd->type() != bndOprDivision && sd->pnd->type() != bndOprRoot 
+			&& (sd->pnd->type() != bndOprPower || sd->pnd->is_left_parentheses(this))
+		|| 1 < _nparentheses || _nparentheses < -1)
 	{
-		short np = !sd->bEditing && sd->pnd && (sd->pnd->type() == bndOprDivision || sd->pnd->type() == bndOprRoot || sd->pnd->type() == bndOprPower) ? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
+		short np = !sd->bEditing && sd->pnd && (sd->pnd->type() == bndOprDivision || sd->pnd->type() == bndOprRoot || sd->pnd->type() == bndOprPower && !sd->pnd->is_left_parentheses(this))
+			? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
 		if (_left)
 		{
 			for (short n = 0; n < np; ++n)
@@ -1735,7 +1744,12 @@ void CParserView::line::node_operator_power::set(sset* ss)
 		_right = new_instance(rnd);
 		_right->set(ss);
 		CRect rr = _right->rec_rect();
-		_right->rec_move(0, rl.top - rr.top + 3 * rl.Height() / 4 - rr.Height());
+		_right->rec_move(0, rl.top - rr.top - rr.Height() + _right->_middle - rr.top);
+		if (_left->_middle < _right->_middle + 10)
+			_right->rec_move(0, rl.top - _right->_middle);
+		if (_left->_middle < _right->bottom)
+			_right->rec_move(0, _left->_middle - _right->bottom);
+
 		check_error(ss);
 		ss->parents.pop_back();
 	}
