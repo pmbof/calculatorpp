@@ -129,6 +129,7 @@
     <None Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\pmb_log\pmb_log.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="FileView.h" />
@@ -139,7 +140,6 @@
     <ClInclude Include="pmb_calculate_number.h" />
     <ClInclude Include="pmb_calculate_symbol.h" />
     <ClInclude Include="pmb_calculate_symbol.hpp" />
-    <ClInclude Include="pmb_log.h" />
     <ClInclude Include="pmb_parser_calc_block.h" />
     <ClInclude Include="pmb_parser_calc_block.hpp" />
     <ClInclude Include="pmb_parser_calc_build_in_function.h" />
@@ -186,6 +186,7 @@
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\pmb_log\pmb_log.cpp" />
     <ClCompile Include="ChildFrm.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
@@ -198,7 +199,6 @@
     <ClCompile Include="MainFrm.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
-    <ClCompile Include="pmb_log.cpp" />
     <ClCompile Include="pmb_parser_calc_build_in_function.hpp" />
     <ClCompile Include="pmb_parser_function.cpp" />
     <ClCompile Include="pmb_parser_nodes_calc.cpp">
