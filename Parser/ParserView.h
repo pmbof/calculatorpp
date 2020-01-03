@@ -39,37 +39,11 @@ private:
 	CMFCToolTipCtrl m_tooltip;
 	int m_tooltipId;
 
+
+
 	struct line : CRect
 	{
 	private:
-		struct bnode;
-		typedef std::list<bnode*> lbnode;
-
-		struct sset
-		{
-			line* pline;
-			const tnode* nd;
-			bnode* pnd;
-			CDC* pDC;
-			const char* pstr;
-			bool bEditing;
-			lbnode parents;
-		};
-
-		struct sdraw
-		{
-			line* pline;
-			const bnode* pnd;
-			CDC* pDC;
-			const char* pstr;
-			bool bEditing;
-			const char* postr;
-
-			void begin_expr(const bnode* pnd);
-			void end_expr(const bnode* pnd);
-		};
-
-
 		enum bnodetypes : char
 		{
 			bndOther,
@@ -94,6 +68,38 @@ private:
 			bndOprMinus
 		};
 
+		struct bnode;
+		typedef std::list<bnode*> lbnode;
+		typedef std::map<line::bnodetypes, std::string> mstyletp;
+
+		struct sset
+		{
+			line* pline;
+			const tnode* nd;
+			bnode* pnd;
+			CDC* pDC;
+			const char* pstr;
+			bool bEditing;
+			lbnode parents;
+			short index;
+		};
+
+		struct sdraw
+		{
+			line* pline;
+			const bnode* pnd;
+			CDC* pDC;
+			const char* pstr;
+			bool bEditing;
+			const char* postr;
+			short index;
+
+			void begin_expr(const bnode* pnd);
+			void end_expr(const bnode* pnd);
+		};
+
+	
+#pragma region nodes
 		struct bnode : CRect
 		{
 		protected:
@@ -104,9 +110,6 @@ private:
 			void clear();
 			virtual void set(sset* ss) = 0;
 			virtual void draw(sdraw* sd) const = 0;
-
-			virtual short font() const = 0;
-			virtual short color() const = 0;
 
 			virtual bool empty() const = 0;
 
@@ -167,9 +170,6 @@ private:
 		{
 			node_space(const tnode* nd);
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -179,9 +179,7 @@ private:
 			node_alpha(const tnode* nd);
 
 			void set(sset* ss) override;
-
-			short font() const override;
-			short color() const override;
+			void draw(sdraw* sd) const override;
 
 			bnodetypes type() const override;
 		};
@@ -191,9 +189,6 @@ private:
 		{
 			node_function(const tnode* nd);
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -201,9 +196,6 @@ private:
 		struct node_buildin_function : node
 		{
 			node_buildin_function(const tnode* nd);
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 		};
@@ -213,9 +205,6 @@ private:
 		{
 			node_number(const tnode* nd);
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -224,9 +213,6 @@ private:
 		{
 			node_string(const tnode* nd);
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -234,9 +220,6 @@ private:
 		struct node_list : node
 		{
 			node_list(const tnode* nd);
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 		};
@@ -252,9 +235,6 @@ private:
 			bool parentheses() const override;
 			short nparentheses() const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 
 		protected:
@@ -265,9 +245,6 @@ private:
 		struct node_unknown : node
 		{
 			node_unknown(const tnode* nd);
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 		};
@@ -280,9 +257,6 @@ private:
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -293,9 +267,6 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 		};
@@ -310,9 +281,6 @@ private:
 
 			bool empty() const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		protected:
 			bool _bNodes;
@@ -325,9 +293,6 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 
@@ -343,9 +308,6 @@ private:
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -355,9 +317,6 @@ private:
 			node_operator_product(const tnode* nd);
 
 			void draw(sdraw* sd) const override;
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 		};
@@ -370,9 +329,6 @@ private:
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -384,9 +340,6 @@ private:
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
 
@@ -396,9 +349,6 @@ private:
 			node_operator_plus(const tnode* nd);
 
 			void draw(sdraw* sd) const override;
-
-			short font() const override;
-			short color() const override;
 
 			bnodetypes type() const override;
 		};
@@ -410,11 +360,9 @@ private:
 
 			void draw(sdraw* sd) const override;
 
-			short font() const override;
-			short color() const override;
-
 			bnodetypes type() const override;
 		};
+#pragma endregion nodes
 
 	public:
 		line(CParserView* parent);
@@ -422,6 +370,10 @@ private:
 
 		void set(CDC* pDC, int xo, int yo);
 		void draw(CDC* pDC);
+
+		CFont* font(bnodetypes type, short index);
+		COLORREF color(bnodetypes type) const;
+		COLORREF back_color() const;
 
 	protected:
 		void _swith_expr_begin(const bnode* pnd, sdraw* sd) const;
@@ -437,6 +389,8 @@ private:
 		node_result* _result;
 		bnode* _ndres;
 		const bnode* _nerror;
+
+		mstyletp _style;
 	};
 
 
@@ -446,12 +400,81 @@ private:
 	std::string m_expr;
 	std::string m_result;
 
+
+	struct resource
+	{
+		resource(CWnd* pwnd);
+		resource(resource* rsc);
+		~resource();
+
+		void clear();
+
+		CFont* init(int pointSize, LPCTSTR fontName, COLORREF backColor, COLORREF color);
+
+		void add_style(const std::string& sname, const LOGFONT* plf, COLORREF color);
+		void add_style(const std::string& sname, int pointSize, LPCTSTR fontName, COLORREF color);
+
+		CFont* font(const std::string& sname, short index);
+		short height(CFont* pFont) const;
+		COLORREF color(const std::string& sname) const;
+		CFont* font(short index);
+		COLORREF color() const;
+		COLORREF back_color() const;
+
+		short max_height() const;
+
+	protected:
+		struct sfont
+		{
+			std::string name;
+			short pointSize;
+			bool italic;
+			bool bold;
+			CFont* pFont;
+		};
+		struct sfont_less
+		{
+			bool operator()(const sfont& left, const sfont& right) const;
+		};
+
+		typedef std::map<sfont, short, sfont_less> mfonth;
+		typedef std::map<int, CFont*>  mapidxfont;
+		struct style
+		{
+			style(CFont* pF, COLORREF col);
+
+			CFont* font;
+			mapidxfont idxfont;
+			COLORREF color;
+		};
+		typedef std::map<std::string, style*> mstyle;
+
+	protected:
+		style* _add_style(const std::string& sname, CFont* pFont, CDC* pDC, COLORREF color);
+
+		CFont* _find_font(const std::string& fontName, short pointFont, bool italic, bool bold) const;
+		CFont* _find_font(const LOGFONT* plf) const;
+
+		CFont* _get_font(const std::string& fontName, short pointFont, bool italic, bool bold, CDC* pDC);
+		CFont* _get_font(const LOGFONT* plf, CDC* pDC);
+
+
+		void update_childs(CDC* pDC, const LOGFONT* plf, mapidxfont& idxfont);
+
+	protected:
+		CWnd* _pwnd;
+		short _idxSize;
+		int _logpixelsy;
+		resource* _src;
+		mfonth _fonts;
+		mstyle _style;
+		CFont* _font;
+		COLORREF _bckColor, _color;
+	} m_resource;
+
+
 	struct style
 	{
-		CFont font[9];
-		int   height[9];
-
-		COLORREF color[9];
 		int maxHeight;
 		int lineHeight;
 		CPoint caretPos;
@@ -461,6 +484,7 @@ private:
 
 	CPoint m_p0;
 	bool m_bShowResult;
+
 
 private:
 	void drawNode(CDC* pDC, const item* nd, const CString& expr, bool bError);

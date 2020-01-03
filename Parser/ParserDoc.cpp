@@ -503,7 +503,7 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
 	test.push_back(tuple("k = (1/4)^2", true, 28));
-	test.push_back(tuple("k1 = (2 * 3) ^ (1 + 1) / (5 + 4) + 8 * (((1 + 1)(5 + 7)(2 + 1)) / (6 + 6)) / 12", true, 8));
+	test.push_back(tuple("v.Escape = (1+1) \\(2G M.Earth / R.Earth)", true, 11185.8));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");

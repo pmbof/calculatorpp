@@ -193,6 +193,8 @@
     <ClCompile Include="ClassView.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="prsrvw_line.cpp" />
+    <ClCompile Include="prsrvw_line_node_list.cpp" />
     <ClCompile Include="FileView.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
@@ -273,6 +275,28 @@
     <ClCompile Include="PropertiesWnd.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="prsrvw_line_bnode.cpp" />
+    <ClCompile Include="prsrvw_line_node.cpp" />
+    <ClCompile Include="prsrvw_line_node_alpha.cpp" />
+    <ClCompile Include="prsrvw_line_node_buildin_function.cpp" />
+    <ClCompile Include="prsrvw_line_node_function.cpp" />
+    <ClCompile Include="prsrvw_line_node_number.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_division.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_division_inline.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_equal.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_minus.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_plus.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_result.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_root.cpp" />
+    <ClCompile Include="prsrvw_line_node_parentheses.cpp" />
+    <ClCompile Include="prsrvw_line_node_result.cpp" />
+    <ClCompile Include="prsrvw_line_node_space.cpp" />
+    <ClCompile Include="prsrvw_line_node_string.cpp" />
+    <ClCompile Include="prsrvw_line_node_unknown.cpp" />
+    <ClCompile Include="prsrvw_line_sdraw.cpp" />
+    <ClCompile Include="prsrvw_resource.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_power.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_product.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
