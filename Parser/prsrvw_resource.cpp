@@ -229,7 +229,7 @@ short CParserView::resource::max_height() const
 		else if (mh < fh->second)
 			mh = fh->second;
 	}
-	return 0;
+	return mh;
 }
 
 
