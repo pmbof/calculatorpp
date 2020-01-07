@@ -30,57 +30,76 @@
 
 // CParserDoc
 const operation CParserDoc::_operation[] = {
-	operation("+", 250, false, false, "positive", "positive", &CParserDoc::opr_positive),
-	operation("-", 250, false, false, "negative", "negative", &CParserDoc::opr_negative),
-	operation("!", 250, true, false, "factorial", "factorial", &CParserDoc::opr_factorial),
-	operation("\\", 210, false, false, "square root", " square root", &CParserDoc::opr_sqrroot),
-	operation("^", 200, true, true, "power", "exponentiation", &CParserDoc::opr_exponentiation),
-	operation("\\", 200, true, true, "root", "root", &CParserDoc::opr_root),
-	operation("*", 110, true, true, "product", "multiplication", &CParserDoc::opr_multiplication),
-	operation("/.", 110, true, true, "inline cocient", "division", &CParserDoc::opr_division),
-	operation("/", 110, true, true, "cocient", "division", &CParserDoc::opr_division),
-	operation("/!", 110, true, true, "com", "division", &CParserDoc::opr_division),
-	operation("", 100, true, true, "product implicit", "multiplication implicit or call function", &CParserDoc::opr_multiplication, true),
-	operation(" ", 100, true, true, "product space", "multiplication space or call function", &CParserDoc::opr_multiplication, true),
-	operation(" ", 100, false, true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication, true),
-	operation("&", 100, true, true, "modulo", "congruence relation", &CParserDoc::opr_modulo),
-	operation("-", 50, true, true, "substract", "substraction", &CParserDoc::opr_subtraction),
-	operation("+", 50, true, true, "add", "addition", &CParserDoc::opr_addition),
-	operation("=", 10, false, true, "assignation", "assignation", &CParserDoc::opr_assignation, false, true, false),
-	operation("=", 0, true, false, "result", "result", &CParserDoc::opr_result),
-	operation("=.", 0, true, true, "result modify", "result modify", &CParserDoc::opr_result_modify)
+	/*	 1- Symb        = Symbol
+		 2- prec        = precedence
+		 3- L2R         = left to right association
+		 4- bin         = is binary
+		 5- name
+		 6- description
+		 7- *function   = pointer to function
+		 8- CCFunc      = can call function
+		 9- CCLvar      = can create left variable
+		10- CCRvar      = can create right variable
+	*/
+	///      Symb, prec,   L2R,   bin, name,					description,                                           *funcion,                         CCFunc, CCLvar, CCRvar
+	operation("+",  250, false, false, "positive",              "positive",                                            &CParserDoc::opr_positive),
+	operation("-",  250, false, false, "negative",              "negative",                                            &CParserDoc::opr_negative),
+	operation("!",  250, true,  false, "factorial",             "factorial",                                           &CParserDoc::opr_factorial),
+	operation("\\", 210, false, false, "square root",           "square root",                                         &CParserDoc::opr_sqrroot),
+	operation("^",  200, false,  true, "power",                 "exponentiation",                                      &CParserDoc::opr_exponentiation),
+	operation("\\", 200, true,   true, "root",                  "root",                                                &CParserDoc::opr_root),
+	operation("*",  110, true,   true, "product",               "multiplication",                                      &CParserDoc::opr_multiplication),
+	operation("/.", 110, true,   true, "inline cocient",        "division",                                            &CParserDoc::opr_division),
+	operation("/",  110, true,   true, "cocient",               "division",                                            &CParserDoc::opr_division),
+	operation("/!", 110, true,   true, "com",                   "combinatory",                                         &CParserDoc::opr_division),
+	operation("",   100, true,   true, "product implicit",      "multiplication implicit or call function",            &CParserDoc::opr_multiplication,  true),
+	operation(" ",  100, true,   true, "product space",         "multiplication space or call function",               &CParserDoc::opr_multiplication,  true),
+	operation(" ",  100, false,  true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication,  true),
+	operation("&",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
+	operation("-",   50, true,   true, "substract",             "substraction",                                        &CParserDoc::opr_subtraction),
+	operation("+",   50, true,   true, "add",                   "addition",                                            &CParserDoc::opr_addition),
+	operation("=",   10, false,  true, "assignation",           "assignation",                                         &CParserDoc::opr_assignation,     false,  true,   false),
+	operation("=",    0, true,  false, "result",                "result",                                              &CParserDoc::opr_result),
+	operation("=.",   0, true,   true, "result modify",         "result modify",                                       &CParserDoc::opr_result_modify)
 };
 
 
+
 const build_in_function CParserDoc::_build_in_function[] = {
-	build_in_function("test", "for test", &CParserDoc::binf_test, 4),
-	build_in_function("abs", "absolute value", &CParserDoc::binf_abs),
-	build_in_function("sgn", "sign", &CParserDoc::binf_sgn),
-	build_in_function("rnd", "random", &CParserDoc::binf_rnd),
-	build_in_function("ceil", "ceil", &CParserDoc::binf_ceil),
-	build_in_function("floor", "sign", &CParserDoc::binf_floor),
-	build_in_function("round", "round", &CParserDoc::binf_round),
+	/*	1- name        = function name
+		2- description
+		3- *function   = pointer to function
+		4- nArgs       = amount of arguments
+	*/
+	///               name,     description,            *function,               nArgs
+	build_in_function("test",   "for test",             &CParserDoc::binf_test,   4),
+	build_in_function("abs",    "absolute value",       &CParserDoc::binf_abs),
+	build_in_function("sgn",    "sign",                 &CParserDoc::binf_sgn),
+	build_in_function("rnd",    "random",               &CParserDoc::binf_rnd),
+	build_in_function("ceil",   "ceil",                 &CParserDoc::binf_ceil),
+	build_in_function("floor",  "sign",                 &CParserDoc::binf_floor),
+	build_in_function("round",  "round",                &CParserDoc::binf_round),
 
-	build_in_function("lg", "decimal logarithm", &CParserDoc::binf_lg),
-	build_in_function("ln", "neperian logarithm", &CParserDoc::binf_ln),
-	build_in_function("log", "n-esim logarithm", &CParserDoc::binf_log, 2),
-	build_in_function("exp", "exponential", &CParserDoc::binf_exp),
+	build_in_function("lg",     "decimal logarithm",    &CParserDoc::binf_lg),
+	build_in_function("ln",     "neperian logarithm",   &CParserDoc::binf_ln),
+	build_in_function("log",    "n-esim logarithm",     &CParserDoc::binf_log,    2),
+	build_in_function("exp",    "exponential",          &CParserDoc::binf_exp),
 
-	build_in_function("sin", "sine", &CParserDoc::binf_sin),
-	build_in_function("cos", "cosine", &CParserDoc::binf_cos),
-	build_in_function("tg", "tangent", &CParserDoc::binf_tg),
-	build_in_function("sec", "secant", &CParserDoc::binf_sec),
-	build_in_function("cosec", "cosecant", &CParserDoc::binf_cosec),
-	build_in_function("cotg", "cotangent", &CParserDoc::binf_cotg),
-	build_in_function("asin", "arc sine", &CParserDoc::binf_asin),
-	build_in_function("acos", "arc cosine", &CParserDoc::binf_acos),
-	build_in_function("atg", "arc tangent", &CParserDoc::binf_atg),
-	build_in_function("atg", "tangent", &CParserDoc::binf_atg2, 2),
-	build_in_function("asec", "arc secant", &CParserDoc::binf_asec),
-	build_in_function("acosec", "arc cosecant", &CParserDoc::binf_acosec),
-	build_in_function("acotg", "arc cotangent", &CParserDoc::binf_acotg),
+	build_in_function("sin",    "sine",                 &CParserDoc::binf_sin),
+	build_in_function("cos",    "cosine",               &CParserDoc::binf_cos),
+	build_in_function("tg",     "tangent",              &CParserDoc::binf_tg),
+	build_in_function("sec",    "secant",               &CParserDoc::binf_sec),
+	build_in_function("cosec",  "cosecant",             &CParserDoc::binf_cosec),
+	build_in_function("cotg",   "cotangent",            &CParserDoc::binf_cotg),
+	build_in_function("asin",   "arc sine",             &CParserDoc::binf_asin),
+	build_in_function("acos",   "arc cosine",           &CParserDoc::binf_acos),
+	build_in_function("atg",    "arc tangent",          &CParserDoc::binf_atg),
+	build_in_function("atg",    "tangent",              &CParserDoc::binf_atg2,   2),
+	build_in_function("asec",   "arc secant",           &CParserDoc::binf_asec),
+	build_in_function("acosec", "arc cosecant",         &CParserDoc::binf_acosec),
+	build_in_function("acotg",  "arc cotangent",        &CParserDoc::binf_acotg),
 
-	build_in_function("if", "conditional function", &CParserDoc::binf_if, 3)
+	build_in_function("if",     "conditional function", &CParserDoc::binf_if,     3)
 };
 
 
