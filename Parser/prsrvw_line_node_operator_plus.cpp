@@ -25,16 +25,24 @@ void CParserView::line::node_operator_plus::draw(sdraw* sd) const
 		_left->draw(sd);
 		sd->pnd = pnd;
 	}
+
+	const short w2 = Width() / 2;
+	const short mx = left + w2;
+	const bool bw = Height() < Width() - 2;
+	const short hw = bw ? Height() / 2 : w2 - 1;
+
 	CPen pen;
 	pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
 	CPen* oldPen = sd->pDC->SelectObject(&pen);
-	short hm = Height() % 2;
-	short wm = Width() % 2;
-	sd->pDC->MoveTo(left + Width() / 2 + wm, top + Height() / 2 - Width() / 2 + 1);
-	sd->pDC->LineTo(left + Width() / 2 + wm, top + Height() / 2 + Width() / 2 - 1 + hm);
-	sd->pDC->MoveTo(left + 1, _middle);
-	sd->pDC->LineTo(right - 1, _middle);
+
+	sd->pDC->MoveTo(mx,         _middle - hw);
+	sd->pDC->LineTo(mx,         _middle + hw + 1);
+
+	sd->pDC->MoveTo(mx - hw,    _middle);
+	sd->pDC->LineTo(mx+ hw + 1, _middle);
+
 	sd->pDC->SelectObject(oldPen);
+
 	if (_right)
 	{
 		const bnode* pnd = sd->pnd;
