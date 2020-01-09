@@ -256,6 +256,10 @@ int CParserApp::ExitInstance()
 {
 	AfxOleTerm(FALSE);
 
+	pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+	lg->trace(pmb::logInf, "End application!\n");
+	lg->endFunction();
+
 	pmb::log::destroy();
 
 	return CWinAppEx::ExitInstance();
