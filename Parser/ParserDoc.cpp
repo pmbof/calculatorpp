@@ -10,6 +10,7 @@
 #endif
 
 #include "ParserDoc.h"
+#include "ParserView.h"
 
 #include "pmb_parser_algorithm.cpp"
 #include "pmb_calculator.cpp"
@@ -41,26 +42,26 @@ const operation CParserDoc::_operation[] = {
 		 9- CCLvar      = can create left variable
 		10- CCRvar      = can create right variable
 	*/
-	///      Symb, prec,   L2R,   bin, name,					description,                                           *funcion,                         CCFunc, CCLvar, CCRvar
-	operation("+",  250, false, false, "positive",              "positive",                                            &CParserDoc::opr_positive),
-	operation("-",  250, false, false, "negative",              "negative",                                            &CParserDoc::opr_negative),
-	operation("!",  250, true,  false, "factorial",             "factorial",                                           &CParserDoc::opr_factorial),
-	operation("\\", 210, false, false, "square root",           "square root",                                         &CParserDoc::opr_sqrroot),
-	operation("^",  200, false,  true, "power",                 "exponentiation",                                      &CParserDoc::opr_exponentiation),
-	operation("\\", 200, true,   true, "root",                  "root",                                                &CParserDoc::opr_root),
-	operation("*",  110, true,   true, "product",               "multiplication",                                      &CParserDoc::opr_multiplication),
-	operation("/.", 110, true,   true, "inline cocient",        "division",                                            &CParserDoc::opr_division),
-	operation("/",  110, true,   true, "cocient",               "division",                                            &CParserDoc::opr_division),
-	operation("/!", 110, true,   true, "com",                   "combinatory",                                         &CParserDoc::opr_division),
-	operation("",   100, true,   true, "product implicit",      "multiplication implicit or call function",            &CParserDoc::opr_multiplication,  true),
-	operation(" ",  100, true,   true, "product space",         "multiplication space or call function",               &CParserDoc::opr_multiplication,  true),
-	operation(" ",  100, false,  true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication,  true),
-	operation("&",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
-	operation("-",   50, true,   true, "substract",             "substraction",                                        &CParserDoc::opr_subtraction),
-	operation("+",   50, true,   true, "add",                   "addition",                                            &CParserDoc::opr_addition),
-	operation("=",   10, false,  true, "assignation",           "assignation",                                         &CParserDoc::opr_assignation,     false,  true,   false),
-	operation("=",    0, true,  false, "result",                "result",                                              &CParserDoc::opr_result),
-	operation("=.",   0, true,   true, "result modify",         "result modify",                                       &CParserDoc::opr_result_modify)
+	///                     Symb, prec,   L2R,   bin, name,					description,                                           *funcion,                         CCFunc, CCLvar, CCRvar
+	CParserView::opr_plus(           "+",  250, false, false, "positive",              "positive",                                            &CParserDoc::opr_positive),
+	CParserView::opr_minus(          "-",  250, false, false, "negative",              "negative",                                            &CParserDoc::opr_negative),
+	CParserView::operation(          "!",  250, true,  false, "factorial",             "factorial",                                           &CParserDoc::opr_factorial),
+	CParserView::opr_root(           "\\", 210, false, false, "square root",           "square root",                                         &CParserDoc::opr_sqrroot),
+	CParserView::opr_power(          "^",  200, false,  true, "power",                 "exponentiation",                                      &CParserDoc::opr_exponentiation),
+	CParserView::opr_root(           "\\", 200, true,   true, "root",                  "root",                                                &CParserDoc::opr_root),
+	CParserView::opr_product(        "*",  110, true,   true, "product",               "multiplication",                                      &CParserDoc::opr_multiplication),
+	CParserView::opr_division_inline("/.", 110, true,   true, "inline cocient",        "division",                                            &CParserDoc::opr_division),
+	CParserView::opr_division(       "/",  110, true,   true, "cocient",               "division",                                            &CParserDoc::opr_division),
+	CParserView::operation(          "/!", 110, true,   true, "com",                   "combinatory",                                         &CParserDoc::opr_division),
+	CParserView::operation(          "",   100, true,   true, "product implicit",      "multiplication implicit or call function",            &CParserDoc::opr_multiplication,  true),
+	CParserView::operation(          " ",  100, true,   true, "product space",         "multiplication space or call function",               &CParserDoc::opr_multiplication,  true),
+	CParserView::operation(          " ",  100, false,  true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication,  true),
+	CParserView::operation(          "&",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
+	CParserView::opr_minus(          "-",   50, true,   true, "substract",             "substraction",                                        &CParserDoc::opr_subtraction),
+	CParserView::opr_plus(           "+",   50, true,   true, "add",                   "addition",                                            &CParserDoc::opr_addition),
+	CParserView::opr_equal(          "=",   10, false,  true, "assignation",           "assignation",                                         &CParserDoc::opr_assignation,     false,  true,   false),
+	CParserView::opr_equal(          "=",    0, true,  false, "result",                "result",                                              &CParserDoc::opr_result),
+	CParserView::opr_result(         "=.",   0, true,   true, "result modify",         "result modify",                                       &CParserDoc::opr_result_modify)
 };
 
 
@@ -521,8 +522,8 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("Lata_choclo = 2.1lb", true, 11185.8));
 	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
-	test.push_back(tuple("k = (1/4)^2", true, 28));
-	test.push_back(tuple("v.Escape = (1+1) \\(2G M.Earth / R.Earth)", true, 11185.8));
+	test.push_back(tuple("2^ \\4^1", true, 4));
+	test.push_back(tuple("v.Escape = \\(2G M.Earth / R.Earth)", true, 11185.8));
 
 	int errors = 0;
 	m_symbols.add_set_variable("test");

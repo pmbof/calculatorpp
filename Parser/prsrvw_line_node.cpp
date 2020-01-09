@@ -77,7 +77,8 @@ CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bno
 		if (uk->isValid() && !uk->isCallFunction())
 		{
 			const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
-			if (!strcmp(opr->getSymbol(), "="))
+			*ndLR = opr->new_instance(parent, nd);
+			/*if (!strcmp(opr->getSymbol(), "="))
 				*ndLR = nnd = new node_operator_equal(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "=."))
 				*ndLR = nnd = new node_operator_result(parent, nd);
@@ -96,7 +97,7 @@ CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bno
 			else if (!strcmp(opr->getSymbol(), "\\"))
 				*ndLR = nnd = new node_operator_root(parent, nd);
 			else
-				*ndLR = nnd = new node_unknown(parent, nd);
+				*ndLR = nnd = new node_unknown(parent, nd);*/
 		}
 		else
 			*ndLR = nnd = new node_unknown(parent, nd);
