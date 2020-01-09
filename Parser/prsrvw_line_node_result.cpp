@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_result::node_result(const tnode* nd)
-	: node()
+CParserView::line::node_result::node_result(bnode* parent, const tnode* nd)
+	: node(parent)
 {
 	if (nd)
 	{
@@ -16,7 +16,7 @@ CParserView::line::node_result::node_result(const tnode* nd)
 		_end = nd->getEnd();
 	}
 	else
-		_end = _ini = 0;
+		_end = _ini = -1;
 }
 
 
@@ -70,7 +70,7 @@ void CParserView::line::node_result::set(sset* ss)
 		_ini = _end = 0;
 
 		nss.nd = resnd;
-		_right = node::new_instance(nss.nd);
+		node::new_instance(&_right, this, nss.nd);
 		_right->set(&nss);
 		CRect rr = _right->rec_rect();
 		max_rect(*this, rr);

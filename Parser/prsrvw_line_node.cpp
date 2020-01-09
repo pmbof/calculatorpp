@@ -7,15 +7,15 @@
 #pragma endregion includes
 
 
-CParserView::line::node::node()
-	: bnode()
+
+CParserView::line::node::node(bnode* parent)
+	: bnode(parent)
 {
 }
 
 
-
-CParserView::line::node::node(const tnode* nd)
-	: bnode(), _ini(nd->getIni()), _end(nd->getEnd())
+CParserView::line::node::node(bnode* parent, const tnode* nd)
+	: bnode(parent), _ini(nd->getIni()), _end(nd->getEnd())
 {
 }
 
@@ -27,37 +27,49 @@ CParserView::line::node::~node()
 
 
 
-CParserView::line::node* CParserView::line::node::new_instance(const tnode* nd)
+CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bnode* parent, const tnode* nd)
 {
+	pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+	ASSERT(*ndLR == nullptr);
 	node* nnd = nullptr;
+	if (parent)
+	{
+		if (&static_cast<node*>(parent)->bnode::_left != ndLR && &static_cast<node*>(parent)->bnode::_right != ndLR)
+		{
+			lg->trace(pmb::logError, "Problem in tree generation, the new item child (0x%08X) of tree is not direct child of parent (0x%08X -> [l:0x%08X, r:0x%08X]), can not continue!\n", ndLR, parent, &static_cast<node*>(parent)->bnode::_left, &static_cast<node*>(parent)->bnode::_right);
+			lg->endFunction(pmb::logError);
+			return nullptr;
+		}
+	}
+
 	switch (nd->getType())
 	{
 	case pmb::parser::ndSpace:
-		nnd = new node_space(nd);
+		*ndLR = nnd = new node_space(parent, nd);
 		break;
 	case pmb::parser::ndAlpha:
 		if (nd->getParent() && nd->getParent()->getType() == pmb::parser::ndUnknown)
 		{
 			const pmb::parser::nodes::unknown<item, ndtype>* uk = static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(nd->getParent());
 			if (uk->isBinary() && uk->isCallFunction() && (uk->isFirstLeft() && uk->getLeft() == nd || uk->isFirstRight() && uk->getRight() == nd))
-				nnd = uk->isCallBuildInFunction() ? static_cast<node*>(new node_buildin_function(nd)) : new node_function(nd);
+				*ndLR = nnd = uk->isCallBuildInFunction() ? static_cast<node*>(new node_buildin_function(parent, nd)) : new node_function(parent, nd);
 			else
-				nnd = new node_alpha(nd);
+				*ndLR = nnd = new node_alpha(parent, nd);
 		}
 		else
-			nnd = new node_alpha(nd);
+			*ndLR = nnd = new node_alpha(parent, nd);
 		break;
 	case pmb::parser::ndNumber:
-		nnd = new node_number(nd);
+		*ndLR = nnd = new node_number(parent, nd);
 		break;
 	case pmb::parser::ndString:
-		nnd = new node_string(nd);
+		*ndLR = nnd = new node_string(parent, nd);
 		break;
 	case pmb::parser::ndList:
-		nnd = new node_list(nd);
+		*ndLR = nnd = new node_list(parent, nd);
 		break;
 	case pmb::parser::ndParentheses:
-		nnd = new node_parentheses(nd);
+		*ndLR = nnd = new node_parentheses(parent, nd);
 		break;
 	case pmb::parser::ndUnknown:
 	{
@@ -66,33 +78,43 @@ CParserView::line::node* CParserView::line::node::new_instance(const tnode* nd)
 		{
 			const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
 			if (!strcmp(opr->getSymbol(), "="))
-				nnd = new node_operator_equal(nd);
+				*ndLR = nnd = new node_operator_equal(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "=."))
-				nnd = new node_operator_result(nd);
+				*ndLR = nnd = new node_operator_result(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "*"))
-				nnd = new node_operator_product(nd);
+				*ndLR = nnd = new node_operator_product(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "+"))
-				nnd = new node_operator_plus(nd);
+				*ndLR = nnd = new node_operator_plus(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "-"))
-				nnd = new node_operator_minus(nd);
+				*ndLR = nnd = new node_operator_minus(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "/."))
-				nnd = new node_operator_division_inline(nd);
+				*ndLR = nnd = new node_operator_division_inline(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "/"))
-				nnd = new node_operator_division(nd);
+				*ndLR = nnd = new node_operator_division(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "^"))
-				nnd = new node_operator_power(nd);
+				*ndLR = nnd = new node_operator_power(parent, nd);
 			else if (!strcmp(opr->getSymbol(), "\\"))
-				nnd = new node_operator_root(nd);
+				*ndLR = nnd = new node_operator_root(parent, nd);
 			else
-				nnd = new node_unknown(nd);
+				*ndLR = nnd = new node_unknown(parent, nd);
 		}
 		else
-			nnd = new node_unknown(nd);
+			*ndLR = nnd = new node_unknown(parent, nd);
 	}
-	break;
+		break;
 	default:
 		break;
 	}
+
+#ifdef DEBUG
+	if (*ndLR)
+	{
+		lg->trace(pmb::logDebug, "new node generate = 0x%08X\n", *ndLR);
+		(*ndLR)->debug_check();
+		(*ndLR)->debug_check_all();
+	}
+#endif // DEBUG
+	lg->endFunction(pmb::logDebug);
 	return nnd;
 }
 
@@ -126,8 +148,7 @@ void CParserView::line::node::set(sset* ss)
 		const tnode* nd = ss->nd;
 		ss->nd = lnd;
 		ss->pnd = this;
-		_left = new_instance(lnd);
-		_left->set(ss);
+		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
 	}
 
@@ -171,8 +192,7 @@ void CParserView::line::node::set(sset* ss)
 		const tnode* nd = ss->nd;
 		ss->nd = rnd;
 		ss->pnd = this;
-		_right = new_instance(rnd);
-		_right->set(ss);
+		new_instance(&_right, this, rnd)->set(ss);
 		ss->nd = nd;
 	}
 	check_error(ss);
@@ -231,6 +251,18 @@ bool CParserView::line::node::parentheses() const
 short CParserView::line::node::nparentheses() const
 {
 	return 0;
+}
+
+
+item::SIZETP CParserView::line::node::get_ini() const
+{
+	return _ini;
+}
+
+
+item::SIZETP CParserView::line::node::get_end() const
+{
+	return _end;
 }
 
 

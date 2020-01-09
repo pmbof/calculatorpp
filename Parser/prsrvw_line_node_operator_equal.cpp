@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_equal::node_operator_equal(const tnode* nd)
-	: node(nd)
+CParserView::line::node_operator_equal::node_operator_equal(bnode* parent, const tnode* nd)
+	: node(parent, nd)
 {
 }
 
@@ -42,8 +42,7 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 		const tnode* nd = ss->nd;
 		ss->nd = lnd;
 		ss->pnd = this;
-		_left = new_instance(lnd);
-		_left->set(ss);
+		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
 	}
 
@@ -84,8 +83,7 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 		const tnode* nd = ss->nd;
 		ss->nd = rnd;
 		ss->pnd = this;
-		_right = new_instance(rnd);
-		_right->set(ss);
+		new_instance(&_right, this, rnd)->set(ss);
 		ss->nd = nd;
 	}
 	else
@@ -97,7 +95,7 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 			ss->nd = rnd;
 			ss->pnd = this;
 
-			_right = ss->pline->_result = new node_result(nullptr);
+			_right = ss->pline->_result = new node_result(this, nullptr);
 			_right->set(ss);
 			ss->nd = nd;
 		}

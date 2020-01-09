@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::bnode::bnode()
-	: _left(nullptr), _right(nullptr)
+CParserView::line::bnode::bnode(bnode* parent)
+	: _parent(parent), _left(nullptr), _right(nullptr)
 {
 }
 
@@ -16,27 +16,49 @@ CParserView::line::bnode::bnode()
 
 CParserView::line::bnode::~bnode()
 {
-	if (_left)
-		delete _left;
-	if (_right)
-		delete _right;
 }
 
 
 
-void CParserView::line::bnode::clear()
+
+void CParserView::line::bnode::debug_check() const
 {
+	pmb::log* lg = pmb::log::instance();
+	lg->trace(pmb::logInf, "bnode this    = 0x%08X\n", this);
+	lg->trace(pmb::logInf, "bnode _parent = 0x%08X\n", _parent);
+	lg->trace(pmb::logInf, "bnode _left   = 0x%08X\n", _left);
+	lg->trace(pmb::logInf, "bnode _right  = 0x%08X\n", _right);
 	if (_left)
 	{
-		delete _left;
-		_left = nullptr;
+		if (_left->_parent != this)
+			lg->trace(pmb::logError, "   - bnode _left->_parent (0x%08X) != this (0x%08X)\n", _left->_parent, this);
+		ASSERT(_left->_parent == this);
 	}
 	if (_right)
 	{
-		delete _right;
-		_right = nullptr;
+		if (_right->_parent != this)
+			lg->trace(pmb::logError, "   - bnode _right->_parent (0x%08X) != this (0x%08X)\n", _right->_parent, this);
+		ASSERT(_right->_parent == this);
+	}
+	if (_parent)
+	{
+		if (_parent->_left != this && _parent->_right != this)
+			lg->trace(pmb::logError, "   - bnode none _parent->_left (0x%08X), _parent->_right (0x%08X) != this (0x%08X)\n", _parent->_left, _parent->_right, this);
+		if (_parent->_left == _parent->_right)
+			lg->trace(pmb::logError, "   - bnode none _parent->_left (0x%08X) == _parent->_right (0x%08X)\n", _parent->_left, _parent->_right, this);
+		ASSERT((_parent->_left == this || _parent->_right == this) && _parent->_left != _parent->_right);
 	}
 }
+
+
+
+void CParserView::line::bnode::debug_check_all() const
+{
+	const bnode* nd = get_root();
+	for (nd = nd->get_first_left(); nd; nd = nd->get_next())
+		nd->debug_check();
+}
+
 
 
 
@@ -133,10 +155,77 @@ void CParserView::line::bnode::end(sset* ss)
 			;
 		ss->pnd = nd;
 
-		nd->_right = new node_result(nullptr);
+		nd->_right = new node_result(this, nullptr);
 		nd->_right->set(ss);
 		nd->_right->rec_move(0, ss->pline->_root->_middle - nd->_right->_middle);
 	}
+}
+
+
+
+
+
+
+const CParserView::line::bnode* CParserView::line::bnode::get_first() const
+{
+	return const_cast<bnode*>(this)->get_first();
+}
+
+const CParserView::line::bnode* CParserView::line::bnode::get_root() const
+{
+	return const_cast<bnode*>(this)->get_root();
+}
+
+const CParserView::line::bnode* CParserView::line::bnode::get_first_left() const
+{
+	return const_cast<bnode*>(this)->get_first_left();
+}
+
+const CParserView::line::bnode* CParserView::line::bnode::get_next() const
+{
+	return const_cast<bnode*>(this)->get_next();
+}
+
+
+CParserView::line::bnode* CParserView::line::bnode::get_first()
+{
+	return get_root()->get_first_left();
+}
+
+CParserView::line::bnode* CParserView::line::bnode::get_root()
+{
+	bnode* ndr;
+	for (ndr = this; ndr && ndr->_parent; ndr = ndr->_parent)
+		;
+	return ndr;
+}
+
+
+CParserView::line::bnode* CParserView::line::bnode::get_first_left()
+{
+	bnode* ndl = this;
+	do
+	{
+		for ( ; ndl && ndl->_left; ndl = ndl->_left)
+			;
+		if (ndl && ndl->_right)
+			ndl = ndl->_right;
+		else
+			break;
+	} while (ndl);
+	return ndl;
+}
+
+
+CParserView::line::bnode* CParserView::line::bnode::get_next()
+{
+	bnode* ndl = _parent;
+	if (ndl && ndl->_right != this)
+	{
+		if (ndl->_right)
+			ndl = ndl->_right->get_first_left();
+	}
+	return ndl;
 }
 
 

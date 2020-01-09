@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_parentheses::node_parentheses(const tnode* nd)
-	: node(nd), _nparentheses(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
+CParserView::line::node_parentheses::node_parentheses(bnode* parent, const tnode* nd)
+	: node(parent, nd), _nparentheses(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
 {
 }
 
@@ -47,8 +47,7 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		bnode* pnd = ss->pnd;
 		ss->nd = lnd;
 		ss->pnd = this;
-		_left = new_instance(lnd);
-		_left->set(ss);
+		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
 		ss->pnd = pnd;
 
@@ -64,8 +63,7 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		bnode* pnd = ss->pnd;
 		ss->nd = rnd;
 		ss->pnd = this;
-		_right = new_instance(rnd);
-		_right->set(ss);
+		new_instance(&_right, this, rnd)->set(ss);
 		ss->nd = nd;
 		ss->pnd = pnd;
 

@@ -40,6 +40,7 @@ private:
 	int m_tooltipId;
 
 
+	struct scaret;
 
 	struct line : CRect
 	{
@@ -103,11 +104,14 @@ private:
 		struct bnode : CRect
 		{
 		protected:
-			bnode();
+			bnode(bnode* parent);
+
 		public:
 			virtual ~bnode();
 
-			void clear();
+			void debug_check() const;
+			void debug_check_all() const;
+
 			virtual void set(sset* ss) = 0;
 			virtual void draw(sdraw* sd) const = 0;
 
@@ -117,6 +121,9 @@ private:
 
 			virtual bool parentheses() const = 0;
 			virtual short nparentheses() const = 0;
+
+			virtual item::SIZETP get_ini() const = 0;
+			virtual item::SIZETP get_end() const = 0;
 
 			bool is_left_parentheses(const bnode* parent) const;
 
@@ -131,10 +138,21 @@ private:
 			void check_error(sset* ss);
 			void end(sset* ss);
 
+			const bnode* get_first() const;
+			const bnode* get_root() const;
+			const bnode* get_first_left() const;
+			const bnode* get_next() const;
+
+			bnode* get_first();
+			bnode* get_root();
+			bnode* get_first_left();
+			bnode* get_next();
+
 		public:
 			int _middle;
 
 		protected:
+			bnode* _parent;
 			bnode* _left;
 			bnode* _right;
 		};
@@ -144,13 +162,13 @@ private:
 		struct node : bnode
 		{
 		protected:
-			node();
-			node(const tnode* nd);
+			node(bnode* parent);
+			node(bnode* parent, const tnode* nd);
 
 		public:
 			virtual ~node();
 
-			static node* new_instance(const tnode* nd);
+			static node* new_instance(bnode** ndLR, bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -160,6 +178,9 @@ private:
 			bool parentheses() const override;
 			short nparentheses() const override;
 
+			item::SIZETP get_ini() const override;
+			item::SIZETP get_end() const override;
+
 		protected:
 			item::SIZETP _ini;
 			item::SIZETP _end;
@@ -168,7 +189,7 @@ private:
 
 		struct node_space : node
 		{
-			node_space(const tnode* nd);
+			node_space(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -176,7 +197,7 @@ private:
 
 		struct node_alpha : node
 		{
-			node_alpha(const tnode* nd);
+			node_alpha(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -187,7 +208,7 @@ private:
 
 		struct node_function : node
 		{
-			node_function(const tnode* nd);
+			node_function(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -195,7 +216,7 @@ private:
 
 		struct node_buildin_function : node
 		{
-			node_buildin_function(const tnode* nd);
+			node_buildin_function(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -203,7 +224,7 @@ private:
 
 		struct node_number : node
 		{
-			node_number(const tnode* nd);
+			node_number(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -211,7 +232,7 @@ private:
 
 		struct node_string : node
 		{
-			node_string(const tnode* nd);
+			node_string(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -219,7 +240,7 @@ private:
 
 		struct node_list : node
 		{
-			node_list(const tnode* nd);
+			node_list(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -227,7 +248,7 @@ private:
 
 		struct node_parentheses : node
 		{
-			node_parentheses(const tnode* nd);
+			node_parentheses(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -244,7 +265,7 @@ private:
 
 		struct node_unknown : node
 		{
-			node_unknown(const tnode* nd);
+			node_unknown(bnode* parent, const tnode* nd);
 
 			bnodetypes type() const override;
 		};
@@ -252,7 +273,7 @@ private:
 
 		struct node_operator_equal : node
 		{
-			node_operator_equal(const tnode* nd);
+			node_operator_equal(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -263,7 +284,7 @@ private:
 
 		struct node_operator_result : node
 		{
-			node_operator_result(const tnode* nd);
+			node_operator_result(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -274,7 +295,7 @@ private:
 
 		struct node_result : node
 		{
-			node_result(const tnode* nd);
+			node_result(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -289,7 +310,7 @@ private:
 
 		struct node_operator_root : node
 		{
-			node_operator_root(const tnode* nd);
+			node_operator_root(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -303,7 +324,7 @@ private:
 
 		struct node_operator_power : node
 		{
-			node_operator_power(const tnode* nd);
+			node_operator_power(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -314,7 +335,7 @@ private:
 
 		struct node_operator_product : node
 		{
-			node_operator_product(const tnode* nd);
+			node_operator_product(bnode* parent, const tnode* nd);
 
 			void draw(sdraw* sd) const override;
 
@@ -324,7 +345,7 @@ private:
 
 		struct node_operator_division_inline : node
 		{
-			node_operator_division_inline(const tnode* nd);
+			node_operator_division_inline(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -335,7 +356,7 @@ private:
 
 		struct node_operator_division : node
 		{
-			node_operator_division(const tnode* nd);
+			node_operator_division(bnode* parent, const tnode* nd);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -346,7 +367,7 @@ private:
 
 		struct node_operator_plus : node
 		{
-			node_operator_plus(const tnode* nd);
+			node_operator_plus(bnode* parent, const tnode* nd);
 
 			void draw(sdraw* sd) const override;
 
@@ -356,7 +377,7 @@ private:
 
 		struct node_operator_minus : node
 		{
-			node_operator_minus(const tnode* nd);
+			node_operator_minus(bnode* parent, const tnode* nd);
 
 			void draw(sdraw* sd) const override;
 
@@ -375,7 +396,10 @@ private:
 		COLORREF color(bnodetypes type) const;
 		COLORREF back_color() const;
 
+		bool operator()(scaret& caret) const;
+
 	protected:
+		void clear();
 		void _swith_expr_begin(const bnode* pnd, sdraw* sd) const;
 		void _swith_expr_end(const bnode* pnd, sdraw* sd) const;
 
@@ -393,8 +417,9 @@ private:
 		mstyletp _style;
 	};
 
+	typedef std::vector<line> vline;
 
-	line m_line;
+	vline m_line;
 	bool m_bEditing;
 	UINT m_fstyle;
 	std::string m_expr;
@@ -409,10 +434,12 @@ private:
 
 		void clear();
 
-		CFont* init(int pointSize, LPCTSTR fontName, COLORREF backColor, COLORREF color);
+		CFont* init(bool bPretty, int pointSize, LPCTSTR fontName, COLORREF backColor, COLORREF color);
 
 		void add_style(const std::string& sname, const LOGFONT* plf, COLORREF color);
 		void add_style(const std::string& sname, int pointSize, LPCTSTR fontName, COLORREF color);
+
+		bool pretty() const;
 
 		CFont* font(const std::string& sname, short index);
 		short height(CFont* pFont) const;
@@ -463,6 +490,7 @@ private:
 
 	protected:
 		CWnd* _pwnd;
+		bool _bPretty;
 		short _idxSize;
 		int _logpixelsy;
 		resource* _src;
@@ -473,22 +501,18 @@ private:
 	} m_resource;
 
 
-	struct style
+	struct scaret
 	{
-		int maxHeight;
-		int lineHeight;
-		CPoint caretPos;
-		CPoint caretPos0;
-		int caret[2];
-	} m_style;
+		int height;
+		CPoint pos[2];
+		item::SIZETP spos[2];
+	} m_caret;
 
 	CPoint m_p0;
 	bool m_bShowResult;
 
 
 private:
-	void drawNode(CDC* pDC, const item* nd, const CString& expr, bool bError);
-
 	void draw_line(CDC* pDC, bool bCalc = false, int* x_pos = nullptr);
 
 // Implementation

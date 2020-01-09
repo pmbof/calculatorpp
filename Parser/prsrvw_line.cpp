@@ -18,21 +18,47 @@ CParserView::line::line(CParserView* parent)
 CParserView::line::~line()
 {
 	if (_root)
-		delete _root;
+	{
+		pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+		lg->trace(pmb::logDebug, "Root node: 0x%08X\n", _root);
+		for (bnode* nd = _root->get_first(); nd; )
+		{
+			bnode* next = nd->get_next();
+			lg->trace(pmb::logDebug, "Deleting node 0x%08X\n", nd);
+			delete nd;
+			nd = next;
+		}
+		lg->endFunction(pmb::logDebug);
+	}
+}
+
+
+void CParserView::line::clear()
+{
+	if (_root)
+	{
+		pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+		lg->trace(pmb::logDebug, "Root node: 0x%08X\n", _root);
+		for (bnode* nd = _root->get_first(); nd; )
+		{
+			bnode* next = nd->get_next();
+			lg->trace(pmb::logDebug, "Deleting node 0x%08X\n", nd);
+			delete nd;
+			nd = next;
+		}
+		_root = nullptr;
+		_result = nullptr;
+		_ndres = nullptr;
+		lg->endFunction(pmb::logDebug);
+	}
+	_nerror = nullptr;
 }
 
 
 
 void CParserView::line::set(CDC* pDC, int xo, int yo)
 {
-	if (_root)
-	{
-		delete _root;
-		_root = nullptr;
-		_result = nullptr;
-		_ndres = nullptr;
-	}
-	_nerror = nullptr;
+	clear();
 
 	_style.clear();
 	_style[bndOther] = "@operators";
@@ -68,13 +94,13 @@ void CParserView::line::set(CDC* pDC, int xo, int yo)
 	if (!nd)
 		return;
 
-	_root = node::new_instance(nd);
-	if (_root)
+	if (node::new_instance(&_root, nullptr, nd))
 	{
 		sset ss = { this, nd, nullptr, pDC, _parent->m_expr.c_str(), _parent->m_bEditing };
 		_root->set(&ss);
 		_root->end(&ss);
 		normalize(xo, yo);
+		_root->debug_check_all();
 	}
 }
 
@@ -178,6 +204,42 @@ COLORREF CParserView::line::color(bnodetypes type) const
 COLORREF CParserView::line::back_color() const
 {
 	return _parent->m_resource.back_color();
+}
+
+
+
+
+
+bool CParserView::line::operator()(scaret& caret) const
+{
+	for (short c = 0; c < 2; ++c)
+	{
+		if (caret.spos[c] < 0)
+			caret.spos[c] = 0;
+		else if (_parent->m_expr.size() < caret.spos[c])
+			caret.spos[c] = _parent->m_expr.size();
+	}
+
+	const bnode* nend = nullptr;
+	for (const bnode* nd = _root->get_first(); nd; nd = nd->get_next())
+	{
+		if (nd->get_ini() <= caret.spos[1] && caret.spos[1] < nd->get_end())
+		{
+			caret.pos[1].x = nd->left;
+			caret.pos[1].y = nd->top;
+			caret.height = nd->Height();
+			return true;
+		}
+		if (caret.spos[1] == nd->get_end())
+			nend = nd;
+	}
+	if (nend)
+	{
+		caret.pos[1].x = nend->right;
+		caret.pos[1].y = nend->top;
+		caret.height = nend->Height();
+	}
+	return nend;
 }
 
 

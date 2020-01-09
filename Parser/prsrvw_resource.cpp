@@ -58,12 +58,13 @@ void CParserView::resource::clear()
 }
 
 
-CFont* CParserView::resource::init(int pointSize, LPCTSTR fontName, COLORREF backColor, COLORREF color)
+CFont* CParserView::resource::init(bool bPretty, int pointSize, LPCTSTR fontName, COLORREF backColor, COLORREF color)
 {
 	clear();
 	if (_src)
-		return _src->init(pointSize, fontName, backColor, color);
+		return _src->init(bPretty, pointSize, fontName, backColor, color);
 
+	_bPretty = bPretty;
 	_idxSize = 20;
 	CDC* pDC = _pwnd->GetDC();
 	_logpixelsy = pDC->GetDeviceCaps(LOGPIXELSY);
@@ -98,6 +99,13 @@ void CParserView::resource::add_style(const std::string& sname, int pointSize, L
 	_pwnd->ReleaseDC(pDC);
 }
 
+
+
+
+bool CParserView::resource::pretty() const
+{
+	return _bPretty;
+}
 
 
 

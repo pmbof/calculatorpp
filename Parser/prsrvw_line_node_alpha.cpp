@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_alpha::node_alpha(const tnode* nd)
-	: node(nd)
+CParserView::line::node_alpha::node_alpha(bnode* parent, const tnode* nd)
+	: node(parent, nd)
 {
 }
 
@@ -42,8 +42,7 @@ void CParserView::line::node_alpha::set(sset* ss)
 		const tnode* nd = ss->nd;
 		ss->nd = lnd;
 		ss->pnd = this;
-		_left = new_instance(lnd);
-		_left->set(ss);
+		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
 	}
 
@@ -90,7 +89,7 @@ void CParserView::line::node_alpha::set(sset* ss)
 		ss->pDC->SelectObject(oldFont);
 		if (0 < pt)
 		{
-			_right = new node_alpha(ss->nd);;
+			_right = new node_alpha(this, ss->nd);;
 			static_cast<node_alpha*>(_right)->_ini += pt + (ss->bEditing ? 0 : 1);
 
 			ss->pnd = this;
@@ -109,8 +108,7 @@ void CParserView::line::node_alpha::set(sset* ss)
 		bnode* lright;
 		for (lright = this; static_cast<node_alpha*>(lright)->bnode::_right; lright = static_cast<node_alpha*>(lright)->bnode::_right)
 			;
-		static_cast<node_alpha*>(lright)->bnode::_right = new_instance(rnd);
-		static_cast<node_alpha*>(lright)->bnode::_right->set(ss);
+		new_instance(&static_cast<node_alpha*>(lright)->bnode::_right, this, rnd)->set(ss);
 		ss->nd = nd;
 	}
 	check_error(ss);

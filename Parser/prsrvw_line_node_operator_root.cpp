@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_root::node_operator_root(const tnode* nd)
-	: node(nd)
+CParserView::line::node_operator_root::node_operator_root(bnode* parent, const tnode* nd)
+	: node(parent, nd)
 {
 }
 
@@ -46,7 +46,7 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		{
 			ss->nd = lnd;
 			ss->pnd = this;
-			_left = new_instance(lnd);
+			new_instance(&_left, this, lnd);
 			++ss->index;
 			_left->set(ss);
 			--ss->index;
@@ -69,8 +69,7 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		}
 		ss->nd = rnd;
 		ss->pnd = this;
-		_right = new_instance(rnd);
-		_right->set(ss);
+		new_instance(&_right, this, rnd)->set(ss);
 		CRect rr = _right->rec_rect();
 		top = rr.top - 2;
 		bottom = rr.bottom;

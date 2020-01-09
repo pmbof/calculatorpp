@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_result::node_operator_result(const tnode* nd)
-	: node(nd)
+CParserView::line::node_operator_result::node_operator_result(bnode* parent, const tnode* nd)
+	: node(parent, nd)
 {
 }
 
@@ -42,8 +42,7 @@ void CParserView::line::node_operator_result::set(sset* ss)
 		const tnode* nd = ss->nd;
 		ss->nd = lnd;
 		ss->pnd = this;
-		_left = new_instance(lnd);
-		_left->set(ss);
+		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
 	}
 
@@ -86,7 +85,7 @@ void CParserView::line::node_operator_result::set(sset* ss)
 		ss->nd = rnd;
 		ss->pnd = this;
 
-		_right = ss->pline->_result = new node_result(nullptr);
+		_right = ss->pline->_result = new node_result(this, nullptr);
 		_right->set(ss);
 		ss->nd = nd;
 	}
@@ -98,17 +97,14 @@ void CParserView::line::node_operator_result::set(sset* ss)
 		if (_right)
 		{
 			bnode* bmr = _right->node_mright();
-			ss->pline->_ndres = static_cast<node_operator_result*>(bmr)->bnode::_right = new_instance(rnd);
+			ss->pline->_ndres = new_instance(&static_cast<node_operator_result*>(bmr)->bnode::_right, bmr, rnd);
 			ss->pline->_ndres->set(ss);
 			CRect rmr = ss->pline->_ndres->rec_rect();
 			if (rmr.left != _right->right)
 				ss->pline->_ndres->rec_move(_right->right - rmr.left, 0);
 		}
 		else
-		{
-			_right = new_instance(rnd);
-			_right->set(ss);
-		}
+			new_instance(&_right, this, rnd)->set(ss);
 		ss->nd = nd;
 	}
 	check_error(ss);
