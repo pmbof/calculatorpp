@@ -123,7 +123,10 @@ void CParserView::OnInitialUpdate()
 	m_fstyle = PMB_STYLE_CPPEDIT_MULTILINE;
 	m_bEditing = false;
 
-	m_expr = GetDocument()->m_expr;
+	CParserDoc* pDoc = GetDocument();
+	pDoc->print_operation_table();
+
+	m_expr = pDoc->m_expr;
 	m_caret.pos[1] = m_p0;
 	--m_caret.pos[1].x;
 	m_caret.pos[0] = m_caret.pos[1];

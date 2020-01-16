@@ -49,7 +49,7 @@ class CParserDoc : public CDocument
 {
 	typedef build_in_function::transporter_args transporter_args;
 
-	static const  operation _operation[];
+	static const  operation* _operation[];
 	operation_table _operation_table;
 
 	static void opr_positive(transporter_args& args);
@@ -122,6 +122,9 @@ public:
 	const tree* getTree2() const;
 
 	const tnode* getNextUnknowNode(const tnode* nd) const;
+
+	void print_operation_table() const;
+	bool check_operation_table() const;
 
 protected:
 	symbol m_symbols;

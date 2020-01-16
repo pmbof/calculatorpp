@@ -61,6 +61,9 @@ public:
 
 	void operator()(_TVALUE& values) const;
 
+	void print(pmb::log_type lgtype) const;
+	bool check() const;
+
 private:
 	tpFunc _fnc;
 	char*	_symbol;
@@ -89,7 +92,7 @@ public:
 	typedef unsigned short size_t;
 
 public:
-	operation_table(const operation* opr, size_t size);
+	operation_table(const operation** opr, size_t size);
 
 	const operation* find(const _NODE* nd, const char* expr) const;
 
@@ -97,7 +100,7 @@ public:
 	size_t size() const;
 
 protected:
-	const operation* _opr;
+	const operation** _opr;
 	size_t _oprSize;
 };
 

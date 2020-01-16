@@ -165,7 +165,7 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::mapUnknown()
 				*plg << "(call user function) ";
 			if (fnc._buildin)
 				*plg << "(call build-in function) ";
-			*plg << "'" << opr->getSymbol() << "'"
+			*plg << "pointer: " << opr << " -> '" << opr->getSymbol() << "'"
 				<< " <" << opr->getName() << ", " << opr->getDescription() << ">["
 				<< (opr->isBinary() ? "b": "u") << "," << (opr->isLeftToRight() ? "L": "R") << "," << opr->getPrecedence() << "]";
 			TRACE_NODE(logDebug, ",", _expr, nd);

@@ -427,6 +427,8 @@ public:
 		operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
 			: ::operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
 
+		virtual ~operation() {}
+
 		virtual line::node* new_instance(line::bnode* parent, const tnode* nd) const {
 			return new line::node_unknown(parent, nd);
 		}

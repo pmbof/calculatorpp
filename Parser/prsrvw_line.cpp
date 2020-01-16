@@ -94,6 +94,7 @@ void CParserView::line::set(CDC* pDC, int xo, int yo)
 	if (!nd)
 		return;
 
+	pDoc->check_operation_table();
 	if (node::new_instance(&_root, nullptr, nd))
 	{
 		sset ss = { this, nd, nullptr, pDC, _parent->m_expr.c_str(), _parent->m_bEditing };

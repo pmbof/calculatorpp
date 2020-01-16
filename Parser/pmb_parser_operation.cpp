@@ -180,6 +180,31 @@ void operation<_TVALUE>::operator()(_TVALUE& values) const
 
 
 template<class _TVALUE>
+void operation<_TVALUE>::print(pmb::log_type lgtype) const
+{
+	pmb::log* lg = pmb::log::instance();
+	lg->trace(lgtype, "\t\t- symbol: %s[%d]\n", std::string(_symbol, _len).c_str(), _len);
+	lg->trace(lgtype, "\t\t- precedence: %d\n", _precedence);
+	lg->trace(lgtype, "\t\t- %s\n", _leftToRight ? "left to right (->)" : "right to left (<-)");
+	lg->trace(lgtype, "\t\t- %s\n", _binary ? "binary" : "unitary");
+	lg->trace(lgtype, "\t\t- can call function: %s\n", _canCallFunction ? "true" : "false");
+	lg->trace(lgtype, "\t\t- can create left variable: %s\n", _canCreateLVariable ? "true" : "false");
+	lg->trace(lgtype, "\t\t- can create right variable: %s\n", _canCreateRVariable ? "true" : "false");
+	lg->trace(lgtype, "\t\t- can create left variable: %s\n", _canCreateLVariable ? "true" : "false");
+	lg->trace(lgtype, "\t\t- name: %s\n", _name);
+	lg->trace(lgtype, "\t\t- description: %s\n", _description);
+}
+
+
+template<class _TVALUE>
+bool operation<_TVALUE>::check() const
+{
+	return 0 <= _len && _len < 4;
+}
+
+
+
+template<class _TVALUE>
 bool operator<(int lPrecedence, const operation<_TVALUE>& opr)
 {
 	return lPrecedence < opr._precedence;
@@ -192,7 +217,7 @@ bool operator<(int lPrecedence, const operation<_TVALUE>& opr)
 
 
 template<class _OPR, class _NODE>
-operation_table<_OPR, _NODE>::operation_table(const operation* opr, size_t size)
+operation_table<_OPR, _NODE>::operation_table(const operation** opr, size_t size)
 	: _opr(opr), _oprSize(size)
 {
 }
@@ -206,11 +231,11 @@ const typename operation_table<_OPR, _NODE>::operation*
 {
 	for(size_t i = 0; i < _oprSize; ++i)
 	{
-		if((_opr[i].isBinary() && nd->getLeft() && nd->getRight() || 
-				!_opr[i].isBinary() && _opr[i].isLeftToRight() && nd->getLeft() && !nd->getRight() || 
-				!_opr[i].isBinary() && !_opr[i].isLeftToRight() && !nd->getLeft() && nd->getRight())
-					&& _opr[i].compare(nd->getCharPtr(expr), nd->len()))
-			return _opr + i;
+		if((_opr[i]->isBinary() && nd->getLeft() && nd->getRight() || 
+				!_opr[i]->isBinary() && _opr[i]->isLeftToRight() && nd->getLeft() && !nd->getRight() || 
+				!_opr[i]->isBinary() && !_opr[i]->isLeftToRight() && !nd->getLeft() && nd->getRight())
+					&& _opr[i]->compare(nd->getCharPtr(expr), nd->len()))
+			return _opr[i];
 	}
 	return nullptr;
 }
@@ -222,7 +247,7 @@ template<class _OPR, class _NODE>
 const typename operation_table<_OPR, _NODE>::operation*
 	operation_table<_OPR, _NODE>::get(size_t i) const
 {
-	return _opr + i;
+	return _opr[i];
 }
 
 
