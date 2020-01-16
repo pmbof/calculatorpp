@@ -76,28 +76,8 @@ CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bno
 		const pmb::parser::nodes::unknown<item, ndtype>* uk = static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(nd);
 		if (uk->isValid() && !uk->isCallFunction())
 		{
-			const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
-			*ndLR = opr->new_instance(parent, nd);
-			/*if (!strcmp(opr->getSymbol(), "="))
-				*ndLR = nnd = new node_operator_equal(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "=."))
-				*ndLR = nnd = new node_operator_result(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "*"))
-				*ndLR = nnd = new node_operator_product(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "+"))
-				*ndLR = nnd = new node_operator_plus(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "-"))
-				*ndLR = nnd = new node_operator_minus(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "/."))
-				*ndLR = nnd = new node_operator_division_inline(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "/"))
-				*ndLR = nnd = new node_operator_division(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "^"))
-				*ndLR = nnd = new node_operator_power(parent, nd);
-			else if (!strcmp(opr->getSymbol(), "\\"))
-				*ndLR = nnd = new node_operator_root(parent, nd);
-			else
-				*ndLR = nnd = new node_unknown(parent, nd);*/
+			const operation* opr = static_cast<const operation*>(reinterpret_cast<const ::operation*>(uk->pointer()));
+			*ndLR = nnd = opr->new_instance(parent, nd);
 		}
 		else
 			*ndLR = nnd = new node_unknown(parent, nd);
