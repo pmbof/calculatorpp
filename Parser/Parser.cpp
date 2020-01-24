@@ -260,6 +260,7 @@ int CParserApp::ExitInstance()
 	lg->trace(pmb::logInf, "End application!\n");
 	lg->endFunction();
 
+	CParserDoc::destroy();
 	pmb::log::destroy();
 
 	return CWinAppEx::ExitInstance();
