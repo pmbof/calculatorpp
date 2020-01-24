@@ -43,7 +43,21 @@ private:
 	int m_tooltipId;
 
 
+#pragma region nodes declare
+	struct operation;
+	struct opr_equal;
+	struct opr_result;
+	struct opr_product;
+	struct opr_plus;
+	struct opr_minus;
+	struct opr_division_inline;
+	struct opr_division;
+	struct opr_power;
+	struct opr_root;
+#pragma endregion nodes declare
+
 	struct scaret;
+
 
 	struct line : CRect
 	{
@@ -72,7 +86,6 @@ private:
 			bndOprMinus
 		};
 
-	public:
 		struct bnode;
 
 	private:
@@ -107,7 +120,7 @@ private:
 
 	
 #pragma region nodes
-	public:
+	private:
 		struct bnode : CRect
 		{
 		protected:
@@ -428,6 +441,17 @@ private:
 		const bnode* _nerror;
 
 		mstyletp _style;
+
+		friend operation;
+		friend opr_equal;
+		friend opr_result;
+		friend opr_product;
+		friend opr_plus;
+		friend opr_minus;
+		friend opr_division_inline;
+		friend opr_division;
+		friend opr_power;
+		friend opr_root;
 	};
 
 public:
