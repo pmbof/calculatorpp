@@ -150,12 +150,12 @@ private:
 
 			const bnode* get_first() const;
 			const bnode* get_root() const;
-			const bnode* get_first_left() const;
+			const bnode* get_first_child() const;
 			const bnode* get_next() const;
 
 			bnode* get_first();
 			bnode* get_root();
-			bnode* get_first_left();
+			bnode* get_first_child();
 			bnode* get_next();
 
 		public:

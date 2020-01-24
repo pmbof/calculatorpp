@@ -107,12 +107,12 @@ void CParserView::line::bnode::debug_check_all() const
 {
 	bool bOk = true;
 	const bnode* nd = get_root();
-	for (nd = nd->get_first_left(); nd && bOk; nd = nd->get_next())
+	for (nd = nd->get_first_child(); nd && bOk; nd = nd->get_next())
 		bOk = nd->debug_check();
 	if (!bOk)
 	{
 		nd = get_root();
-		for (nd = nd->get_first_left(); nd; nd = nd->get_next())
+		for (nd = nd->get_first_child(); nd; nd = nd->get_next())
 			nd->print();
 	}
 }
@@ -149,7 +149,7 @@ void CParserView::line::bnode::rect_move(int dx, int dy)
 {
 	if (dx || dy)
 	{
-		for (bnode* nd = get_first_left(); nd; nd = nd->get_next())
+		for (bnode* nd = get_first_child(); nd; nd = nd->get_next())
 		{
 			nd->_rect_move(dx, dy);
 			if (nd == this)
@@ -174,7 +174,7 @@ void CParserView::line::bnode::_rect_move(int dx, int dy)
 CRect CParserView::line::bnode::rect() const
 {
 	CRect cr = *this;
-	for (const bnode* nd = get_first_left(); nd && nd != this; nd = nd->get_next())
+	for (const bnode* nd = get_first_child(); nd && nd != this; nd = nd->get_next())
 		max_rect(cr, *nd);
 	return cr;
 }
@@ -231,9 +231,9 @@ const CParserView::line::bnode* CParserView::line::bnode::get_root() const
 	return const_cast<bnode*>(this)->get_root();
 }
 
-const CParserView::line::bnode* CParserView::line::bnode::get_first_left() const
+const CParserView::line::bnode* CParserView::line::bnode::get_first_child() const
 {
-	return const_cast<bnode*>(this)->get_first_left();
+	return const_cast<bnode*>(this)->get_first_child();
 }
 
 const CParserView::line::bnode* CParserView::line::bnode::get_next() const
@@ -244,7 +244,7 @@ const CParserView::line::bnode* CParserView::line::bnode::get_next() const
 
 CParserView::line::bnode* CParserView::line::bnode::get_first()
 {
-	return get_root()->get_first_left();
+	return get_root()->get_first_child();
 }
 
 CParserView::line::bnode* CParserView::line::bnode::get_root()
@@ -256,7 +256,7 @@ CParserView::line::bnode* CParserView::line::bnode::get_root()
 }
 
 
-CParserView::line::bnode* CParserView::line::bnode::get_first_left()
+CParserView::line::bnode* CParserView::line::bnode::get_first_child()
 {
 	bnode* ndl = this;
 	do
@@ -278,7 +278,7 @@ CParserView::line::bnode* CParserView::line::bnode::get_next()
 	if (ndl && ndl->_right != this)
 	{
 		if (ndl->_right)
-			ndl = ndl->_right->get_first_left();
+			ndl = ndl->_right->get_first_child();
 	}
 	return ndl;
 }
