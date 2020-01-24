@@ -65,7 +65,7 @@ CFont* CParserView::resource::init(bool bPretty, int pointSize, LPCTSTR fontName
 		return _src->init(bPretty, pointSize, fontName, backColor, color);
 
 	_bPretty = bPretty;
-	_idxSize = 20;
+	_idxSize = 25;
 	CDC* pDC = _pwnd->GetDC();
 	_logpixelsy = pDC->GetDeviceCaps(LOGPIXELSY);
 	_font = _get_font(std::string(CStringA(fontName)), pointSize, false, false, pDC);

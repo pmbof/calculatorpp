@@ -63,7 +63,7 @@ void CParserView::line::node_operator_root::set(sset* ss)
 
 			CRect cr(this);
 			ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-			right = left + cr.Width();
+			right = left + cr.Width() + 1;
 			bottom = top + cr.Height();
 			ss->pDC->SelectObject(oldFont);
 		}
@@ -71,9 +71,17 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		ss->pnd = this;
 		new_instance(&_right, this, rnd)->set(ss);
 		CRect rr = _right->rect();
+		bool bdouble = 3 * Height() < 2 * rr.Height();
 		top = rr.top - 2;
 		bottom = rr.bottom;
 		rright = rr.right;
+		if (bdouble)
+		{
+			const int dy = Width();
+			rright += dy;
+			right += dy;
+			_right->rect_move(dy, 0);
+		}
 		if (_left)
 		{
 			if (2 * rl.Height() < 3 * (rr.Height() - rl.Height()) * (rr.Height() < rl.Height() ? -1 : 1))
@@ -120,8 +128,19 @@ void CParserView::line::node_operator_root::draw(sdraw* sd) const
 		pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
 		CPen* oldPen = sd->pDC->SelectObject(&pen);
 
-		int t = _left ? _left->bottom : top + Height() / 3;
-		sd->pDC->MoveTo(left + 1, t);
+		int t;
+		if (_left)
+		{
+			CRect rl = _left->rect();
+			t = rl.bottom;
+			sd->pDC->MoveTo(rl.left + rl.Width() / 2, t + 1);
+		}
+		else
+		{
+			t = top + Height() / 3;
+			sd->pDC->MoveTo(left - 1, t + 1);
+		}
+		sd->pDC->LineTo(left + 1, t);
 		sd->pDC->LineTo(left + 1 + Width() / 2, bottom);
 		sd->pDC->LineTo(right - 1, top + 1);
 
