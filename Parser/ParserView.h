@@ -72,7 +72,10 @@ private:
 			bndOprMinus
 		};
 
+	public:
 		struct bnode;
+
+	private:
 		typedef std::list<bnode*> lbnode;
 		typedef std::map<line::bnodetypes, std::string> mstyletp;
 
@@ -113,7 +116,9 @@ private:
 		public:
 			virtual ~bnode();
 
-			void debug_check() const;
+			virtual void print_line(pmb::log_type tplg, const char* text) const;
+			void print() const;
+			bool debug_check() const;
 			void debug_check_all() const;
 
 			virtual void set(sset* ss) = 0;
@@ -135,8 +140,9 @@ private:
 
 			bnode* node_mright();
 
-			void rec_move(int dx, int dy);
-			CRect rec_rect() const;
+			void rect_move(int dx, int dy);
+			void _rect_move(int dx, int dy);
+			CRect rect() const;
 			void max_rect(CRect& r, const CRect& r2) const;
 
 			void check_error(sset* ss);
@@ -162,6 +168,7 @@ private:
 		};
 
 
+
 		struct node : bnode
 		{
 		protected:
@@ -170,6 +177,8 @@ private:
 
 		public:
 			virtual ~node();
+
+			void print_line(pmb::log_type tplg, const char* text) const override;
 
 			static node* new_instance(bnode** ndLR, bnode* parent, const tnode* nd);
 

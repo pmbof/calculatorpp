@@ -21,13 +21,40 @@ CParserView::line::bnode::~bnode()
 
 
 
-void CParserView::line::bnode::debug_check() const
+
+
+void CParserView::line::bnode::print_line(pmb::log_type tplg, const char* text) const
+{
+	pmb::log::instance()->trace(tplg, "%s = 0x%08X\n", text, this);
+}
+
+
+
+
+void CParserView::line::bnode::print() const
 {
 	pmb::log* lg = pmb::log::instance();
-	lg->trace(pmb::logInf, "bnode this    = 0x%08X\n", this);
-	lg->trace(pmb::logInf, "bnode _parent = 0x%08X\n", _parent);
-	lg->trace(pmb::logInf, "bnode _left   = 0x%08X\n", _left);
-	lg->trace(pmb::logInf, "bnode _right  = 0x%08X\n", _right);
+
+	bool bErrParent = _parent && (_parent->_left != this && _parent->_right != this || _parent->_left == _parent->_right);
+	bool bErrLeft = _left && _left->_parent != this;
+	bool bErrRight = _right && _right->_parent != this;
+
+	print_line(bErrParent || bErrLeft || bErrRight ? pmb::logError : pmb::logDebug, "bnode this   ");
+	if (_parent)
+		_parent->print_line(bErrParent ? pmb::logError : pmb::logDebug, "bnode _parent");
+	else
+		lg->trace(bErrParent ? pmb::logError : pmb::logDebug, "bnode _parent = 0x%08X\n", _parent);
+
+	if (_left)
+		_left->print_line(bErrLeft ? pmb::logError : pmb::logDebug, "bnode _left  ");
+	else
+		lg->trace(bErrLeft ? pmb::logError : pmb::logDebug, "bnode _left   = 0x%08X\n", _left);
+
+	if (_right)
+		_right->print_line(bErrRight ? pmb::logError : pmb::logDebug, "bnode _right ");
+	else
+		lg->trace(bErrRight ? pmb::logError : pmb::logDebug, "bnode _right  = 0x%08X\n", _right);
+
 	if (_left)
 	{
 		if (_left->_parent != this)
@@ -52,11 +79,42 @@ void CParserView::line::bnode::debug_check() const
 
 
 
+bool CParserView::line::bnode::debug_check() const
+{
+	if (_left)
+	{
+		if (_left->_parent != this)
+			return false;
+	}
+	if (_right)
+	{
+		if (_right->_parent != this)
+			return false;
+	}
+	if (_parent)
+	{
+		if (_parent->_left != this && _parent->_right != this)
+			return false;
+		if (_parent->_left == _parent->_right)
+			return false;
+	}
+	return true;
+}
+
+
+
 void CParserView::line::bnode::debug_check_all() const
 {
+	bool bOk = true;
 	const bnode* nd = get_root();
-	for (nd = nd->get_first_left(); nd; nd = nd->get_next())
-		nd->debug_check();
+	for (nd = nd->get_first_left(); nd && bOk; nd = nd->get_next())
+		bOk = nd->debug_check();
+	if (!bOk)
+	{
+		nd = get_root();
+		for (nd = nd->get_first_left(); nd; nd = nd->get_next())
+			nd->print();
+	}
 }
 
 
@@ -86,36 +144,48 @@ CParserView::line::bnode* CParserView::line::bnode::node_mright()
 }
 
 
-void CParserView::line::bnode::rec_move(int dx, int dy)
+
+void CParserView::line::bnode::rect_move(int dx, int dy)
 {
-	_middle += dy;
-	top += dy;
+	if (dx || dy)
+	{
+		for (bnode* nd = get_first_left(); nd; nd = nd->get_next())
+		{
+			nd->_rect_move(dx, dy);
+			if (nd == this)
+				break;
+		}
+	}
+}
+
+
+void CParserView::line::bnode::_rect_move(int dx, int dy)
+{
 	left += dx;
-	bottom += dy;
 	right += dx;
-	if (_left)
-		_left->rec_move(dx, dy);
-	if (_right)
-		_right->rec_move(dx, dy);
+
+	top += dy;
+	_middle += dy;
+	bottom += dy;
 }
 
 
 
-CRect CParserView::line::bnode::rec_rect() const
+CRect CParserView::line::bnode::rect() const
 {
 	if (!_left && !_right)
 		return *this;
 	CRect cr;
 	if (_left)
 	{
-		cr = _left->rec_rect();
+		cr = _left->rect();
 		max_rect(cr, *this);
 	}
 	else
 		cr = *this;
 	if (_right)
 	{
-		CRect rr = _right->rec_rect();
+		CRect rr = _right->rect();
 		max_rect(cr, rr);
 	}
 	return cr;
@@ -149,15 +219,12 @@ void CParserView::line::bnode::end(sset* ss)
 	CParserDoc* pDoc = ss->pline->_parent->GetDocument();
 	if (!ss->pline->_result && pDoc && ss->bEditing && !pDoc->m_result.empty())
 	{
-		ss->nd = nullptr;
-		bnode* nd;
-		for (nd = this; nd->_right; nd = nd->_right)
-			;
-		ss->pnd = nd;
+		bnode* nd = this->get_root();
+		nd->_parent = new node_result(nullptr, nullptr);
+		ss->pnd = nd->_parent->_left = nd;
+		nd->_parent->set(ss);
 
-		nd->_right = new node_result(this, nullptr);
-		nd->_right->set(ss);
-		nd->_right->rec_move(0, ss->pline->_root->_middle - nd->_right->_middle);
+		debug_check_all();
 	}
 }
 

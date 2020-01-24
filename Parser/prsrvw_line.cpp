@@ -100,6 +100,9 @@ void CParserView::line::set(CDC* pDC, int xo, int yo)
 		sset ss = { this, nd, nullptr, pDC, _parent->m_expr.c_str(), _parent->m_bEditing };
 		_root->set(&ss);
 		_root->end(&ss);
+		bnode* root = _root->get_root();
+		if (_root != root)
+			_root = root;
 		normalize(xo, yo);
 		_root->debug_check_all();
 	}
@@ -112,12 +115,12 @@ void CParserView::line::normalize(int xo, int yo)
 {
 	if (!_root->empty())
 	{
-		CRect cr = _root->rec_rect();
+		CRect cr = _root->rect();
 		if (xo != cr.left || yo != cr.top)
 		{
-			int dx = xo - cr.left;
-			int dy = yo - cr.top;
-			_root->rec_move(dx, dy);
+			const int dx = xo - cr.left;
+			const int dy = yo - cr.top;
+			_root->get_root()->rect_move(dx, dy);
 		}
 		left = xo;
 		top = yo;

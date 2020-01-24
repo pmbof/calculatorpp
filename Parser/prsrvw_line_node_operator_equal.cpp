@@ -49,7 +49,7 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 	CRect rl;
 	if (lnd)
 	{
-		rl = _left->rec_rect();
+		rl = _left->rect();
 		left = rl.right;
 		right = left + 10;
 		top = rl.top;

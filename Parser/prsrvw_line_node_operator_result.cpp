@@ -49,7 +49,7 @@ void CParserView::line::node_operator_result::set(sset* ss)
 	CRect rl;
 	if (lnd)
 	{
-		rl = _left->rec_rect();
+		rl = _left->rect();
 		left = rl.right;
 		right = left + 10;
 		top = rl.top;
@@ -99,9 +99,9 @@ void CParserView::line::node_operator_result::set(sset* ss)
 			bnode* bmr = _right->node_mright();
 			ss->pline->_ndres = new_instance(&static_cast<node_operator_result*>(bmr)->bnode::_right, bmr, rnd);
 			ss->pline->_ndres->set(ss);
-			CRect rmr = ss->pline->_ndres->rec_rect();
+			CRect rmr = ss->pline->_ndres->rect();
 			if (rmr.left != _right->right)
-				ss->pline->_ndres->rec_move(_right->right - rmr.left, 0);
+				ss->pline->_ndres->rect_move(_right->right - rmr.left, 0);
 		}
 		else
 			new_instance(&_right, this, rnd)->set(ss);

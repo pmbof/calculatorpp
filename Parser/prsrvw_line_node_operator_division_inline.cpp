@@ -20,10 +20,10 @@ void CParserView::line::node_operator_division_inline::set(sset* ss)
 	node::set(ss);
 	CRect rl;
 	if (_left)
-		rl = _left->rec_rect();
+		rl = _left->rect();
 	if (_right)
 	{
-		CRect rr = _right->rec_rect();
+		CRect rr = _right->rect();
 		if (_left)
 			max_rect(rr, rl);
 		if (Height() < rr.Height())

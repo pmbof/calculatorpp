@@ -51,13 +51,28 @@ void CParserView::line::node_result::set(sset* ss)
 
 	if (!_bNodes)
 	{
-		right = left += 10;
+		CRect rl;
+		if (_left)
+		{
+			rl = _left->rect();
+			right = left = rl.right + 10;
+			top = rl.top;
+			bottom = rl.bottom;
+			_middle = _left->_middle;
+		}
+		else
+		{
+			right = left += 10;
+			rl.top = top;
+			rl.bottom = bottom;
+		}
+
 		CFont* pFont = ss->pline->font(type(), ss->index);
 		CFont* oldFont = ss->pDC->SelectObject(pFont);
 		CRect cr(this);
 		ss->pDC->DrawText(L" = ", cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
 		right += cr.Width();
-		if (Height() != cr.Height())
+		if (rl.Height() != cr.Height())
 		{
 			top = _middle - cr.Height() / 2 - cr.Height() % 2;
 			bottom = top + cr.Height();
@@ -70,9 +85,11 @@ void CParserView::line::node_result::set(sset* ss)
 		_ini = _end = 0;
 
 		nss.nd = resnd;
+		if (!_bNodes)
+			nss.pnd = this;
 		node::new_instance(&_right, this, nss.nd);
 		_right->set(&nss);
-		CRect rr = _right->rec_rect();
+		CRect rr = _right->rect();
 		max_rect(*this, rr);
 	}
 }
@@ -96,7 +113,7 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 		sdraw nsd = { sd->pline, this, sd->pDC, pDoc->m_result.c_str(), false };
 
 		if (_left)
-			_left->draw(&nsd);
+			_left->draw(sd);
 
 		CString sn;
 		if (!_bNodes)
@@ -109,25 +126,27 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 			CFont* pFont = sd->pline->font(type(), sd->index);
 			CFont* oldFont = sd->pDC->SelectObject(pFont);
 			CRect r(this);
-			if (_left)
+			if (_bNodes)
 			{
-				r.left = _left->right;
-				r.top = _left->_middle - Height() / 2;
-				r.bottom = r.top + Height();
-			}
-			if (_right)
-			{
-				r.right = _right->left;
-				if (!_left)
+				if (_left)
 				{
-					r.top = _right->_middle - Height() / 2;
+					r.left = _left->right;
+					r.top = _left->_middle - Height() / 2;
 					r.bottom = r.top + Height();
+				}
+				if (_right)
+				{
+					r.right = _right->left;
+					if (!_left)
+					{
+						r.top = _right->_middle - Height() / 2;
+						r.bottom = r.top + Height();
+					}
 				}
 			}
 			sd->pDC->DrawText(sn, r, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 			sd->pDC->SelectObject(oldFont);
 			sd->pDC->SetTextColor(oldColor);
-			sd->pDC->SetBkColor(bkColor);
 		}
 		if (_right)
 			_right->draw(&nsd);
@@ -139,6 +158,7 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 		_right->draw(sd);
 		sd->pnd = pnd;
 	}
+	sd->pDC->SetBkColor(bkColor);
 	sd->pDC->SetBkMode(oMode);
 	sd->end_expr(this);
 }

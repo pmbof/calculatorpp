@@ -50,7 +50,7 @@ void CParserView::line::node_alpha::set(sset* ss)
 	if (lnd)
 	{
 		ASSERT(false); // because doble left in  a.0
-		rl = _left->rec_rect();
+		rl = _left->rect();
 		left = rl.right;
 		right = left;
 		top = rl.top;
@@ -96,7 +96,7 @@ void CParserView::line::node_alpha::set(sset* ss)
 			ss->index += 2;
 			_right->set(ss);
 			ss->index -= 2;
-			_right->rec_move(lf.lfItalic ? -2 : 0, Height() / 2);
+			_right->rect_move(lf.lfItalic ? -2 : 0, Height() / 2);
 			rnd = nullptr;
 		}
 	}

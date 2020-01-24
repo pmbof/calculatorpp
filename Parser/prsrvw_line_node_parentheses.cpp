@@ -51,7 +51,7 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		ss->nd = nd;
 		ss->pnd = pnd;
 
-		CRect rr = _left->rec_rect();
+		CRect rr = _left->rect();
 		left = right = rr.left;
 		top = rr.top;
 		bottom = rr.bottom;
@@ -67,7 +67,7 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		ss->nd = nd;
 		ss->pnd = pnd;
 
-		CRect rr = _right->rec_rect();
+		CRect rr = _right->rect();
 		left = right = rr.right;
 		top = rr.top;
 		bottom = rr.bottom;
@@ -81,7 +81,7 @@ void CParserView::line::node_parentheses::set(sset* ss)
 	if (lf.lfItalic)
 		right += 2;
 	if (lnd)
-		_left->rec_move(right - left, 0);
+		_left->rect_move(right - left, 0);
 
 	check_error(ss);
 	ss->parents.pop_back();

@@ -27,6 +27,19 @@ CParserView::line::node::~node()
 
 
 
+
+void CParserView::line::node::print_line(pmb::log_type tplg, const char* text) const
+{
+	if (this)
+		pmb::log::instance()->trace(tplg, "%s = 0x%08X [%d, %d]\n", text, this, _ini, _end);
+	else
+		bnode::print_line(tplg, text);
+}
+
+
+
+
+
 CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bnode* parent, const tnode* nd)
 {
 	pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
@@ -136,7 +149,7 @@ void CParserView::line::node::set(sset* ss)
 	CRect rl;
 	if (lnd)
 	{
-		rl = _left->rec_rect();
+		rl = _left->rect();
 		left = rl.right;
 		right = left;
 		top = rl.top;

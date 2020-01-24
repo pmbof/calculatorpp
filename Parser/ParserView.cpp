@@ -121,7 +121,7 @@ void CParserView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 
 	m_fstyle = PMB_STYLE_CPPEDIT_MULTILINE;
-	m_bEditing = false;
+	m_bEditing = true;
 
 	CParserDoc* pDoc = GetDocument();
 	pDoc->print_operation_table();
@@ -344,7 +344,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 				if (uk->isValid() && !uk->isCallFunction())
 				{
 					pDC->SelectObject(&pen);
-					const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
+					const ::operation* opr = reinterpret_cast<const ::operation*>(uk->pointer());
 					if (!strcmp(opr->getSymbol(), "=") || !strcmp(opr->getSymbol(), "=."))
 					{
 						bDrawText = false;
@@ -612,7 +612,7 @@ void CParserView::OnSetFocus(CWnd* pOldWnd)
 {
 	CView::OnSetFocus(pOldWnd);
 
-	if (m_resource.pretty())
+	if (m_resource.pretty() && !m_line.empty())
 		m_line[0](m_caret);
 
 	CreateSolidCaret(1, m_caret.height);

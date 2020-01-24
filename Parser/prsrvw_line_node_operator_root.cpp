@@ -50,7 +50,7 @@ void CParserView::line::node_operator_root::set(sset* ss)
 			++ss->index;
 			_left->set(ss);
 			--ss->index;
-			rl = _left->rec_rect();
+			rl = _left->rect();
 			left = rl.right;
 			right = left + 2;
 			top = rl.top - 1;
@@ -70,16 +70,16 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		ss->nd = rnd;
 		ss->pnd = this;
 		new_instance(&_right, this, rnd)->set(ss);
-		CRect rr = _right->rec_rect();
+		CRect rr = _right->rect();
 		top = rr.top - 2;
 		bottom = rr.bottom;
 		rright = rr.right;
 		if (_left)
 		{
 			if (2 * rl.Height() < 3 * (rr.Height() - rl.Height()) * (rr.Height() < rl.Height() ? -1 : 1))
-				_left->rec_move(0, rr.top - rl.top);
+				_left->rect_move(0, rr.top - rl.top);
 			else
-				_left->rec_move(0, rr.top - rl.top - rl.Height() / 2);
+				_left->rect_move(0, rr.top - rl.top - rl.Height() / 2);
 		}
 		check_error(ss);
 		ss->parents.pop_back();

@@ -48,7 +48,7 @@ void CParserView::line::node_operator_division::set(sset* ss)
 			new_instance(&_left, this, lnd)->set(ss);
 		}
 
-		CRect rl = _left->rec_rect();
+		CRect rl = _left->rect();
 
 		ss->nd = rnd;
 		ss->pnd = this;
@@ -56,13 +56,13 @@ void CParserView::line::node_operator_division::set(sset* ss)
 		ss->nd = nd;
 		ss->pnd = pnd;
 
-		CRect rr = _right->rec_rect();
+		CRect rr = _right->rect();
 		int width = rr.Width() < rl.Width() ? rl.Width() : rr.Width();
 		right = left + width + 2;
 		top += _middle - 2;
 		bottom = _middle + 4;
-		_left->rec_move(width / 2 - rl.Width() / 2, _middle - rl.bottom - 2);
-		_right->rec_move(width / 2 - rr.Width() / 2, _middle - rr.top + 2);
+		_left->rect_move(width / 2 - rl.Width() / 2, _middle - rl.bottom - 2);
+		_right->rect_move(width / 2 - rr.Width() / 2, _middle - rr.top + 2);
 		check_error(ss);
 		ss->parents.pop_back();
 	}
