@@ -173,21 +173,9 @@ void CParserView::line::bnode::_rect_move(int dx, int dy)
 
 CRect CParserView::line::bnode::rect() const
 {
-	if (!_left && !_right)
-		return *this;
-	CRect cr;
-	if (_left)
-	{
-		cr = _left->rect();
-		max_rect(cr, *this);
-	}
-	else
-		cr = *this;
-	if (_right)
-	{
-		CRect rr = _right->rect();
-		max_rect(cr, rr);
-	}
+	CRect cr = *this;
+	for (const bnode* nd = get_first_left(); nd && nd != this; nd = nd->get_next())
+		max_rect(cr, *nd);
 	return cr;
 }
 
