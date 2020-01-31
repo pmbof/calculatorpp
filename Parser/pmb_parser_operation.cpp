@@ -15,7 +15,7 @@ namespace parser
 
 
 template<class _TVALUE>
-operation<_TVALUE>::operation(const char * symbol, int precedence, bool leftToRight, bool binary, const char * name, const char * description, tpFunc func,
+operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func,
 			bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
 	: _precedence(precedence), _leftToRight(leftToRight), _binary(binary), _fnc(func), _canCallFunction(canCallFunction),
 	_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)

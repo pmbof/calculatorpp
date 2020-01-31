@@ -294,6 +294,7 @@
     <ClCompile Include="prsrvw_line_node_string.cpp" />
     <ClCompile Include="prsrvw_line_node_unknown.cpp" />
     <ClCompile Include="prsrvw_line_sdraw.cpp" />
+    <ClCompile Include="prsrvw_operation.cpp" />
     <ClCompile Include="prsrvw_resource.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_power.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_product.cpp" />

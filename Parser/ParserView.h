@@ -455,116 +455,89 @@ private:
 	};
 
 public:
+#pragma region operations view
 	struct operation : ::operation
 	{
-		operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: ::operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		virtual ~operation() {}
+		virtual ~operation();
 
-		virtual line::node* new_instance(line::bnode* parent, const tnode* nd) const {
-			return new line::node_unknown(parent, nd);
-		}
+		virtual line::node* new_instance(line::bnode* parent, const tnode* nd) const;
 	};
 
 
 	struct opr_equal : operation
 	{
-		opr_equal(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_equal(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_equal(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_result : operation
 	{
-		opr_result(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_result(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_result(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_product : operation
 	{
-		opr_product(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_product(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_product(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_plus : operation
 	{
-		opr_plus(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_plus(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_plus(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_minus : operation
 	{
-		opr_minus(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_minus(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_minus(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_division_inline : operation
 	{
-		opr_division_inline(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_division_inline(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_division_inline(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_division : operation
 	{
-		opr_division(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_division(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_division(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_power : operation
 	{
-		opr_power(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_power(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_power(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
 
 
 	struct opr_root : operation
 	{
-		opr_root(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false)
-			: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable) {}
+		opr_root(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
-		line::node* new_instance(line::bnode* parent, const tnode* nd) const override {
-			return new line::node_operator_root(parent, nd);
-		}
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
+#pragma endregion operations view
+
 private:
 
 	typedef std::vector<line> vline;

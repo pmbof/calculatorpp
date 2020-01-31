@@ -449,6 +449,9 @@
     <ClCompile Include="prsrvw_line.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="prsrvw_operation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Parser.rc">
