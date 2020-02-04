@@ -63,7 +63,7 @@ CParserView::opr_result::opr_result(const char* symbol, int precedence, bool lef
 
 CParserView::line::node* CParserView::opr_result::new_instance(line::bnode* parent, const tnode* nd) const
 {
-	return new line::node_result(parent, nd);
+	return new line::node_operator_result(parent, nd);
 }
 
 
