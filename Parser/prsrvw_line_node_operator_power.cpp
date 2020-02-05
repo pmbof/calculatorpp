@@ -22,13 +22,12 @@ void CParserView::line::node_operator_power::set(sset* ss)
 
 	if (lnd && rnd)
 	{
-		ss->parents.push_back(this);
-		if (ss->pnd)
+		if (_parent)
 		{
-			top = ss->pnd->top;
-			bottom = ss->pnd->bottom;
-			left = right = ss->pnd->right;
-			_middle = ss->pnd->_middle;
+			top = _parent->top;
+			bottom = _parent->bottom;
+			left = right = _parent->right;
+			_middle = _parent->_middle;
 		}
 		else
 		{
@@ -40,9 +39,7 @@ void CParserView::line::node_operator_power::set(sset* ss)
 		}
 
 		const tnode* nd = ss->nd;
-		bnode* pnd = ss->pnd;
 		ss->nd = lnd;
-		ss->pnd = this;
 		new_instance(&_left, this, lnd)->set(ss);
 		CRect rl = _left->rect();
 		left = rl.right;
@@ -63,7 +60,6 @@ void CParserView::line::node_operator_power::set(sset* ss)
 		}
 		_middle = _left->_middle;
 		ss->nd = rnd;
-		ss->pnd = this;
 		new_instance(&_right, this, rnd);
 		++ss->index;
 		_right->set(ss);
@@ -76,7 +72,6 @@ void CParserView::line::node_operator_power::set(sset* ss)
 			_right->rect_move(0, _left->_middle - _right->bottom);
 
 		check_error(ss);
-		ss->parents.pop_back();
 	}
 	else
 		node::set(ss);

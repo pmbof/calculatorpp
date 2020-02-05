@@ -22,13 +22,12 @@ void CParserView::line::node_operator_root::set(sset* ss)
 
 	if (rnd)
 	{
-		ss->parents.push_back(this);
-		if (ss->pnd)
+		if (_parent)
 		{
-			top = ss->pnd->top;
-			bottom = ss->pnd->bottom;
-			left = right = ss->pnd->right;
-			_middle = ss->pnd->_middle;
+			top = _parent->top;
+			bottom = _parent->bottom;
+			left = right = _parent->right;
+			_middle = _parent->_middle;
 		}
 		else
 		{
@@ -40,12 +39,10 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		}
 
 		const tnode* nd = ss->nd;
-		bnode* pnd = ss->pnd;
 		CRect rl;
 		if (lnd)
 		{
 			ss->nd = lnd;
-			ss->pnd = this;
 			new_instance(&_left, this, lnd);
 			++ss->index;
 			_left->set(ss);
@@ -68,7 +65,6 @@ void CParserView::line::node_operator_root::set(sset* ss)
 			ss->pDC->SelectObject(oldFont);
 		}
 		ss->nd = rnd;
-		ss->pnd = this;
 		new_instance(&_right, this, rnd)->set(ss);
 		CRect rr = _right->rect();
 		bool bdouble = 3 * Height() < 2 * rr.Height();
@@ -90,7 +86,6 @@ void CParserView::line::node_operator_root::set(sset* ss)
 				_left->rect_move(0, rr.top - rl.top - rl.Height() / 2);
 		}
 		check_error(ss);
-		ss->parents.pop_back();
 	}
 	else
 		node::set(ss);

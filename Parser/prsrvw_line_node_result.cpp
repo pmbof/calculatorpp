@@ -24,12 +24,12 @@ CParserView::line::node_result::node_result(bnode* parent, const tnode* nd)
 
 void CParserView::line::node_result::set(sset* ss)
 {
-	if (ss->pnd)
+	if (_parent)
 	{
-		top = ss->pnd->top;
-		bottom = ss->pnd->bottom;
-		left = right = ss->pnd->right;
-		_middle = ss->pnd->_middle;
+		top = _parent->top;
+		bottom = _parent->bottom;
+		left = right = _parent->right;
+		_middle = _parent->_middle;
 	}
 	else
 	{
@@ -44,7 +44,7 @@ void CParserView::line::node_result::set(sset* ss)
 		return;
 
 	const tnode* resnd = pDoc->getNodeResult();
-	sset nss = { ss->pline, nullptr, this, ss->pDC, pDoc->m_result.c_str(), false };
+	sset nss = { ss->pline, nullptr, ss->pDC, pDoc->m_result.c_str(), false, 0 };
 
 	_bNodes = ss->pline->_result == this;
 	ss->pline->_result = this;
@@ -85,8 +85,6 @@ void CParserView::line::node_result::set(sset* ss)
 		_ini = _end = 0;
 
 		nss.nd = resnd;
-		if (!_bNodes)
-			nss.pnd = this;
 		node::new_instance(&_right, this, nss.nd);
 		_right->set(&nss);
 		CRect rr = _right->rect();

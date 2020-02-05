@@ -19,13 +19,12 @@ void CParserView::line::node_alpha::set(sset* ss)
 	const tnode* lnd = ss->nd->getLeft();
 	const tnode* rnd = ss->nd->getRight();
 
-	ss->parents.push_back(this);
-	if (ss->pnd)
+	if (_parent)
 	{
-		top = ss->pnd->top;
-		bottom = ss->pnd->bottom;
-		left = right = ss->pnd->right;
-		_middle = ss->pnd->_middle;
+		top = _parent->top;
+		bottom = _parent->bottom;
+		left = right = _parent->right;
+		_middle = _parent->_middle;
 	}
 	else
 	{
@@ -41,7 +40,6 @@ void CParserView::line::node_alpha::set(sset* ss)
 		ASSERT(false); // because doble left in  a.0
 		const tnode* nd = ss->nd;
 		ss->nd = lnd;
-		ss->pnd = this;
 		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
 	}
@@ -92,7 +90,6 @@ void CParserView::line::node_alpha::set(sset* ss)
 			_right = new node_alpha(this, ss->nd);;
 			static_cast<node_alpha*>(_right)->_ini += pt + (ss->bEditing ? 0 : 1);
 
-			ss->pnd = this;
 			ss->index += 2;
 			_right->set(ss);
 			ss->index -= 2;
@@ -104,7 +101,6 @@ void CParserView::line::node_alpha::set(sset* ss)
 	{
 		const tnode* nd = ss->nd;
 		ss->nd = rnd;
-		ss->pnd = this;
 		bnode* lright;
 		for (lright = this; static_cast<node_alpha*>(lright)->bnode::_right; lright = static_cast<node_alpha*>(lright)->bnode::_right)
 			;
@@ -112,7 +108,6 @@ void CParserView::line::node_alpha::set(sset* ss)
 		ss->nd = nd;
 	}
 	check_error(ss);
-	ss->parents.pop_back();
 }
 
 

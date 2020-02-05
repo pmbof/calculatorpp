@@ -20,13 +20,12 @@ void CParserView::line::node_parentheses::set(sset* ss)
 	const tnode* lnd = ss->nd->getLeft();
 	const tnode* rnd = ss->nd->getRight();
 
-	ss->parents.push_back(this);
-	if (ss->pnd)
+	if (_parent)
 	{
-		top = ss->pnd->top;
-		bottom = ss->pnd->bottom;
-		left = right = ss->pnd->right;
-		_middle = ss->pnd->_middle;
+		top = _parent->top;
+		bottom = _parent->bottom;
+		left = right = _parent->right;
+		_middle = _parent->_middle;
 	}
 	else
 	{
@@ -44,12 +43,9 @@ void CParserView::line::node_parentheses::set(sset* ss)
 	if (lnd)
 	{
 		const tnode* nd = ss->nd;
-		bnode* pnd = ss->pnd;
 		ss->nd = lnd;
-		ss->pnd = this;
 		new_instance(&_left, this, lnd)->set(ss);
 		ss->nd = nd;
-		ss->pnd = pnd;
 
 		CRect rr = _left->rect();
 		left = right = rr.left;
@@ -60,12 +56,9 @@ void CParserView::line::node_parentheses::set(sset* ss)
 	if (rnd)
 	{
 		const tnode* nd = ss->nd;
-		bnode* pnd = ss->pnd;
 		ss->nd = rnd;
-		ss->pnd = this;
 		new_instance(&_right, this, rnd)->set(ss);
 		ss->nd = nd;
-		ss->pnd = pnd;
 
 		CRect rr = _right->rect();
 		left = right = rr.right;
@@ -84,7 +77,6 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		_left->rect_move(right - left, 0);
 
 	check_error(ss);
-	ss->parents.pop_back();
 }
 
 

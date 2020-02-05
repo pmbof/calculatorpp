@@ -89,18 +89,15 @@ private:
 		struct bnode;
 
 	private:
-		typedef std::list<bnode*> lbnode;
 		typedef std::map<line::bnodetypes, std::string> mstyletp;
 
 		struct sset
 		{
 			line* pline;
 			const tnode* nd;
-			bnode* pnd;
 			CDC* pDC;
 			const char* pstr;
 			bool bEditing;
-			lbnode parents;
 			short index;
 		};
 

@@ -22,13 +22,12 @@ void CParserView::line::node_operator_division::set(sset* ss)
 
 	if (lnd && rnd && ss->pline->_parent->m_fstyle & PMB_STYLE_CPPEDIT_MULTILINE)
 	{
-		ss->parents.push_back(this);
-		if (ss->pnd)
+		if (_parent)
 		{
-			top = ss->pnd->top;
-			bottom = ss->pnd->bottom;
-			left = right = ss->pnd->right;
-			_middle = ss->pnd->_middle;
+			top = _parent->top;
+			bottom = _parent->bottom;
+			left = right = _parent->right;
+			_middle = _parent->_middle;
 		}
 		else
 		{
@@ -40,21 +39,17 @@ void CParserView::line::node_operator_division::set(sset* ss)
 		}
 
 		const tnode* nd = ss->nd;
-		bnode* pnd = ss->pnd;
 		if (lnd)
 		{
 			ss->nd = lnd;
-			ss->pnd = this;
 			new_instance(&_left, this, lnd)->set(ss);
 		}
 
 		CRect rl = _left->rect();
 
 		ss->nd = rnd;
-		ss->pnd = this;
 		new_instance(&_right, this, rnd)->set(ss);
 		ss->nd = nd;
-		ss->pnd = pnd;
 
 		CRect rr = _right->rect();
 		int width = rr.Width() < rl.Width() ? rl.Width() : rr.Width();
@@ -64,7 +59,6 @@ void CParserView::line::node_operator_division::set(sset* ss)
 		_left->rect_move(width / 2 - rl.Width() / 2, _middle - rl.bottom - 2);
 		_right->rect_move(width / 2 - rr.Width() / 2, _middle - rr.top + 2);
 		check_error(ss);
-		ss->parents.pop_back();
 	}
 	else
 		node::set(ss);

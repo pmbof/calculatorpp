@@ -209,7 +209,7 @@ void CParserView::line::bnode::end(sset* ss)
 	{
 		bnode* nd = this->get_root();
 		nd->_parent = new node_result(nullptr, nullptr);
-		ss->pnd = nd->_parent->_left = nd;
+		nd->_parent->_left = nd;
 		nd->_parent->set(ss);
 
 		debug_check_all();
