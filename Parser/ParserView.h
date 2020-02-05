@@ -144,6 +144,8 @@ private:
 			virtual item::SIZETP get_ini() const = 0;
 			virtual item::SIZETP get_end() const = 0;
 
+			void set_rect_fromparent();
+
 			bool is_left_parentheses(const bnode* parent) const;
 
 			bnode& operator= (const CRect& right);

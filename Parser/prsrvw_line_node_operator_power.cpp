@@ -23,12 +23,7 @@ void CParserView::line::node_operator_power::set(sset* ss)
 	if (lnd && rnd)
 	{
 		if (_parent)
-		{
-			top = _parent->top;
-			bottom = _parent->bottom;
-			left = right = _parent->right;
-			_middle = _parent->_middle;
-		}
+			set_rect_fromparent();
 		else
 		{
 			top = ss->pline->top;

@@ -120,6 +120,17 @@ void CParserView::line::bnode::debug_check_all() const
 
 
 
+void CParserView::line::bnode::set_rect_fromparent()
+{
+	top = _parent->top;
+	bottom = _parent->bottom;
+	left = right = _parent->right;
+	_middle = _parent->_middle;
+}
+
+
+
+
 bool CParserView::line::bnode::is_left_parentheses(const bnode* parent) const
 {
 	return _left == parent || _left && _left->_left == parent;

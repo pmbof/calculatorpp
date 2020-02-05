@@ -21,12 +21,7 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 	const tnode* rnd = ss->nd->getRight();
 
 	if (_parent)
-	{
-		top = _parent->top;
-		bottom = _parent->bottom;
-		left = right = _parent->right;
-		_middle = _parent->_middle;
-	}
+		set_rect_fromparent();
 	else
 	{
 		top = ss->pline->top;
