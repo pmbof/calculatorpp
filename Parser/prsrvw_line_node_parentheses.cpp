@@ -95,12 +95,9 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 	r.top -= Height();
 	r.bottom += Height();
 
-	if (sd->bEditing || !sd->pnd || sd->pnd->type() != bndOprDivision && sd->pnd->type() != bndOprRoot
-		&& (sd->pnd->type() != bndOprPower || sd->pnd->is_left_parentheses(this))
-		|| 1 < _nparentheses || _nparentheses < -1)
+	short np;
+	if (get_np(sd, sd->pnd, np))
 	{
-		short np = !sd->bEditing && sd->pnd && (sd->pnd->type() == bndOprDivision || sd->pnd->type() == bndOprRoot || sd->pnd->type() == bndOprPower && !sd->pnd->is_left_parentheses(this))
-			? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
 		if (_left)
 		{
 			for (short n = 0; n < np; ++n)
@@ -130,6 +127,27 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 	}
 	sd->end_expr(this);
 }
+
+
+
+
+bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, short& np) const
+{
+	if (sb->bEditing|| !pnd || pnd->type() != bndOprDivision && pnd->type() != bndOprRoot
+		&& (pnd->type() != bndOprPower || pnd->is_left_parentheses(this))
+		|| 1 < _nparentheses || _nparentheses < -1)
+	{
+		np = !sb->bEditing && pnd && (pnd->type() == bndOprDivision || pnd->type() == bndOprRoot || pnd->type() == bndOprPower && !pnd->is_left_parentheses(this))
+			? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
+		if (!np)
+		{
+
+		}
+		return true;
+	}
+	return false;
+}
+
 
 
 

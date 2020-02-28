@@ -97,7 +97,7 @@ void CParserView::line::set(CDC* pDC, int xo, int yo)
 	pDoc->check_operation_table();
 	if (node::new_instance(&_root, nullptr, nd))
 	{
-		sset ss = { this, nd, pDC, _parent->m_expr.c_str(), _parent->m_bEditing, 0 };
+		sset ss(this, nd, pDC, _parent->m_expr.c_str(), editing());
 		_root->set(&ss);
 		_root->end(&ss);
 		bnode* root = _root->get_root();
@@ -168,6 +168,11 @@ void CParserView::line::draw_error(CDC* pDC)
 	}
 }
 
+bool CParserView::line::editing() const
+{
+	return _parent->m_bEditing;
+}
+
 
 
 
@@ -175,7 +180,7 @@ void CParserView::line::draw(CDC* pDC)
 {
 	if (_root && !_root->empty())
 	{
-		sdraw sd = { this, nullptr, pDC, _parent->m_expr.c_str(), _parent->m_bEditing };
+		sdraw sd(this, nullptr, pDC, _parent->m_expr.c_str(), editing());
 		_root->draw(&sd);
 		draw_error(pDC);
 	}
@@ -257,7 +262,7 @@ void CParserView::line::_swith_expr_begin(const bnode* pnd, sdraw* sd) const
 		sd->pstr = _parent->m_expr.c_str();
 		sd->pDC->SetBkMode(OPAQUE);
 		sd->pDC->SetBkColor(RGB(0xFF, 0xFF, 0xFF));
-		sd->bEditing = true;
+		sd->bEditing = sd->pline->editing();
 	}
 }
 

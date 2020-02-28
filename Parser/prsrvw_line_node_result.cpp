@@ -39,7 +39,7 @@ void CParserView::line::node_result::set(sset* ss)
 		return;
 
 	const tnode* resnd = pDoc->getNodeResult();
-	sset nss = { ss->pline, nullptr, ss->pDC, pDoc->m_result.c_str(), false, 0 };
+	sset nss(ss->pline, nullptr, ss->pDC, pDoc->m_result.c_str(), false);
 
 	_bNodes = ss->pline->_result == this;
 	ss->pline->_result = this;
@@ -103,7 +103,7 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 	CParserDoc* pDoc = sd->pline->_parent->GetDocument();
 	if (pDoc)
 	{
-		sdraw nsd = { sd->pline, this, sd->pDC, pDoc->m_result.c_str(), false };
+		sdraw nsd(sd->pline, this, sd->pDC, pDoc->m_result.c_str(), false);
 
 		if (_left)
 			_left->draw(sd);

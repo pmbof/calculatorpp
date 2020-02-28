@@ -44,6 +44,7 @@ private:
 
 
 #pragma region nodes declare
+public:
 	struct operation;
 	struct opr_equal;
 	struct opr_result;
@@ -55,6 +56,7 @@ private:
 	struct opr_power;
 	struct opr_root;
 #pragma endregion nodes declare
+private:
 
 	struct scaret;
 
@@ -91,33 +93,38 @@ private:
 	private:
 		typedef std::map<line::bnodetypes, std::string> mstyletp;
 
-		struct sset
+#pragma region nodes
+	private:
+		struct sbase
 		{
+			sbase(line* pl, CDC* pdc, const char* pExpr, bool bediting);
+
 			line* pline;
-			const tnode* nd;
 			CDC* pDC;
 			const char* pstr;
-			bool bEditing;
 			short index;
+			bool bEditing;
 		};
 
-		struct sdraw
+		struct sset : sbase
 		{
-			line* pline;
+			sset(line* pl, const tnode* pnd, CDC* pdc, const char* pExpr, bool bediting);
+
+			const tnode* nd;
+		};
+
+		struct sdraw : sbase
+		{
+			sdraw(line* pl, const bnode* pbnd, CDC* pdc, const char* pExpr, bool bediting, const char* pExpr2 = nullptr);
+
 			const bnode* pnd;
-			CDC* pDC;
-			const char* pstr;
-			bool bEditing;
 			const char* postr;
-			short index;
 
 			void begin_expr(const bnode* pnd);
 			void end_expr(const bnode* pnd);
 		};
 
 	
-#pragma region nodes
-	private:
 		struct bnode : CRect
 		{
 		protected:
@@ -283,6 +290,9 @@ private:
 			bnodetypes type() const override;
 
 		protected:
+			bool get_np(sbase* sb, const bnode* pnd, short& np) const;
+
+		protected:
 			short _nparentheses;
 		};
 
@@ -431,6 +441,8 @@ private:
 		void normalize(int xo, int yo);
 		void check_error(const tnode* nd, const bnode* nnd);
 		void draw_error(CDC* pDC);
+
+		bool editing() const;
 
 	protected:
 		CParserView* _parent;
