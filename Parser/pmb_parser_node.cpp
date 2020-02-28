@@ -681,7 +681,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_list(cnode* newNode)
 	case ndString:
 	case ndUnknown:
 		insertWithLowPriority(ndRet = newNode);
-		if (newNode->getType() == ndList && newNode->_parent->getType() == ndList)
+		if (newNode->getType() == ndList && newNode->_parent && newNode->_parent->getType() == ndList)
 			newNode->switchToUpNode();
 		break;
 	case ndList:
