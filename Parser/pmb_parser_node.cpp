@@ -163,6 +163,31 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextUnknownNode()
 }
 
 
+
+
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstParenthesisNode() const
+{
+	const cnode* nd = getFirstNode();
+	if (nd && nd->_type != ndParentheses)
+		nd = nd->getNextParenthesisNode();
+	return nd;
+}
+
+
+template <class _ITEM, class _NDTYPE>
+const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getNextParenthesisNode() const
+{
+	const cnode* ret;
+	for (ret = getNextNode(); ret && ret->_type != ndParentheses; ret = ret->getNextNode())
+		;
+	return ret;
+}
+
+
+
+
+
 template <class _ITEM, class _NDTYPE>
 const node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::getFirstNode() const
 {
@@ -861,26 +886,14 @@ bool node<_ITEM, _NDTYPE>::checkParentheses() const
 
 	const cnode* open = nullptr;
 	const cnode* close = nullptr;
-	// falta checkear todos los nodos:
-	for (const cnode* right = getRootNode(); right; )
+	for (const cnode* nuk = getFirstParenthesisNode(); nuk; nuk = nuk->getNextParenthesisNode() )
 	{
-		if (right->getType() == ndParentheses)
+		if (nuk->getType() == ndParentheses)
 		{
-			short o = static_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(right)->getOpened();
-			if (o < 0)
-			{
-				close = right;
-				right = right->_left;
-			}
-			else
-			{
-				open = right;
-				right = right->_right;
-			}
+			short o = static_cast<const nodes::parentheses<_ITEM, _NDTYPE>*>(nuk)->getOpened();
+			o < 0 ? close : open = nuk;
 			opened += o;
 		}
-		else
-			right = right->_right;
 	}
 	if (opened)
 	{

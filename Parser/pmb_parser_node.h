@@ -63,6 +63,9 @@ public:
 	const node* getFirstUnknownNode() const;
 	const node* getNextUnknownNode() const;
 
+	const node* getFirstParenthesisNode() const;
+	const node* getNextParenthesisNode() const;
+
 	const node* getParent() const;
 	const node* getLeft() const;
 	const node* getRight() const;

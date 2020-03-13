@@ -99,7 +99,17 @@ bool calculator<_BLOCK, _OPRTABLE>::parser_result(const tpChar* rexpr)
 	const tpChar* expr = _expr;
 	_base::tptree* tree = _tree;
 	_tree = nullptr;
-	bool bRet = parser(rexpr);
+	bool bRet;
+	try
+	{
+		bRet = parser(rexpr);
+	}
+	catch (parser::exception<cItem>& ex)
+	{
+		log::instance()->trace(logError, "Error %s in parser result: %s\nItem node: [%d, %d]\n", ex.message(rexpr).c_str(), rexpr, ex.item()->getIni(), ex.item()->getEnd());
+		bRet = false;
+	}
+
 	if (bRet)
 	{
 		_result = _tree;
