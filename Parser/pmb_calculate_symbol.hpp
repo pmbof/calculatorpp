@@ -716,7 +716,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system(const tp
 		return false;
 	}
 	map_system::const_iterator is = _msystems.find(name);
-	_define_system = is != _msystems.end() ? is->second : nullptr;
+	return _define_system = is != _msystems.end() ? is->second : nullptr;
 }
 
 
