@@ -290,7 +290,7 @@ private:
 			bnodetypes type() const override;
 
 		protected:
-			bool get_np(sbase* sb, const bnode* pnd, short& np) const;
+			bool get_np(sbase* sb, const bnode* pnd, short& np, bool bDraw) const;
 
 		protected:
 			short _nparentheses;

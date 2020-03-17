@@ -22,6 +22,8 @@
 #include "pmb_parser_nodes_calc.cpp"
 #include "pmb_parser_nodes_parentheses.cpp"
 
+#include "pmb_configuration_file.h"
+
 #include <propkey.h>
 
 #ifdef _DEBUG
@@ -267,11 +269,24 @@ int determinante(int orden, const int* matriz)
 BOOL CParserDoc::OnNewDocument()
 {
 	pmb::log* log = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+	m_expr = nullptr;
 	if (!CDocument::OnNewDocument())
 	{
 		log->endFunction();
 		return FALSE;
 	}
+
+	if (!load_configuration())
+	{
+
+	}
+	m_calculator.clear();
+
+	m_symbols.select_search("Variables");
+	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
+
+	return true;
+
 
 	m_symbols.add_dimension("L", "length");
 	m_symbols.add_dimension("T", "time");
@@ -642,7 +657,7 @@ BOOL CParserDoc::OnNewDocument()
 	test.push_back(tuple("2Lata_choclo + 5kg + 250g", true, 11185.8));
 	test.push_back(tuple("2 1024 1024 1024B", true, 11185.8));
 	test.push_back(tuple("2^ \\4^1", true, 4));
-	test.push_back(tuple("v.Escape = \\(2G M.Earth / R.Earth)", true, 11185.8));
+	test.push_back(tuple("v.Escape = (2 +0/1)\\(2G M.Earth / R.Earth)", true, 11185.8));
 
 	if (check_operation_table())
 		print_operation_table();
@@ -932,6 +947,21 @@ void CParserDoc::Dump(CDumpContext& dc) const
 	CDocument::Dump(dc);
 }
 #endif //_DEBUG
+
+
+
+
+bool CParserDoc::load_configuration()
+{
+	pmb::configuration_file<symbol, pmb::calculator<block, operation_table>> cfile;
+	cfile.open("../calc.ini");
+
+	cfile.process(m_symbols, m_calculator);
+
+	return false;
+}
+
+
 
 
 void CParserDoc::result()

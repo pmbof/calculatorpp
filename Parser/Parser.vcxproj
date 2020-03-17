@@ -140,6 +140,8 @@
     <ClInclude Include="pmb_calculate_number.h" />
     <ClInclude Include="pmb_calculate_symbol.h" />
     <ClInclude Include="pmb_calculate_symbol.hpp" />
+    <ClInclude Include="pmb_configuration_file.h" />
+    <ClInclude Include="pmb_configuration_file.hpp" />
     <ClInclude Include="pmb_parser_calc_block.h" />
     <ClInclude Include="pmb_parser_calc_block.hpp" />
     <ClInclude Include="pmb_parser_calc_build_in_function.h" />

@@ -160,11 +160,16 @@ public:
 #endif
 
 protected:
+	bool load_configuration();
+
 	void result();
 
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
+
+protected:
+	std::string _expression;
 
 #ifdef SHARED_HANDLERS
 	// Helper function that sets search content for a Search Handler

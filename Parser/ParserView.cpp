@@ -126,7 +126,11 @@ void CParserView::OnInitialUpdate()
 	CParserDoc* pDoc = GetDocument();
 	pDoc->print_operation_table();
 
-	m_expr = pDoc->m_expr;
+	if (pDoc->m_expr)
+		m_expr = pDoc->m_expr;
+	else
+		m_expr.clear();
+
 	m_caret.pos[1] = m_p0;
 	--m_caret.pos[1].x;
 	m_caret.pos[0] = m_caret.pos[1];

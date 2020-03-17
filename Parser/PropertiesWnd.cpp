@@ -215,7 +215,7 @@ afx_msg LRESULT CPropertiesWnd::OnChargeProperties(WPARAM wParam, LPARAM lParam)
 
 	CMFCPropertyGridProperty* pExprGrp = new CMFCPropertyGridProperty(_T("Expression"));
 	CParserDoc* pDoc = static_cast<CParserDoc*>(GetParentFrame()->GetActiveFrame()->GetActiveDocument());
-	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)))
+	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)) && pDoc->m_expr)
 	{
 		CString str(pDoc->m_expr);
 		CString name;
