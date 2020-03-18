@@ -278,13 +278,14 @@ BOOL CParserDoc::OnNewDocument()
 
 	if (!load_configuration())
 	{
-
+		AfxMessageBox(L"Error in configuration file!\r\nPlease check log file", MB_OK | MB_ICONEXCLAMATION);
 	}
 	m_calculator.clear();
 
 	m_symbols.select_search("Variables");
 	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 
+	log->endFunction();
 	return true;
 
 
@@ -953,12 +954,17 @@ void CParserDoc::Dump(CDumpContext& dc) const
 
 bool CParserDoc::load_configuration()
 {
-	pmb::configuration_file<symbol, pmb::calculator<block, operation_table>> cfile;
-	cfile.open("../calc.ini");
+	CStringA cfgfile(AfxGetApp()->GetProfileString(L"Settings", L"document"));
+	if (!cfgfile.IsEmpty())
+	{
+		pmb::configuration_file<symbol, pmb::calculator<block, operation_table>> cfile;
 
-	cfile.process(m_symbols, m_calculator);
+		cfile.open(cfgfile);
 
-	return false;
+		return cfile.process(m_symbols, m_calculator);
+	}
+	else
+		return true;
 }
 
 
