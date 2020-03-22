@@ -185,10 +185,54 @@ inline bool configuration_file<SYMBOL, CALC>::preprocessor::has_separator(int nE
 
 
 
+
+
+
+
+
+
 template<class SYMBOL, class CALC>
-void configuration_file<SYMBOL, CALC>::open(const char* filename)
+inline configuration_file<SYMBOL, CALC>::configuration_file(mimport* mimport)
+	: _pmimport(mimport)
 {
+}
+
+
+
+
+template<class SYMBOL, class CALC>
+inline configuration_file<SYMBOL, CALC>::configuration_file()
+	: _pmimport(nullptr)
+{
+}
+
+
+
+template<class SYMBOL, class CALC>
+bool configuration_file<SYMBOL, CALC>::open(const char* filename)
+{
+	pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, "configuration_file<SYMBOL, CALC>::open");
+	lg->trace(logDebug, "open file: %s\n", filename);
+
+	_filename = filename;
+	if (_pmimport && _pmimport->find(filename) != _pmimport->end() || _mimport.find(filename) != _mimport.end())
+	{
+		lg->trace(logWarning, "The file: %s has been processed!\n", filename);
+		lg->endFunction();
+		return true;
+	}
+
 	std::fstream::open(filename, std::ios_base::in);
+	bool bOk = !bad() && is_open();
+	if (!bOk)
+		lg->trace(logError, "Error opening file: %s\n", filename);
+	else if (_pmimport)
+		_pmimport->insert(filename);
+	else
+		_mimport.insert(filename);
+
+	lg->endFunction();
+	return bOk;
 }
 
 
@@ -201,34 +245,47 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 	if (bad())
 		return false;
 
-	pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+	pmb::log* lg = pmb::log::beginFunction(logDebug, "configuration_file<SYMBOL, CALC>::process");
+	lg->trace(logDebug, "file: %s\n", _filename.c_str());
 
 	_prefix = nullptr;
 	_nline = 0;
 	_defines = 0;
-	_bcomment = false;
+	_bmlcomment = _bcomment = false;
 	bool bOk = true;
 
 	std::string line;
-	for (char ch = get(); bOk && good(); ch = get())
+	for (char ch = get(), oldch = '\0'; bOk && good(); ch = get())
 	{
-		if (ch == '\0' || ch == '\r' || ch != '\n' && _bcomment)
+		if (ch == '\0' || ch == '\r' || ch != '\n' && _bcomment && !_bmlcomment)
 			continue;
-		else if (!_bcomment && 0 < line.size() && ch == '/' && line.back() == '/')
+		else if (!_bcomment && 0 < line.size() && ch == '*' && line.back() == '/') //: /*
+		{
+			line.pop_back();
+			_bcomment = _bmlcomment = true;
+		}
+		else if (_bcomment && _bmlcomment && oldch == '*' && ch == '/') //: */
+			_bcomment = _bmlcomment = false;
+		else if (!_bcomment && 0 < line.size() && ch == '/' && line.back() == '/') //: //
 		{
 			line.pop_back();
 			_bcomment = true;
 		}
 		else if (ch == '\n')
 		{
-			_bcomment = false;
 			++_nline;
+			if (!_bmlcomment)
+			{
+				_bcomment = false;
 
-			if (bOk = process(symbols, calculator, line, lg))
-				line.clear();
+				if (bOk = process(symbols, calculator, line, lg))
+					line.clear();
+			}
 		}
 		else if (!_bcomment && (ch != ' ' && ch != '\t' || !line.empty()))
 			line += ch;
+		else if (_bmlcomment)
+			oldch = ch;
 	}
 	if (bOk)
 		bOk = process(symbols, calculator, line, lg);
@@ -238,21 +295,21 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 		if (!_defines)
 		{
 			if (_serror.IsEmpty())
-				lg->trace(pmb::logError, "Error in line %d:\n%s\n", _nline, line.c_str());
+				lg->trace(pmb::logError, "Error in file: %s line %d:\n%s\n", _filename.c_str(), _nline, line.c_str());
 			else
-				lg->trace(pmb::logError, "Error in line %d: %s:\n%s\n", _nline, _serror, line.c_str());
+				lg->trace(pmb::logError, "Error in file: %s line %d: %s:\n%s\n", _filename.c_str(), _nline, _serror, line.c_str());
 		}
 		else
 		{
 			if (_serror.IsEmpty())
-				lg->trace(pmb::logError, "Error in line %d:\n[0]: %s\n[1]: %s\n[2]: %s\n%s\n", _nline, _dstr[0], _dstr[1], _dstr[2], line.c_str());
+				lg->trace(pmb::logError, "Error in file: %s line %d:\n[0]: %s\n[1]: %s\n[2]: %s\n%s\n", _filename.c_str(), _nline, _dstr[0], _dstr[1], _dstr[2], line.c_str());
 			else
-				lg->trace(pmb::logError, "Error in line %d: %s:\n[0]: %s\n[1]: %s\n[2]: %s\n%s\n", _nline, _dstr[0], _dstr[1], _dstr[2], _serror, line.c_str());
+				lg->trace(pmb::logError, "Error in file: %s line %d: %s:\n[0]: %s\n[1]: %s\n[2]: %s\n%s\n", _filename.c_str(), _nline, _dstr[0], _dstr[1], _dstr[2], _serror, line.c_str());
 		}
 	}
 
 
-	lg->endFunction(bOk ? pmb::logDebug : pmb::logError);
+	lg->endFunction(bOk ? pmb::logDebug : pmb::logError, ("End process, filename: " + _filename).c_str());
 	return bOk;
 }
 
@@ -264,8 +321,6 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 {
 	while (!line.empty() && (line.back() == ' ' || line.back() == '\t'))
 		line.pop_back();
-
-	lg->trace(pmb::logError, "process line %d: %s\n", _nline, line.c_str());
 
 	if (line.empty())
 		return true;
@@ -286,7 +341,19 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 		if (!calculate(symbols, calculator, prpr, line, true))
 			return false;
 
-		if (prpr.compare(0, "define", 6))
+		if (prpr.compare(0, "import", 6))
+		{
+			CStringA import = prpr(1, -1);
+			size_t p = _filename.rfind('/');
+			if (p != _filename.npos)
+				import = _filename.substr(0, p + 1).c_str() + import;
+
+			configuration_file imcf(&_mimport);
+			if (!imcf.open(import))
+				return _pmimport && _pmimport->find(import) != _pmimport->end() || _mimport.find(import) != _mimport.end();
+			return imcf.process(symbols, calculator);
+		}
+		else if (prpr.compare(0, "define", 6))
 		{
 			_defines = 0;
 			if (4 <= prpr.size() && prpr.compare(1, "dimension", 9) && prpr.is_alphanumeric(2, ':') && prpr.is_alphanumeric(3))

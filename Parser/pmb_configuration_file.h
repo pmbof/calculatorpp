@@ -2,6 +2,8 @@
 
 #include <fstream>
 #include <vector>
+#include <set>
+
 
 namespace pmb
 {
@@ -13,6 +15,7 @@ class configuration_file : public std::fstream
 {
 	typedef std::pair<int, int> prpair;
 	typedef std::vector<prpair> vprpair;
+	typedef std::set<CStringA> mimport;
 
 	struct preprocessor : vprpair
 	{
@@ -36,8 +39,11 @@ class configuration_file : public std::fstream
 	};
 
 
+
+	configuration_file(mimport* mimport);
 public:
-	void open(const char* filename);
+	configuration_file();
+	bool open(const char* filename);
 
 	bool process(SYMBOL& symbols, CALC& calculator);
 
@@ -46,8 +52,12 @@ protected:
 	bool calculate(SYMBOL& symbols, CALC& calculator, const preprocessor& prpr, const std::string& line, bool bDefault = false);
 
 protected:
+	mimport* _pmimport;
+	mimport _mimport;
+	std::string _filename;
 	int _nline;
-	bool _bcomment;
+	bool _bmlcomment;	// Multi line comments:  /* ....... */
+	bool _bcomment;		// Line comment: // ......... \n
 	short _defines;
 	bool _bUnit;
 	CStringA _dstr[3];
