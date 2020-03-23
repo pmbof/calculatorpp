@@ -348,7 +348,7 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			if (p != _filename.npos)
 				import = _filename.substr(0, p + 1).c_str() + import;
 
-			configuration_file imcf(&_mimport);
+			configuration_file imcf(_pmimport ? _pmimport : &_mimport);
 			if (!imcf.open(import))
 				return _pmimport && _pmimport->find(import) != _pmimport->end() || _mimport.find(import) != _mimport.end();
 			return imcf.process(symbols, calculator);
@@ -360,13 +360,15 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			{
 				CStringA symbol = prpr(2, 1, ':');
 				CStringA name = prpr(3, -1);
+				lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_dimension(\"%s\", \"%s\")\n", _nline, _filename.c_str(), symbol, name);
 				symbols.add_dimension(symbol, name);
 			}
 			else if (prpr.size() == 6 && prpr.compare(1, "new", 3) && prpr.compare(2, "prefix", 6, ':') && prpr.compare(4, "base", 4, ':') && prpr.is_alphanumeric(3) && prpr.is_numeric(5))
 			{
 				CStringA name = prpr(3);
 				CStringA base = prpr(5);
-				_prefix = new prefix_base(atoi(base));
+				_prefix = new prefix_base(static_cast<unsigned char>(atoi(base)));
+				lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_prefix(\"%s\", %d)\n", _nline, _filename.c_str(), name, (int)_prefix->base());
 				symbols.add_prefix(name, _prefix);
 			}
 			else
@@ -378,12 +380,14 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			{
 				CStringA systemc = prpr(3, -1);
 				_bUnit = false;
+				lg->trace(logDebug, "processing line %d <%s>:\n\t* symbols.set_system_constants(\"%s\")\n", _nline, _filename.c_str(), systemc);
 				return (_defines = symbols.set_system_constants(systemc) ? 1 : 0) == 1;
 			}
 			else if (2 < prpr.size() && prpr.compare(1, "system", 6, ':', false) && 0 < prpr[2].second)
 			{
 				CStringA system = prpr(2, -1);
 				_bUnit = true;
+				lg->trace(logDebug, "processing line %d <%s>:\n\t* symbols.set_system(\"%s\")\n", _nline, _filename.c_str(), system);
 				return (_defines = symbols.set_system(system) ? 1 : 0) == 1;
 			}
 			else
@@ -394,9 +398,15 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			if ((2 == prpr.size() || 3 == prpr.size()) && prpr.compare(1, "system", 6))
 			{
 				if (2 == prpr.size())
+				{
+					lg->trace(logDebug, "processing line %d <%s>:\n\t- symbols.set_system()\n", _nline, _filename.c_str());
 					symbols.set_system();
+				}
 				else if (3 == prpr.size() && prpr.compare(2, "constants", 9))
+				{
+					lg->trace(logDebug, "processing line %d <%s>:\n\t- symbols.set_system_constants()\n", _nline, _filename.c_str());
 					symbols.set_system_constants();
+				}
 				else
 					return false;
 
@@ -418,6 +428,9 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			CStringA prefix;
 			if (sep + 1 < prpr.size())
 				prefix = prpr(sep + 1, -1);
+			char c1 = sep + 1 < prpr.size() ? '"' : '<';
+			char c2 = sep + 1 < prpr.size() ? '"' : '>';
+			lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_system(\"%s\", %c%s%c)\n", _nline, _filename.c_str(), system, c1, sep + 1 < prpr.size() ? (const char*)prefix : "nullptr", c2);
 			return symbols.add_system(system, sep + 1 < prpr.size() ? (const char*)prefix : nullptr);
 		}
 		else
@@ -442,6 +455,7 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 		CStringA name = prpr(0, 1, ':');
 		CStringA symbol = prpr(1, 1, ':');
 		CStringA exp = prpr(2);
+		lg->trace(logDebug, "processing line %d <%s>:\n\t+ _prefix->insert(\"%s\", %d, \"%s\", %s)\n", _nline, _filename.c_str(), symbol, atoi(exp), name, bShow ? "true" : "false");
 		_prefix->insert(symbol, atoi(exp), name, bShow);
 	}
 	else
@@ -456,6 +470,7 @@ inline bool configuration_file<SYMBOL, CALC>::calculate(SYMBOL& symbols, CALC& c
 {
 	if (0 < _defines)
 	{
+		log* lg = log::instance();
 		bool bend = prpr.has_separator(prpr.size() - 1, ':');
 
 		if (_defines == 1)
@@ -485,10 +500,16 @@ inline bool configuration_file<SYMBOL, CALC>::calculate(SYMBOL& symbols, CALC& c
 						bool bUnit = _dstr[0][0] != '-';
 						if (!bUnit)
 							_dstr[0] = _dstr[0].Mid(1);
+						char c1 = _dstr[2].IsEmpty() ? '<' : '"';
+						char c2 = _dstr[2].IsEmpty() ? '>' : '"';
+						lg->trace(logDebug, "processing line %d <%s>:\n\t+ calculator.add_unit(\"%s\", \"%s\", %c%s%c, %s)\n", _nline, _filename.c_str(), _dstr[0], _dstr[1], c1, _dstr[2].IsEmpty() ? "nullptr" : (LPCSTR)_dstr[2], c2, bUnit ? "true" : "false");
 						calculator.add_unit(_dstr[0], _dstr[1], _dstr[2].IsEmpty() ? nullptr : (LPCSTR)_dstr[2], bUnit);
 					}
 					else
+					{
+						lg->trace(logDebug, "processing line %d <%s>:\n\t+ calculator.add_constant(\"%s\", \"%s\")\n", _nline, _filename.c_str(), _dstr[0], _dstr[1]);
 						bOk = calculator.add_constant(_dstr[0], _dstr[1]);
+					}
 				}
 				catch (pmb::parser::exception<item>& ex)
 				{
