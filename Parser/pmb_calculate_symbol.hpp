@@ -668,12 +668,21 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_dimension(const
 }
 
 
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::exists_prefix(const tpChar* name) const
+{
+	return _mprefix.find(name) != _mprefix.end();
+}
+
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_prefix(const tpChar* name, prefix_base* pprefix)
 {
 	map_prefix::iterator pr = _mprefix.find(name);
 	if (pr != _mprefix.end())
 	{
+		log::instance()->trace(logWarning, "Adding prefix %s that alright exists!\n", name);
 		delete pr->second;
 		pr->second = pprefix;
 	}
@@ -683,12 +692,23 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_prefix(const tp
 }
 
 
+
+template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
+inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::exists_system(const tpChar* name) const
+{
+	return _msystems.find(name) != _msystems.end();
+}
+
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_system(const tpChar* name, const tpChar* prefix)
 {
 	map_system::const_iterator si = _msystems.find(name);
 	if (si != _msystems.end())
+	{
+		log::instance()->trace(logWarning, "System %s that alright exists!\n", name);
 		delete si->second;
+	}
 
 	bool bRet = true;
 	const prefix_base* pb;

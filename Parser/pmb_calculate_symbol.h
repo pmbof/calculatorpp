@@ -251,6 +251,10 @@ public:
 	symbol();
 	~symbol();
 
+	bool exists_dimension(const tpChar* symb) const;
+	bool exists_prefix(const tpChar* name) const;
+	bool exists_system(const tpChar* name) const;
+
 	bool add_dimension(const tpChar* symb, const tpChar* name);
 	bool add_prefix(const tpChar* name, prefix_base* pprefix);
 	bool add_system(const tpChar* name, const tpChar* prefix = nullptr);

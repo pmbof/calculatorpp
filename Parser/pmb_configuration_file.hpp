@@ -361,15 +361,24 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 				CStringA symbol = prpr(2, 1, ':');
 				CStringA name = prpr(3, -1);
 				lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_dimension(\"%s\", \"%s\")\n", _nline, _filename.c_str(), symbol, name);
-				symbols.add_dimension(symbol, name);
+				if (!symbols.add_dimension(symbol, name))
+				{
+					lg->trace(logError, "The dimension %s alright exists!\n", name);
+					return false;
+				}
 			}
 			else if (prpr.size() == 6 && prpr.compare(1, "new", 3) && prpr.compare(2, "prefix", 6, ':') && prpr.compare(4, "base", 4, ':') && prpr.is_alphanumeric(3) && prpr.is_numeric(5))
 			{
 				CStringA name = prpr(3);
 				CStringA base = prpr(5);
-				_prefix = new prefix_base(static_cast<unsigned char>(atoi(base)));
 				lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_prefix(\"%s\", %d)\n", _nline, _filename.c_str(), name, (int)_prefix->base());
-				symbols.add_prefix(name, _prefix);
+				if (!symbols.exists_prefix(name))
+				{
+					lg->trace(logError, "The prefix %s alright exists!\n", name);
+					return false;
+				}
+				_prefix = new prefix_base(static_cast<unsigned char>(atoi(base)));
+				return symbols.add_prefix(name, _prefix);
 			}
 			else
 				return false;
@@ -431,6 +440,11 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			char c1 = sep + 1 < prpr.size() ? '"' : '<';
 			char c2 = sep + 1 < prpr.size() ? '"' : '>';
 			lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_system(\"%s\", %c%s%c)\n", _nline, _filename.c_str(), system, c1, sep + 1 < prpr.size() ? (const char*)prefix : "nullptr", c2);
+			if (symbols.exists_system(system))
+			{
+				lg->trace(logError, "The system %s alright exists!\n", system);
+				return false;
+			}
 			return symbols.add_system(system, sep + 1 < prpr.size() ? (const char*)prefix : nullptr);
 		}
 		else
