@@ -371,8 +371,8 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 			{
 				CStringA name = prpr(3);
 				CStringA base = prpr(5);
-				lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_prefix(\"%s\", %d)\n", _nline, _filename.c_str(), name, (int)_prefix->base());
-				if (!symbols.exists_prefix(name))
+				lg->trace(logDebug, "processing line %d <%s>:\n\t+ symbols.add_prefix(\"%s\", %s)\n", _nline, _filename.c_str(), name, base);
+				if (symbols.exists_prefix(name))
 				{
 					lg->trace(logError, "The prefix %s alright exists!\n", name);
 					return false;
@@ -398,6 +398,17 @@ bool configuration_file<SYMBOL, CALC>::process(SYMBOL& symbols, CALC& calculator
 				_bUnit = true;
 				lg->trace(logDebug, "processing line %d <%s>:\n\t* symbols.set_system(\"%s\")\n", _nline, _filename.c_str(), system);
 				return (_defines = symbols.set_system(system) ? 1 : 0) == 1;
+			}
+			else if (3 < prpr.size() && prpr.compare(1, "default", 7) && prpr.compare(2, "system", 6, ':', false) && 0 < prpr[3].second)
+			{
+				CStringA systemc = prpr(3, -1);
+				lg->trace(logDebug, "processing line %d <%s>:\n\t* symbols.set_defualt_system(\"%s\")\n", _nline, _filename.c_str(), systemc);
+				if (!symbols.exists_system(systemc))
+				{
+					lg->trace(logError, "The system %s does not exists!\n", systemc);
+					return false;
+				}
+				return symbols.set_default_system(systemc);
 			}
 			else
 				return false;
