@@ -289,324 +289,10 @@ BOOL CParserDoc::OnNewDocument()
 	return true;
 
 
-	m_symbols.add_dimension("L", "length");
-	m_symbols.add_dimension("T", "time");
-	m_symbols.add_dimension("M", "mass");
-	m_symbols.add_dimension("I", "electric current");
-	m_symbols.add_dimension("Theta", "temperature");
-	m_symbols.add_dimension("N", "amount of substance");
-	m_symbols.add_dimension("J", "luminous intensity");
-	m_symbols.add_dimension("Crr", "currency");
-	m_symbols.add_dimension("Mem", "memory");
-
-	prefix_base* prefix = new prefix_base(10);
-	prefix->insert("Y",   24, "yotta");
-	prefix->insert("Z",   21, "zetta");
-	prefix->insert("E",   18, "exa");
-	prefix->insert("P",   15, "peta");
-	prefix->insert("T",   12, "tera");
-	prefix->insert("G",    9, "giga");
-	prefix->insert("M",    6, "mega");
-	prefix->insert("k",    3, "kilo");
-	prefix->insert("h",    2, "hecto", false);
-	prefix->insert("da",   1, "deka",  false);
-	prefix->insert("d",   -1, "deci",  false);
-	prefix->insert("c",   -2, "centi");
-	prefix->insert("m",   -3, "mili");
-	prefix->insert("mhu", -6, "micro");
-	prefix->insert("n",   -9, "nano");
-	prefix->insert("p",  -12, "pico");
-	prefix->insert("f",  -15, "femto");
-	prefix->insert("a",  -18, "atto");
-	prefix->insert("z",  -21, "zepto");
-	prefix->insert("y",  -24, "yocto");
-	m_symbols.add_prefix("decimal", prefix);
-
-	prefix = new prefix_base(2);
-	prefix->insert("E", 60, "exa");
-	prefix->insert("P", 50, "peta");
-	prefix->insert("T", 40, "tera");
-	prefix->insert("G", 30, "giga");
-	prefix->insert("M", 20, "mega");
-	prefix->insert("k", 10, "kilo");
-	m_symbols.add_prefix("memory", prefix);
-
-	// adding system units without prefix
-	m_symbols.add_system("No prefix");
-	// adding Internation System of Units (SI):
-	m_symbols.add_system("SI", "decimal");
-	// adding system CGS:
-	m_symbols.add_system("cgs", "decimal");
-	// adding Imperial units (United States customary system):
-	m_symbols.add_system("USCS"); // no prefix support
-	// adding Memory system units:
-	m_symbols.add_system("Memory", "memory");
-	// adding Memory system units:
-	m_symbols.add_system("Currency");
-
-	// Initialized calculator:
-	m_calculator.initialize();
-	// set default system of units:
-
-	print_operation_table();
-
-	try
-	{
-		m_symbols.set_system_constants("Constants");
-		check_operation_table();
-		m_calculator.add_constant("Archimedes' constant", "pi = 4 atg 1");
-		check_operation_table();
-		m_calculator.add_constant("Euler's number", "e = 2.7182818284590452353602874");
-		check_operation_table();
-		m_calculator.add_constant("Golden ratio", "phi = (1 + 5^(1/2))/2");
-		check_operation_table();
-		m_calculator.add_constant("Euler–Mascheroni", "gamma = 0.5772156649015328606065120");
-		check_operation_table();
-		m_calculator.add_constant("Khinchin's constant", "Kh = 2.685452001065306445309714835481795");
-		check_operation_table();
-		m_calculator.add_constant("Glaisher–Kinkelin", "A = 1.282427129100622636875342568869791727");
-		check_operation_table();
-		m_calculator.add_constant("Liouville's constant", "Lc = .7656250596046447753906250000000000007");
-		check_operation_table();
-		m_symbols.set_system_constants();
-
-		m_symbols.set_system("SI");
-		m_calculator.add_unit("meter", "m = 1L");
-		check_operation_table();
-		m_calculator.add_unit("second", "s = 1T");
-		check_operation_table();
-		m_calculator.add_unit("gram", "g = 10^(-3)M");
-		check_operation_table();
-		m_calculator.add_unit("ampere", "A = 1I");
-		check_operation_table();
-		m_calculator.add_unit("kelvin", "K = 1Theta");
-		check_operation_table();
-		m_calculator.add_unit("mole", "mol = 1N");
-		check_operation_table();
-		m_calculator.add_unit("candela", "cd = 1J");
-		check_operation_table();
-
-		m_symbols.set_system("No prefix");
-		m_calculator.add_unit("radian", "rad = 1", "plane angle");
-		check_operation_table();
-		m_calculator.add_unit("steradian", "sr = 1", "solid angle");
-		check_operation_table();
-		m_calculator.add_unit("minute", "min = 60s");
-		check_operation_table();
-		m_calculator.add_unit("hour", "h = 60min");
-		check_operation_table();
-		m_calculator.add_unit("day", "d = 24h");
-		check_operation_table();
-		m_calculator.add_unit("degree = pi/180 rad", false);
-		check_operation_table();
-		m_calculator.add_unit("ton", "t = 10^3kg", false);
-		check_operation_table();
-		m_calculator.add_unit("neper", "Np = 1");
-		check_operation_table();
-
-
-		m_symbols.set_system("SI");
-		m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency", false);
-		check_operation_table();
-		m_calculator.add_unit("newton", "N = kg m/s^2", "force");
-		check_operation_table();
-		m_calculator.add_unit("pascal", "Pa = N/m^2", "pressure, stress");
-		check_operation_table();
-		m_calculator.add_unit("joule", "J = N m", "energy, work, quantity of heat");
-		check_operation_table();
-		m_calculator.add_unit("watt", "W = J/s", "power, radiant flux");
-		check_operation_table();
-		m_calculator.add_unit("coulomb", "C = A s", "electric charge, quantity of electricity");
-		check_operation_table();
-		m_calculator.add_unit("volt", "V = W/A", "electric potential difference, electromotive force");
-		check_operation_table();
-		m_calculator.add_unit("farad", "F = C/V", "capacitance");
-		check_operation_table();
-		m_calculator.add_unit("ohm", "omega = V/A", "electric resistance");
-		check_operation_table();
-		m_calculator.add_unit("siemens", "S = 1/omega", "electric conductance");
-		check_operation_table();
-		m_calculator.add_unit("weber", "Wb = V s", "magnetic flux");
-		check_operation_table();
-		m_calculator.add_unit("tesla", "T = Wb/m^2", "magnetic flux density");
-		check_operation_table();
-		m_calculator.add_unit("henry", "H = W/A", "inductance");
-		check_operation_table();
-		// °C    = ???                   Celsius temperature
-		m_calculator.add_unit("lumen", "lm = cd sr", "luminous flux");
-		check_operation_table();
-		m_calculator.add_unit("lux", "lx = lm/m^2", "illuminance");
-		check_operation_table();
-		m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)", false);
-		check_operation_table();
-		m_calculator.add_unit("gray", "Gy = J/kg", "absorbed dose, specific energy (imparted), kerma");
-		check_operation_table();
-		m_calculator.add_unit("sievert", "Sv = J/kg", "dose equivalent");
-		check_operation_table();
-		m_calculator.add_unit("katal", "kat = mol/s", "catalytic activity");
-		check_operation_table();
-
-		m_calculator.add_unit("litre", "L = 1dm^3", "volume", false);
-		check_operation_table();
-
-		m_symbols.set_system("cgs");
-		m_calculator.add_unit("gal", "Gal = cm/s^2", "acceleration");
-		check_operation_table();
-		m_calculator.add_unit("dyne", "dyn = g Gal");
-		check_operation_table();
-		m_calculator.add_unit("erg = dyn cm");
-		check_operation_table();
-		m_calculator.add_unit("barye", "Ba = dyn/cm^2");
-		check_operation_table();
-		m_calculator.add_unit("poise", "P = g/(cm s)", "dynamic viscosity");
-		check_operation_table();
-		m_calculator.add_unit("stockes", "St = cm^2/s", "kinematic viscosity");
-		check_operation_table();
-		m_calculator.add_unit("kayser", "kays = 1/cm", "wavenumber");
-		check_operation_table();
-		m_calculator.add_unit("statcoulomb", "Fr = cm dyn^(1/2)");
-		check_operation_table();
-		m_calculator.add_unit("statampere", "stA = Fr/s");
-		check_operation_table();
-		m_calculator.add_unit("abampere", "Bi = Fr/cm");
-		check_operation_table();
-		m_calculator.add_unit("abcoulomb", "abC = Bi s");
-		check_operation_table();
-
-		m_symbols.set_system("USCS");
-		m_calculator.add_unit("point", "p = 127/360 mm");
-		check_operation_table();
-		m_calculator.add_unit("pica", "Pi = 12 p");
-		check_operation_table();
-		m_calculator.add_unit("inch", "in = 6 Pi");
-		check_operation_table();
-		m_calculator.add_unit("foot", "ft = 12 in");
-		check_operation_table();
-		m_calculator.add_unit("yard", "yd = 3 ft");
-		check_operation_table();
-		m_calculator.add_unit("mile", "mi = 1760 yd");
-		check_operation_table();
-		m_calculator.add_unit("link", "li = 33/50 ft");
-		check_operation_table();
-		m_calculator.add_unit("rod", "rd = 25 li");
-		check_operation_table();
-		m_calculator.add_unit("chain", "ch = 4 rd");
-		check_operation_table();
-		m_calculator.add_unit("furlong", "fur = 10 ch");
-		check_operation_table();
-		m_calculator.add_unit("league", "lea = 3 mi");
-		check_operation_table();
-		m_calculator.add_unit("fathom", "ftm = 2 yd");
-		check_operation_table();
-		m_calculator.add_unit("cable", "cb = 120 ftm");
-		check_operation_table();
-		m_calculator.add_unit("nautical_mile", "NM = nmi = 8439 cb");
-		check_operation_table();
-		m_calculator.add_unit("acres", "acre = 10 ch^2", "area");
-		check_operation_table();
-		m_calculator.add_unit("sections", "section = 640 acres");
-		check_operation_table();
-		m_calculator.add_unit("survey_township", "twp = 36 sections");
-		check_operation_table();
-
-		m_calculator.add_unit("grain", "gr = 64.79891 mg");
-		check_operation_table();
-		m_calculator.add_unit("dram", "dr = (27 + 11/32)gr");
-		check_operation_table();
-		m_calculator.add_unit("ounce", "oz = 16 dr");
-		check_operation_table();
-		m_calculator.add_unit("pound", "lb = 16 oz");
-		check_operation_table();
-		m_calculator.add_unit("hundredweicht", "cwt = 100 lb");
-		check_operation_table();
-		m_calculator.add_unit("short_ton", "ton = 20 cwt");
-		check_operation_table();
-
-		m_calculator.add_unit("pound_force", "lbf = lb * 9.80665m/s^2");
-		check_operation_table();
-		m_calculator.add_unit("psi = lbf/in^2");
-		check_operation_table();
-		//		m_symbols.add_by_name("survey_township", _block.tresult());
-
-		m_calculator.add_unit("british_thermal_unit", "Btu = 1055 J");
-		check_operation_table();
-		m_calculator.add_unit("calorie", "cal = 4.184 J");
-		check_operation_table();
-		m_calculator.add_unit("large_calorie", "Cal = kcal = 1000 cal");
-		check_operation_table();
-		m_symbols.add_by_name("food_calorie", _block.tresult(), false);
-		check_operation_table();
-		m_calculator.add_unit("horse_power", "hp = 745.7 W");
-		check_operation_table();
-
-		m_symbols.set_system("No prefix");
-		m_calculator.add_unit("atm = 101325 Pa");
-		check_operation_table();
-		//		m_symbols.add_by_name("survey_township", _block.tresult());
-
-		m_symbols.set_system("Memory");
-		m_calculator.add_unit("bit", "b = 1Mem");
-		check_operation_table();
-		m_calculator.add_unit("byte", "B = 8b");
-		check_operation_table();
-
-		m_symbols.set_system("Currency");
-		m_calculator.add_unit("dollar = 1Crr");
-		check_operation_table();
-
-		m_symbols.set_system();
-		m_symbols.set_system_constants("Physical Constants");
-		m_calculator.add_constant("speed of light in a vacuum", "c = 299792458 m/s");
-		check_operation_table();
-		m_calculator.add_constant("gravitational constant", "G = 6.67408 10^(-11) N m^2/kg^2");
-		check_operation_table();
-		m_calculator.add_constant("planck constant", "h = 6.62607015 10^(-34) J s");
-		check_operation_table();
-		m_calculator.add_constant("h c", "hc = h c");
-		check_operation_table();
-		m_calculator.add_constant("elementary charge", "e.0 = 1.602176634 10^(-19) C");
-		check_operation_table();
-		m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu.0 = 4 pi 10^(-7) m/A");
-		check_operation_table();
-		m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon.0 = 1 / (mhu.0 c^2)");
-		check_operation_table();
-		m_calculator.add_constant("avogadro constant", "NA = 6.02214076 10^23 1/mol");
-		check_operation_table();
-		m_calculator.add_constant("boltzmann constant", "k = 1.380649 10^(-23) J/K");
-		check_operation_table();
-		m_calculator.add_constant("gas constant", "R = NA k");
-		check_operation_table();
-		m_calculator.add_constant("wien displacement constant", "b = 2.897771955 mm/K");
-		check_operation_table();
-		m_calculator.add_constant("atomic mass constant", "m.u = 1.660 10^(-27) kg");
-		check_operation_table();
-		m_calculator.add_constant("electron mass", "m.e = 9.109 10^(-31) kg");
-		check_operation_table();
-		m_calculator.add_constant("proton mass", "m.p = 1.007 m.u");
-		check_operation_table();
-		m_calculator.add_constant("neutron mass", "m.n = 1.008 m.u");
-		check_operation_table();
-		m_calculator.add_constant("luminous efficacy", "Kcd = 683 lm/W");
-		check_operation_table();
-		m_calculator.add_constant("standard gravity", "g.0 = 9.80665 m/s^2");
-		check_operation_table();
-		m_calculator.add_constant("hubble constant", "H.0 = 2.25 10^(-18) 1/s");
-		check_operation_table();
-		m_symbols.set_system_constants();
-	}
-	catch (pmb::parser::exception<item>& ex)
-	{
-		m_expr = m_calculator.expression();
-		log->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str(), m_expr);
-		m_error = ex;
-		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
-		return true;
-	}
 
 	if (check_operation_table())
 		print_operation_table();
 
-	m_symbols.set_default_system("SI");
 
 	const char* symb[] = { "c", "g", "G", "h", "e" };
 	double val;
@@ -964,7 +650,323 @@ bool CParserDoc::load_configuration()
 		return cfile.process(m_symbols, m_calculator);
 	}
 	else
-		return true;
+	{
+		m_symbols.add_dimension("L", "length");
+		m_symbols.add_dimension("T", "time");
+		m_symbols.add_dimension("M", "mass");
+		m_symbols.add_dimension("I", "electric current");
+		m_symbols.add_dimension("Theta", "temperature");
+		m_symbols.add_dimension("N", "amount of substance");
+		m_symbols.add_dimension("J", "luminous intensity");
+		m_symbols.add_dimension("Crr", "currency");
+		m_symbols.add_dimension("Mem", "memory");
+
+		prefix_base* prefix = new prefix_base(10);
+		prefix->insert("Y", 24, "yotta");
+		prefix->insert("Z", 21, "zetta");
+		prefix->insert("E", 18, "exa");
+		prefix->insert("P", 15, "peta");
+		prefix->insert("T", 12, "tera");
+		prefix->insert("G", 9, "giga");
+		prefix->insert("M", 6, "mega");
+		prefix->insert("k", 3, "kilo");
+		prefix->insert("h", 2, "hecto", false);
+		prefix->insert("da", 1, "deka", false);
+		prefix->insert("d", -1, "deci", false);
+		prefix->insert("c", -2, "centi");
+		prefix->insert("m", -3, "mili");
+		prefix->insert("mhu", -6, "micro");
+		prefix->insert("n", -9, "nano");
+		prefix->insert("p", -12, "pico");
+		prefix->insert("f", -15, "femto");
+		prefix->insert("a", -18, "atto");
+		prefix->insert("z", -21, "zepto");
+		prefix->insert("y", -24, "yocto");
+		m_symbols.add_prefix("decimal", prefix);
+
+		prefix = new prefix_base(2);
+		prefix->insert("E", 60, "exa");
+		prefix->insert("P", 50, "peta");
+		prefix->insert("T", 40, "tera");
+		prefix->insert("G", 30, "giga");
+		prefix->insert("M", 20, "mega");
+		prefix->insert("k", 10, "kilo");
+		m_symbols.add_prefix("memory", prefix);
+
+		// adding system units without prefix
+		m_symbols.add_system("No prefix");
+		// adding Internation System of Units (SI):
+		m_symbols.add_system("SI", "decimal");
+		// adding system CGS:
+		m_symbols.add_system("cgs", "decimal");
+		// adding Imperial units (United States customary system):
+		m_symbols.add_system("USCS"); // no prefix support
+		// adding Memory system units:
+		m_symbols.add_system("Memory", "memory");
+		// adding Memory system units:
+		m_symbols.add_system("Currency");
+
+		// Initialized calculator:
+		m_calculator.initialize();
+		// set default system of units:
+
+		print_operation_table();
+
+		try
+		{
+			m_symbols.set_system_constants("Constants");
+			check_operation_table();
+			m_calculator.add_constant("Archimedes' constant", "pi = 4 atg 1");
+			check_operation_table();
+			m_calculator.add_constant("Euler's number", "e = 2.7182818284590452353602874");
+			check_operation_table();
+			m_calculator.add_constant("Golden ratio", "phi = (1 + 5^(1/2))/2");
+			check_operation_table();
+			m_calculator.add_constant("Euler–Mascheroni", "gamma = 0.5772156649015328606065120");
+			check_operation_table();
+			m_calculator.add_constant("Khinchin's constant", "Kh = 2.685452001065306445309714835481795");
+			check_operation_table();
+			m_calculator.add_constant("Glaisher–Kinkelin", "A = 1.282427129100622636875342568869791727");
+			check_operation_table();
+			m_calculator.add_constant("Liouville's constant", "Lc = .7656250596046447753906250000000000007");
+			check_operation_table();
+			m_symbols.set_system_constants();
+
+			m_symbols.set_system("SI");
+			m_calculator.add_unit("meter", "m = 1L");
+			check_operation_table();
+			m_calculator.add_unit("second", "s = 1T");
+			check_operation_table();
+			m_calculator.add_unit("gram", "g = 10^(-3)M");
+			check_operation_table();
+			m_calculator.add_unit("ampere", "A = 1I");
+			check_operation_table();
+			m_calculator.add_unit("kelvin", "K = 1Theta");
+			check_operation_table();
+			m_calculator.add_unit("mole", "mol = 1N");
+			check_operation_table();
+			m_calculator.add_unit("candela", "cd = 1J");
+			check_operation_table();
+
+			m_symbols.set_system("No prefix");
+			m_calculator.add_unit("radian", "rad = 1", "plane angle");
+			check_operation_table();
+			m_calculator.add_unit("steradian", "sr = 1", "solid angle");
+			check_operation_table();
+			m_calculator.add_unit("minute", "min = 60s");
+			check_operation_table();
+			m_calculator.add_unit("hour", "h = 60min");
+			check_operation_table();
+			m_calculator.add_unit("day", "d = 24h");
+			check_operation_table();
+			m_calculator.add_unit("degree = pi/180 rad", false);
+			check_operation_table();
+			m_calculator.add_unit("ton", "t = 10^3kg", false);
+			check_operation_table();
+			m_calculator.add_unit("neper", "Np = 1");
+			check_operation_table();
+
+
+			m_symbols.set_system("SI");
+			m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency", false);
+			check_operation_table();
+			m_calculator.add_unit("newton", "N = kg m/s^2", "force");
+			check_operation_table();
+			m_calculator.add_unit("pascal", "Pa = N/m^2", "pressure, stress");
+			check_operation_table();
+			m_calculator.add_unit("joule", "J = N m", "energy, work, quantity of heat");
+			check_operation_table();
+			m_calculator.add_unit("watt", "W = J/s", "power, radiant flux");
+			check_operation_table();
+			m_calculator.add_unit("coulomb", "C = A s", "electric charge, quantity of electricity");
+			check_operation_table();
+			m_calculator.add_unit("volt", "V = W/A", "electric potential difference, electromotive force");
+			check_operation_table();
+			m_calculator.add_unit("farad", "F = C/V", "capacitance");
+			check_operation_table();
+			m_calculator.add_unit("ohm", "omega = V/A", "electric resistance");
+			check_operation_table();
+			m_calculator.add_unit("siemens", "S = 1/omega", "electric conductance");
+			check_operation_table();
+			m_calculator.add_unit("weber", "Wb = V s", "magnetic flux");
+			check_operation_table();
+			m_calculator.add_unit("tesla", "T = Wb/m^2", "magnetic flux density");
+			check_operation_table();
+			m_calculator.add_unit("henry", "H = W/A", "inductance");
+			check_operation_table();
+			// °C    = ???                   Celsius temperature
+			m_calculator.add_unit("lumen", "lm = cd sr", "luminous flux");
+			check_operation_table();
+			m_calculator.add_unit("lux", "lx = lm/m^2", "illuminance");
+			check_operation_table();
+			m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)", false);
+			check_operation_table();
+			m_calculator.add_unit("gray", "Gy = J/kg", "absorbed dose, specific energy (imparted), kerma");
+			check_operation_table();
+			m_calculator.add_unit("sievert", "Sv = J/kg", "dose equivalent");
+			check_operation_table();
+			m_calculator.add_unit("katal", "kat = mol/s", "catalytic activity");
+			check_operation_table();
+
+			m_calculator.add_unit("litre", "L = 1dm^3", "volume", false);
+			check_operation_table();
+
+			m_symbols.set_system("cgs");
+			m_calculator.add_unit("gal", "Gal = cm/s^2", "acceleration");
+			check_operation_table();
+			m_calculator.add_unit("dyne", "dyn = g Gal");
+			check_operation_table();
+			m_calculator.add_unit("erg = dyn cm");
+			check_operation_table();
+			m_calculator.add_unit("barye", "Ba = dyn/cm^2");
+			check_operation_table();
+			m_calculator.add_unit("poise", "P = g/(cm s)", "dynamic viscosity");
+			check_operation_table();
+			m_calculator.add_unit("stockes", "St = cm^2/s", "kinematic viscosity");
+			check_operation_table();
+			m_calculator.add_unit("kayser", "kays = 1/cm", "wavenumber");
+			check_operation_table();
+			m_calculator.add_unit("statcoulomb", "Fr = cm dyn^(1/2)");
+			check_operation_table();
+			m_calculator.add_unit("statampere", "stA = Fr/s");
+			check_operation_table();
+			m_calculator.add_unit("abampere", "Bi = Fr/cm");
+			check_operation_table();
+			m_calculator.add_unit("abcoulomb", "abC = Bi s");
+			check_operation_table();
+
+			m_symbols.set_system("USCS");
+			m_calculator.add_unit("point", "p = 127/360 mm");
+			check_operation_table();
+			m_calculator.add_unit("pica", "Pi = 12 p");
+			check_operation_table();
+			m_calculator.add_unit("inch", "in = 6 Pi");
+			check_operation_table();
+			m_calculator.add_unit("foot", "ft = 12 in");
+			check_operation_table();
+			m_calculator.add_unit("yard", "yd = 3 ft");
+			check_operation_table();
+			m_calculator.add_unit("mile", "mi = 1760 yd");
+			check_operation_table();
+			m_calculator.add_unit("link", "li = 33/50 ft");
+			check_operation_table();
+			m_calculator.add_unit("rod", "rd = 25 li");
+			check_operation_table();
+			m_calculator.add_unit("chain", "ch = 4 rd");
+			check_operation_table();
+			m_calculator.add_unit("furlong", "fur = 10 ch");
+			check_operation_table();
+			m_calculator.add_unit("league", "lea = 3 mi");
+			check_operation_table();
+			m_calculator.add_unit("fathom", "ftm = 2 yd");
+			check_operation_table();
+			m_calculator.add_unit("cable", "cb = 120 ftm");
+			check_operation_table();
+			m_calculator.add_unit("nautical_mile", "NM = nmi = 8439 cb");
+			check_operation_table();
+			m_calculator.add_unit("acres", "acre = 10 ch^2", "area");
+			check_operation_table();
+			m_calculator.add_unit("sections", "section = 640 acres");
+			check_operation_table();
+			m_calculator.add_unit("survey_township", "twp = 36 sections");
+			check_operation_table();
+
+			m_calculator.add_unit("grain", "gr = 64.79891 mg");
+			check_operation_table();
+			m_calculator.add_unit("dram", "dr = (27 + 11/32)gr");
+			check_operation_table();
+			m_calculator.add_unit("ounce", "oz = 16 dr");
+			check_operation_table();
+			m_calculator.add_unit("pound", "lb = 16 oz");
+			check_operation_table();
+			m_calculator.add_unit("hundredweicht", "cwt = 100 lb");
+			check_operation_table();
+			m_calculator.add_unit("short_ton", "ton = 20 cwt");
+			check_operation_table();
+
+			m_calculator.add_unit("pound_force", "lbf = lb * 9.80665m/s^2");
+			check_operation_table();
+			m_calculator.add_unit("psi = lbf/in^2");
+			check_operation_table();
+			//		m_symbols.add_by_name("survey_township", _block.tresult());
+
+			m_calculator.add_unit("british_thermal_unit", "Btu = 1055 J");
+			check_operation_table();
+			m_calculator.add_unit("calorie", "cal = 4.184 J");
+			check_operation_table();
+			m_calculator.add_unit("large_calorie", "Cal = kcal = 1000 cal");
+			check_operation_table();
+			m_symbols.add_by_name("food_calorie", _block.tresult(), false);
+			check_operation_table();
+			m_calculator.add_unit("horse_power", "hp = 745.7 W");
+			check_operation_table();
+
+			m_symbols.set_system("No prefix");
+			m_calculator.add_unit("atm = 101325 Pa");
+			check_operation_table();
+			//		m_symbols.add_by_name("survey_township", _block.tresult());
+
+			m_symbols.set_system("Memory");
+			m_calculator.add_unit("bit", "b = 1Mem");
+			check_operation_table();
+			m_calculator.add_unit("byte", "B = 8b");
+			check_operation_table();
+
+			m_symbols.set_system("Currency");
+			m_calculator.add_unit("dollar = 1Crr");
+			check_operation_table();
+
+			m_symbols.set_system();
+			m_symbols.set_system_constants("Physical Constants");
+			m_calculator.add_constant("speed of light in a vacuum", "c = 299792458 m/s");
+			check_operation_table();
+			m_calculator.add_constant("gravitational constant", "G = 6.67408 10^(-11) N m^2/kg^2");
+			check_operation_table();
+			m_calculator.add_constant("planck constant", "h = 6.62607015 10^(-34) J s");
+			check_operation_table();
+			m_calculator.add_constant("h c", "hc = h c");
+			check_operation_table();
+			m_calculator.add_constant("elementary charge", "e.0 = 1.602176634 10^(-19) C");
+			check_operation_table();
+			m_calculator.add_constant("magnetic constant permeability of free space vacuum permeability", "mhu.0 = 4 pi 10^(-7) m/A");
+			check_operation_table();
+			m_calculator.add_constant("electric constant permitivitty of free space vacuum permitivitty", "epsilon.0 = 1 / (mhu.0 c^2)");
+			check_operation_table();
+			m_calculator.add_constant("avogadro constant", "NA = 6.02214076 10^23 1/mol");
+			check_operation_table();
+			m_calculator.add_constant("boltzmann constant", "k = 1.380649 10^(-23) J/K");
+			check_operation_table();
+			m_calculator.add_constant("gas constant", "R = NA k");
+			check_operation_table();
+			m_calculator.add_constant("wien displacement constant", "b = 2.897771955 mm/K");
+			check_operation_table();
+			m_calculator.add_constant("atomic mass constant", "m.u = 1.660 10^(-27) kg");
+			check_operation_table();
+			m_calculator.add_constant("electron mass", "m.e = 9.109 10^(-31) kg");
+			check_operation_table();
+			m_calculator.add_constant("proton mass", "m.p = 1.007 m.u");
+			check_operation_table();
+			m_calculator.add_constant("neutron mass", "m.n = 1.008 m.u");
+			check_operation_table();
+			m_calculator.add_constant("luminous efficacy", "Kcd = 683 lm/W");
+			check_operation_table();
+			m_calculator.add_constant("standard gravity", "g.0 = 9.80665 m/s^2");
+			check_operation_table();
+			m_calculator.add_constant("hubble constant", "H.0 = 2.25 10^(-18) 1/s");
+			check_operation_table();
+			m_symbols.set_system_constants();
+		}
+		catch (pmb::parser::exception<item>& ex)
+		{
+			m_expr = m_calculator.expression();
+			pmb::log::instance()->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str(), m_expr);
+			m_error = ex;
+			AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
+			return true;
+		}
+		m_symbols.set_default_system("SI");
+	}
+	return true;
 }
 
 
