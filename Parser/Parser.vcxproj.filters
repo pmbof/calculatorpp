@@ -273,6 +273,9 @@
     <ClInclude Include="pmb_configuration_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pmb_configuration_file.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser.cpp">
@@ -453,9 +456,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="prsrvw_operation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pmb_configuration_file.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
