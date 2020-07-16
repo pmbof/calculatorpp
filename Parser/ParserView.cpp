@@ -296,7 +296,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 				if (uk->isValid() && !uk->isCallFunction())
 				{
 					const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
-					if (!strcmp(opr->getSymbol(), "=.") && (!pDoc->m_result.empty() && pDoc->m_error.empty()))
+					if (opr->getSymbol() && !strcmp(opr->getSymbol(), "=.") && (!pDoc->m_result.empty() && pDoc->m_error.empty()))
 					{
 						of = pDC->SelectObject(m_resource.font("@operators", 0));
 						sn = pDoc->m_result.c_str();
