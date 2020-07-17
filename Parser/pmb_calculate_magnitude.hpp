@@ -1150,11 +1150,13 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude()
 }
 
 
+
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _TYPE& src)
 	: _number(src)
 {
 }
+
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
@@ -1164,54 +1166,22 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _MyT* src)
 }
 
 
+
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _CHAR* str, const _SZSTR& len)
+	: _number(str, len)
 {
-	_number = 0;
-	unsigned short ini = 0;
-	int base = 10;
-	if (2 < len && str[0] == '0') {
-		ini = 2;
-		switch (str[1]) {
-		case 'x':
-		case 'X':
-			base = 16;
-			break;
-		case 'o':
-		case 'O':
-			base = 8;
-			break;
-		case 'b':
-		case 'B':
-			base = 2;
-			break;
-		default:
-			ini = 0;
-			break;
-		}
-	}
-	bool bDecimal = false;
-	_TYPE decimal = _TYPE(1);
-	for (unsigned short i = ini; i < len; ++i)
-	{
-		if (str[i] == '.')
-		{
-			if (bDecimal)
-				throw "numeric expression error";
-			bDecimal = true;
-		}
-		else
-			_number = _number * (bDecimal ? 1 : base) + (10 < base && 'A' <= str[i] ? str[i] < 'a' ? str[i] - 'A' : str[i] - 'a' : str[i] - '0') / decimal;
-		if (bDecimal)
-			decimal = decimal * base;
-	}
 }
+
+
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const dimension * dim)
 	: _number(1), _unit(dim)
 {
 }
+
+
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _TYPE& n, const unit& u)
