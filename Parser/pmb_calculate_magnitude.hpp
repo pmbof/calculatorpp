@@ -616,7 +616,7 @@ template<typename _INT, typename _CHAR, typename _SZSTR>
 template<typename _N>
 inline power_dimension<_INT, _CHAR, _SZSTR> power_dimension<_INT, _CHAR, _SZSTR>::operator/(const _N& right) const
 {
-	rational<_INT> result = *static_cast<rational<_INT>*>(this) / right;
+	rational<_INT> result = *static_cast<const rational<_INT>*>(this) / right;
 	return power_dimension(result, dim);
 }
 
@@ -1008,11 +1008,14 @@ template<typename _INT, typename _CHAR, typename _SZSTR>
 template<typename _N>
 inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _N& p) const
 {
-	power_dimension* dim = p ? new power_dimension[_nDims] : nullptr;
-	for (ndim i = 0; p && i < _nDims; ++i)
+	power_dimension* dim = p && _dim ? new power_dimension[_nDims] : nullptr;
+	if (dim)
 	{
-		dim[i].dim = _dim[i].dim;
-		dim[i] = _dim[i] * p;
+		for (ndim i = 0; i < _nDims; ++i)
+		{
+			dim[i].dim = _dim[i].dim;
+			dim[i] = _dim[i] * p;
+		}
 	}
 	return unit(dim, p ? _nDims : 0);
 }
@@ -1021,15 +1024,40 @@ inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _N& p) con
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
 template<typename _N>
+inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::pow(const _N& n, const _N& d) const
+{
+	if (!d)
+		throw "Divide by zero";
+	power_dimension* dim = n && _dim ? new power_dimension[_nDims] : nullptr;
+	if (dim)
+	{
+		for (ndim i = 0; i < _nDims; ++i)
+		{
+			dim[i].dim = _dim[i].dim;
+			dim[i] = _dim[i] * n / d;
+		}
+	}
+	return unit(dim, n ? _nDims : 0);
+}
+
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+template<typename _N>
 inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _N& p) const
 {
-	power_dimension* dim = p ? new power_dimension[_nDims] : nullptr;
-	for (ndim i = 0; p && i < _nDims; ++i)
+	if (p.zero())
+		throw "Divide by zero";
+	power_dimension* dim = !p.zero() && _dim ? new power_dimension[_nDims] : nullptr;
+	if (dim)
 	{
-		dim[i].dim = _dim[i].dim;
-		dim[i] = _dim[i] / p;
+		for (ndim i = 0; i < _nDims; ++i)
+		{
+			dim[i].dim = _dim[i].dim;
+			dim[i] = _dim[i] / p;
+		}
 	}
-	return unit(dim, p ? _nDims : 0);
+	return unit(dim, p.zero() ? 0 : _nDims);
 }
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
@@ -1216,10 +1244,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::factorial(const _MyT& right)
 {
 	if (!right._unit.dimensionless())
 		throw "factorial operator must be dimensionless";
-	long res = 1;
-	for (int i = 2; i <= right._number; ++i)
-		res *= i;
-	_number = res;
+	_number = right._number.factorial();
 }
 
 
@@ -1242,7 +1267,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::division(const _MyT& left, co
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, typename _SZSTR>::modulo(const _MyT& left, const _MyT& right)
 {
-	_number = (long int)left._number % (long int)right._number;
+	_number = left._number % right._number;
 	_unit = left._unit;
 }
 
@@ -1268,11 +1293,11 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::substraction(const _MyT& left
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
-inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::exponentiation(const _MyT& left, const _MyT& right)
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::pow(const _MyT& left, const _MyT& right)
 {
 	if (!right._unit.dimensionless())
 		throw "exponent must be dimensionless";
-	_number = ::pow(left._number, right._number);
+	_number = left._number.pow(right._number);
 	_unit = left._unit.pow(right._number);
 }
 
@@ -1281,9 +1306,8 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::exponentiation(const _MyT& le
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sqrroot(const _MyT& right)
 {
-	_TYPE exp = (_TYPE)1 / 2;
-	_number = ::sqrt(right._number);
-	_unit = right._unit.pow(exp);
+	_number = right._number.sqrt();
+	_unit = right._unit.pow(1, 2);
 }
 
 
@@ -1294,9 +1318,8 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::root(const _MyT& left, const 
 		throw "exponent must be dimensionless";
 	if (left.zero())
 		throw "illegal root, divide by zero";
-	_TYPE exp = 1 / left._number;
-	_number = ::pow(right._number, exp);
-	_unit = right._unit.pow(exp);
+	_number = right._number.root(left._number);
+	_unit = right._unit.root(left._number);
 }
 
 
@@ -1313,7 +1336,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::assignation(const _MyT& left,
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::abs(const _MyT& arg)
 {
-	_number = arg._number < 0 ? -arg._number : arg._number;
+	_number = arg._number.abs();
 	_unit = arg._unit;
 }
 
@@ -1321,7 +1344,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::abs(const _MyT& arg)
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sgn(const _MyT& arg)
 {
-	_number = arg._number < 0 ? -1 : 1;
+	_number = arg._number.sgn();
 	_unit = arg._unit;
 }
 
@@ -1334,7 +1357,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::ln(const _MyT& arg)
 		throw "argument for function natural logarithm must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::log(arg._number);
+	_number = arg._number.ln();
 }
 
 
@@ -1345,7 +1368,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::lg(const _MyT& arg)
 		throw "argument for function logarithm must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::log10(arg._number);
+	_number = arg._number.log();
 }
 
 
@@ -1361,7 +1384,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::log(const _MyT& arg, const _M
 		throw "base for function logarithm must be dimensionless";
 	if (!base.scalar())
 		throw "must be scaler";
-	_number = ::log(arg._number) / ::log(base._number);
+	_number = arg._number.log(base._number);
 }
 
 
@@ -1373,7 +1396,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::sin(const _MyT& arg)
 		throw "argument for function sine must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::sin(arg._number);
+	_number = arg._number.sin();
 }
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
@@ -1383,7 +1406,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::cos(const _MyT& arg)
 		throw "argument for function cosine must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::cos(arg._number);
+	_number = arg._number.cos();
 }
 
 
@@ -1394,7 +1417,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::tg(const _MyT & arg)
 		throw "argument for function tangent must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::tan(arg._number);
+	_number = arg._number.tg();
 }
 
 
@@ -1405,7 +1428,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::asin(const _MyT& arg)
 		throw "argument for function arc sine must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::asin(arg._number);
+	_number = arg._number.asin();
 }
 
 
@@ -1416,7 +1439,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::acos(const _MyT& arg)
 		throw "argument for function arc cosine must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::acos(arg._number);
+	_number = arg._number.acos();
 }
 
 
@@ -1427,7 +1450,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg(const _MyT & arg)
 		throw "argument for function arc tangent must be dimensionless";
 	if (!arg.scalar())
 		throw "must be scaler";
-	_number = ::atan(arg._number);
+	_number = arg._number.atg();
 }
 
 
@@ -1438,14 +1461,14 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::atg2(const _MyT& opposite, co
 		throw "arguments for function arc tanget2 must be equal units";
 	if (!opposite.scalar() || !adjacent.scalar())
 		throw "must be scaler";
-	_number = ::atan2(opposite._number, adjacent._number);
+	_number = opposite._number.atg(adjacent._number);
 }
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
 	magnitude<_TYPE, _INT, _CHAR, _SZSTR>::pow(_TypeInt p) const
 {
-	return magnitude(::pow(_number, p), _unit.pow(p));
+	return magnitude(_number.pow(p), _unit.pow(p));
 }
 
 
@@ -1464,27 +1487,27 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::zero() const
 {
-	return _number == _TYPE(0);
+	return _number.zero();
 }
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::positive() const
 {
-	return 0 < _number;
+	return _number.positive();
 }
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::negative() const
 {
-	return _number < 0;
+	return _number.negative();
 }
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::integer() const
 {
-	return ceil(_number) == floor(_number);
+	return _number.integer();
 }
 
 
@@ -1506,7 +1529,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::one_dimension() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::scalar() const
 {
-	return true;
+	return _number.scalar();
 }
 
 
@@ -1514,7 +1537,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::scalar() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::real() const
 {
-	return true;
+	return _number.real();
 }
 
 
@@ -1522,7 +1545,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::real() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::imaginary() const
 {
-	return false;
+	return _number.imaginary();
 }
 
 
@@ -1530,7 +1553,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::imaginary() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::complex() const
 {
-	return false;
+	return _number.complex();
 }
 
 
@@ -1538,7 +1561,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::complex() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::vector() const
 {
-	return false;
+	return _number.vector();
 }
 
 
@@ -1546,7 +1569,7 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::vector() const
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::matrix() const
 {
-	return false;
+	return _number.matrix();
 }
 
 

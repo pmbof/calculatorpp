@@ -204,13 +204,14 @@ inline const typename prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::prefix
 prefix_base<_CHAR, _POWER, _BASE, _ITSTRING, _MAP>::find_prefix(const _T& val, _BASE pow) const
 {
 	const prefix* vret = nullptr;
-	double last = 0;
+	_T::_TypeValue last = 0;
 	for (const_iterator i = begin(); i != end(); ++i)
 	{
 		if (!i->first->show())
 			continue;
-		double f = i->first->getFactor(_base, pow);
-		if (0 < val && last < f && f <= val || val < 0 && f < last && val <= f)
+		_T::_TypeValue f = i->first->getFactor(_base, pow);
+		constexpr _T::_TypeValue zero = 0;
+		if (zero < val && last < f && f <= val || val < zero && f < last && val <= f)
 		{
 			last = f;
 			vret = i->first;
@@ -293,7 +294,7 @@ inline bool map_dimension<_DIMENSION, _ITSTRING, _MAP>::insert(const tpChar* sym
 }
 
 template<class _DIMENSION, class _ITSTRING, class _MAP>
-inline bool map_dimension<_DIMENSION, _ITSTRING, _MAP>::insert(const tpChar* symbol, tpSize len, const tpChar* name = nullptr)
+inline bool map_dimension<_DIMENSION, _ITSTRING, _MAP>::insert(const tpChar* symbol, tpSize len, const tpChar* name)
 {
 	_ITSTRING istring(symbol, len);
 	base::const_iterator fs = find(istring);
@@ -556,7 +557,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 				vector vunit;
 				tpUnit::_tpInt pow;
 				tpUnit::_tpInt ppow;
-				tpValue::_TypeValue factor;
+				tpValue::_2TypeValue factor;
 			};
 
 			std::vector<s_unit> vunit;
@@ -908,7 +909,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 		map_dimension::mapName::const_iterator din = _dimension.find_by_name(symbol);
 		if (din != _dimension.end_by_name())
 		{
-			value = _TVALUE(new _TVALUE::tpValue(din->second));
+			value = _TVALUE(new _TVALUE::tpValue(din->first));
 			return true;
 		}
 	}

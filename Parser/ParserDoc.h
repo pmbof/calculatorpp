@@ -20,9 +20,10 @@
 
 //typedef pmb::parser::transporter<pmb::parser::number<double> > transporter;
 
-typedef pmb::calculate::units::magnitude<double, short, char, unsigned short> number_double;
+typedef pmb::calculate::number<double> number_double;
+typedef pmb::calculate::units::magnitude<number_double, short, char, unsigned short> magnitude;
 //typedef pmb::calculate::number<double> number_double;
-typedef pmb::parser::calc::transporter<number_double, unsigned short> transporter;
+typedef pmb::parser::calc::transporter<magnitude, unsigned short> transporter;
 typedef pmb::parser::calc::transporter_args<transporter, unsigned char> transporter_args;
 
 

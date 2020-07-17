@@ -15,11 +15,13 @@ number<_TYPE>::number()
 }
 
 
+
 template<class _TYPE>
-inline number<_TYPE>::number(const _TYPE& src)
+inline number<_TYPE>::number(const _TypeValue& src)
 	: _number(src)
 {
 }
+
 
 
 template<class _TYPE>
@@ -73,6 +75,182 @@ inline number<_TYPE>::number(const char* str, unsigned short len)
 }
 
 
+
+// Assign operators:
+template<class _TYPE>
+inline number<_TYPE>& number<_TYPE>::operator=(const _TypeValue& rValue)
+{
+	_number = rValue;
+	return *this;
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE>& number<_TYPE>::operator*=(const _TypeValue& rValue)
+{
+	_number *= rValue;
+	return *this;
+}
+
+
+
+// Operators comparation:
+template<class _TYPE>
+inline bool number<_TYPE>::operator==(const _MyT& right) const
+{
+	return _number == right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator!=(const _MyT& right) const
+{
+	return _number != right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator<(const _MyT& right) const
+{
+	return _number < right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator<(const _TypeValue& right) const
+{
+	return _number < right;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator>(const _MyT& right) const
+{
+	return _number > right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator<=(const _MyT& right) const
+{
+	return _number <= right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator<=(const _TypeValue& right) const
+{
+	return _number <= right;
+}
+
+
+
+// Friend operators:
+template<class _TYPE>
+inline bool operator <(const _TYPE& left, const number<_TYPE>& right)
+{
+	return left < right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool operator <=(const _TYPE& left, const number<_TYPE>& right)
+{
+	return left <= right._number;
+}
+
+
+
+// Operators comparation:
+template<class _TYPE>
+inline number<_TYPE>::operator bool() const
+{
+	return !zero();
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator!() const
+{
+	return zero();
+}
+
+
+
+// Math operations:
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator+() const
+{
+	return _MyT(_number);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator-() const
+{
+	return _MyT(-_number);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator*(const _MyT& right) const
+{
+	return _MyT(_number * right._number);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator/(const _MyT& right) const
+{
+	return _MyT(_number / right._number);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator/(const _TypeValue& right) const
+{
+	return _MyT(_number / right);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator%(const _MyT& right) const
+{
+	return _MyT((long)_number % (long)right._number);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator+(const _MyT& right) const
+{
+	return _MyT(_number + right._number);
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator-(const _MyT& right) const
+{
+	return _MyT(_number - right._number);
+}
+
+
+
 // Operations:
 template<class _TYPE>
 inline void number<_TYPE>::positive(const _MyT& right)
@@ -88,113 +266,167 @@ inline void number<_TYPE>::negative(const _MyT& right)
 }
 
 
+
+// Math functions:
 template<class _TYPE>
-inline void number<_TYPE>::factorial(const _MyT& right)
+inline number<_TYPE> number<_TYPE>::abs() const
 {
-	long res = 1;
-	for (int i = 2; i <= right._number; ++i)
-		res *= i;
-	_number = res;
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::multiplication(const _MyT& left, const _MyT& right)
-{
-	_number = left._number * right._number;
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::division(const _MyT& left, const _MyT& right)
-{
-	_number = left._number / right._number;
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::modulo(const _MyT& left, const _MyT& right)
-{
-	_number = (long int)left._number % (long int)right._number;
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::addition(const _MyT& left, const _MyT& right)
-{
-	_number = left._number + right._number;
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::substraction(const _MyT& left, const _MyT& right)
-{
-	_number = left._number - right._number;
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::exponentiation(const _MyT& left, const _MyT& right)
-{
-	_number = pow(left._number, right._number);
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::root(const _MyT& left, const _MyT& right)
-{
-	_number = pow(left._number, 1 / right._number);
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::assignation(const _MyT& left, const _MyT& right)
-{
-	_number = right._number;
+	return _MyT(_number < 0 ? -_number : _number);
 }
 
 
 
-// Functions:
 template<class _TYPE>
-inline void number<_TYPE>::abs(const _MyT& arg)
+inline number<_TYPE> number<_TYPE>::sgn() const
 {
-	_number = arg._number < 0 ? -arg._number : arg._number;
+	return _MyT(_number < 0 ? -1 : 1);
 }
 
 
 template<class _TYPE>
-inline void number<_TYPE>::sgn(const _MyT& arg)
+inline number<_TYPE> number<_TYPE>::factorial() const
 {
-	_number = arg._number < 0 ? -1 : 1;
+	_MyT res;
+	res._number = 1;
+	for (int i = 2; i <= _number; ++i)
+		res._number *= i;
+	return res;
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::pow(const _MyT& right) const
+{
+	return _MyT(::pow(_number, right._number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::pow(const _TypeValue& right) const
+{
+	return _MyT(::pow(_number, right));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::sqrt() const
+{
+	return _MyT(::sqrt(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::root(const _MyT& exp) const
+{
+	return _MyT(::pow(_number, 1 / exp._number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::ln() const
+{
+	return _MyT(::log(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::log() const
+{
+	return _MyT(::log10(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::log(const _MyT& base) const
+{
+	return _MyT(::log(_number) / ::log(base._number));
+}
+
+
+
+// trigonometric functions:
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::sin() const
+{
+	return _MyT(::sin(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::cos() const
+{
+	return _MyT(::cos(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::tg() const
+{
+	return _MyT(::tan(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::sec() const
+{
+	return _MyT(::sec(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::cosec() const
+{
+	return _MyT(::cosec(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::cotg() const
+{
+	return _MyT(::cotan(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::asin() const
+{
+	return _MyT(::asin(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::acos() const
+{
+	return _MyT(::acos(_number));
+}
+
+
+
+template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::atg() const
+{
+	return _MyT(::atan(_number));
 }
 
 
 template<class _TYPE>
-inline void number<_TYPE>::sin(const _MyT& arg)
+inline number<_TYPE> number<_TYPE>::atg(const _MyT& adjacent) const
 {
-	_number = ::sin(arg._number);
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::tg(const _MyT & arg)
-{
-	_number = ::tan(arg._number);
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::atg(const _MyT & arg)
-{
-	_number = ::atan(arg._number);
-}
-
-
-template<class _TYPE>
-inline void number<_TYPE>::atg2(const _MyT& opposite, const _MyT& adjacent)
-{
-	_number = ::atan2(opposite._number, adjacent._number);
+	return _MyT(::atan2(_number, adjacent._number));
 }
 
 
@@ -275,6 +507,14 @@ inline bool number<_TYPE>::matrix() const
 }
 
 
+
+
+template<class _TYPE>
+std::stringstream& operator <<(std::stringstream& ss, const number<_TYPE>& right)
+{
+	ss << right._number;
+	return ss;
+}
 
 
 }

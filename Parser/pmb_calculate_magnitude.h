@@ -232,6 +232,8 @@ struct unit
 	template<typename _N>
 	unit pow(const _N& p) const;
 	template<typename _N>
+	unit pow(const _N& n, const _N& d) const;
+	template<typename _N>
 	unit root(const _N& p) const;
 
 	bool dimensionless() const;
@@ -292,6 +294,7 @@ struct magnitude
 {
 public:
 	typename typedef _TYPE _TypeValue;
+	typename typedef _TypeValue::_TypeValue _2TypeValue;
 	typename typedef _INT _TypeInt;
 	typedef magnitude<_TYPE, _INT, _CHAR, _SZSTR> _MyT;
 	typedef typename unit<_INT, _CHAR, _SZSTR> unit;
@@ -318,7 +321,7 @@ public:
 	void addition(const _MyT& left, const _MyT& right);
 	void substraction(const _MyT& left, const _MyT& right);
 
-	void exponentiation(const _MyT& left, const _MyT& right);
+	void pow(const _MyT& left, const _MyT& right);
 	void sqrroot(const _MyT& right);
 	void root(const _MyT& left, const _MyT& right);
 

@@ -18,43 +18,76 @@ public:
 public:
 	// Constructors:
 	number();
-	explicit number(const _TYPE& src);
+	explicit number(const _TypeValue& src);
 	explicit number(const _MyT* src);
 	explicit number(const char* str, unsigned short len);
 
-	// Operators:
+	// Assign operators:
+	_MyT& operator=(const _TypeValue& rValue);
+	_MyT& operator*=(const _TypeValue& rValue);
+
+	// Operators comparation:
+	bool operator ==(const _MyT& right) const;
+	bool operator !=(const _MyT& right) const;
+	bool operator<(const _MyT& right) const;
+	bool operator<(const _TypeValue& right) const;
+	bool operator>(const _MyT& right) const;
+	bool operator<=(const _MyT& right) const;
+	bool operator<=(const _TypeValue& right) const;
+
+	template<class _TYPE>
+	friend bool operator <(const _TypeValue& left, const number<_TYPE>& right);
+	template<class _TYPE>
+	friend bool operator <=(const _TypeValue& left, const number<_TYPE>& right);
+
+	operator bool() const;
+	bool operator!() const;
+
+	// Math operations:
+	_MyT operator+() const;
+	_MyT operator-() const;
+
+	_MyT operator*(const _MyT& right) const;
+	_MyT operator/(const _MyT& right) const;
+	_MyT operator/(const _TypeValue& right) const;
+	_MyT operator%(const _MyT& right) const;
+
+	_MyT operator+(const _MyT& right) const;
+	_MyT operator-(const _MyT& right) const;
+
+
+	// Operations:
 	void positive(const _MyT& right);
 	void negative(const _MyT& right);
 
-	void factorial(const _MyT& right);
-	void multiplication(const _MyT& left, const _MyT& right);
-	void division(const _MyT& left, const _MyT& right);
-	void modulo(const _MyT& left, const _MyT& right);
-
-	void addition(const _MyT& left, const _MyT& right);
-	void substraction(const _MyT& left, const _MyT& right);
-
-	void exponentiation(const _MyT& left, const _MyT& right);
-	void root(const _MyT& left, const _MyT& right);
-
-	void assignation(const _MyT& left, const _MyT& right);
-
-
 	// functions:
-	void abs(const _MyT& arg);
-	void sgn(const _MyT& arg);
+	_MyT abs() const;
+	_MyT sgn() const;
+
+	_MyT factorial() const;
+
+	_MyT pow(const _MyT& right) const;
+	_MyT pow(const _TypeValue& right) const;
+	_MyT sqrt() const;
+	_MyT root(const _MyT& right) const;
+	_MyT ln() const;
+	_MyT log() const;
+	_MyT log(const _MyT& base) const;
 
 	// trigonometric functions:
-	void sin(const _MyT& arg);
-	void tg(const _MyT& arg);
+	_MyT sin() const;
+	_MyT cos() const;
+	_MyT tg() const;
+	_MyT sec() const;
+	_MyT cosec() const;
+	_MyT cotg() const;
 
 	// inverse trigonometric functions:
-	void atg(const _MyT& arg);
-	void atg2(const _MyT& opposite, const _MyT& adjacent);
+	_MyT asin() const;
+	_MyT acos() const;
+	_MyT atg() const;
+	_MyT atg(const _MyT& adjacent) const;
 	
-
-	void result(const _MyT& right) {
-	}
 
 	// check:
 	bool zero() const;
@@ -70,6 +103,9 @@ public:
 	bool matrix() const;
 
 	_TYPE _number;
+
+	template<class _TYPE>
+	friend std::stringstream& operator <<(std::stringstream& ss, const number<_TYPE>& right);
 };
 
 
@@ -77,8 +113,21 @@ public:
 
 
 
+// Friend operators:
+template<class _TYPE>
+inline bool operator <(const _TYPE& left, const number<_TYPE>& right);
+
+template<class _TYPE>
+inline bool operator <=(const _TYPE& left, const number<_TYPE>& right);
+
+
+template<class _TYPE>
+inline std::stringstream& operator <<(std::stringstream& ss, const number<_TYPE>& right);
+
 
 }
 }
+
+
 
 #include "pmb_calculate_number.hpp"

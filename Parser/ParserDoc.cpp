@@ -295,7 +295,7 @@ BOOL CParserDoc::OnNewDocument()
 
 
 	const char* symb[] = { "c", "g", "G", "h", "e" };
-	double val;
+	number_double val;
 	std::string sunit;
 	for (int i = 0; i < sizeof(symb) / sizeof(*symb); ++i)
 	{
@@ -314,7 +314,7 @@ BOOL CParserDoc::OnNewDocument()
 //	m_expr = "a acos (";
 
 
-	typedef std::tuple<const char*, bool, double> tuple;
+	typedef std::tuple<const char*, bool, number_double> tuple;
 	typedef std::vector<tuple> vector;
 
 	const double pi = 4 * atan(1);
@@ -976,8 +976,8 @@ void CParserDoc::result()
 {
 	try
 	{
-		const pmb::parser::debug::number_double& val = _block.result();
-		double number;
+		const magnitude& val = _block.result();
+		number_double number;
 		std::string sunit;
 		m_symbols.value(val, number, sunit, true);
 		std::stringstream sres;
@@ -1024,7 +1024,7 @@ void CParserDoc::opr_sqrroot(transporter_args& args)
 
 void CParserDoc::opr_exponentiation(transporter_args& args)
 {
-	args.result()->exponentiation(**args.left(), **args.right());
+	args.result()->pow(**args.left(), **args.right());
 }
 
 void CParserDoc::opr_root(transporter_args& args)

@@ -317,12 +317,13 @@ protected:
 };
 
 
-typedef pmb::calculate::units::magnitude<double, short, char, unsigned short> number_double;
+typedef pmb::calculate::number<double> number_double;
+typedef pmb::calculate::units::magnitude<number_double, short, char, unsigned short> magnitude;
 //typedef calculate::number<double> number_double;
 typedef item<char, unsigned short> citem;
 typedef tree<citem, ndtype> debug_tree;
 typedef debug_tree::cnode tnode; 
-typedef calc::transporter<number_double, unsigned short> transporter;
+typedef calc::transporter<magnitude, unsigned short> transporter;
 typedef calc::transporter_args<transporter, unsigned char> transporter_args;
 typedef calc::build_in_function_table<calc::build_in_function<transporter_args, char, unsigned char>, unsigned short> build_in_function_table;
 typedef calc::iterator<transporter_args, debug_tree> citerator;
