@@ -984,8 +984,10 @@ void CParserDoc::result()
 		sres << number;
 		CStringA sn(sres.str().c_str());
 		sn.Replace("e+", " 10^");
-		sn.Replace("e-", " 10^-");
+		int le = sn.Replace("e-", " 10^(-");
 		sn.Replace("e", " 10^");
+		if (0 < le)
+			sn += ")";
 		sres.str("");
 		sres << sn << sunit;
 		m_result = sres.str();
