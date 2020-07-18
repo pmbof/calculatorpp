@@ -1046,9 +1046,9 @@ template<typename _INT, typename _CHAR, typename _SZSTR>
 template<typename _N>
 inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _N& p) const
 {
-	if (p.zero())
+	if (!p)
 		throw "Divide by zero";
-	power_dimension* dim = !p.zero() && _dim ? new power_dimension[_nDims] : nullptr;
+	power_dimension* dim = _dim ? new power_dimension[_nDims] : nullptr;
 	if (dim)
 	{
 		for (ndim i = 0; i < _nDims; ++i)
@@ -1057,7 +1057,7 @@ inline unit<_INT, _CHAR, _SZSTR> unit<_INT, _CHAR, _SZSTR>::root(const _N& p) co
 			dim[i] = _dim[i] / p;
 		}
 	}
-	return unit(dim, p.zero() ? 0 : _nDims);
+	return unit(dim, dim ? _nDims : 0);
 }
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
@@ -1268,7 +1268,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::pow(const _MyT& left, const _
 	if (!right._unit.dimensionless())
 		throw "exponent must be dimensionless";
 	_number = left._number.pow(right._number);
-	_unit = left._unit.pow(right._number);
+	_unit = left._unit.pow((_2TypeValue)right._number);
 }
 
 
@@ -1289,7 +1289,7 @@ inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::root(const _MyT& left, const 
 	if (left.zero())
 		throw "illegal root, divide by zero";
 	_number = right._number.root(left._number);
-	_unit = right._unit.root(left._number);
+	_unit = right._unit.root((_2TypeValue)left._number);
 }
 
 

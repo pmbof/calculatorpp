@@ -40,6 +40,8 @@ public:
 	template<class _TYPE>
 	friend bool operator <=(const _TypeValue& left, const number<_TYPE>& right);
 
+	operator _TypeValue() const;
+
 	operator bool() const;
 	bool operator!() const;
 

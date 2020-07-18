@@ -169,6 +169,15 @@ inline bool operator <=(const _TYPE& left, const number<_TYPE>& right)
 
 
 
+template<class _TYPE>
+inline number<_TYPE>::operator _TypeValue() const
+{
+	return _number;
+}
+
+
+
+
 // Operators comparation:
 template<class _TYPE>
 inline number<_TYPE>::operator bool() const
