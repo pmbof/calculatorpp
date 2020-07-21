@@ -229,14 +229,28 @@ template<class _OPR, class _NODE>
 const typename operation_table<_OPR, _NODE>::operation*
 	operation_table<_OPR, _NODE>::find(const _NODE* nd, const char* expr) const
 {
+	std::vector<size_t> vfs;
 	for(size_t i = 0; i < _oprSize; ++i)
 	{
-		if((_opr[i]->isBinary() && nd->getLeft() && nd->getRight() || 
-				!_opr[i]->isBinary() && _opr[i]->isLeftToRight() && nd->getLeft() && !nd->getRight() || 
-				!_opr[i]->isBinary() && !_opr[i]->isLeftToRight() && !nd->getLeft() && nd->getRight())
-					&& _opr[i]->compare(nd->getCharPtr(expr), nd->len()))
+		if (_opr[i]->compare(nd->getCharPtr(expr), nd->len()))
+		{
+			vfs.push_back(i);
+			if((_opr[i]->isBinary() && nd->getLeft() && nd->getRight() || 
+					!_opr[i]->isBinary() && _opr[i]->isLeftToRight() && nd->getLeft() && !nd->getRight() || 
+					!_opr[i]->isBinary() && !_opr[i]->isLeftToRight() && !nd->getLeft() && nd->getRight()))
+				return _opr[i];
+		}
+	}
+
+	for (size_t vi = 0; vi < vfs.size(); ++vi)
+	{
+		size_t i = vfs[vi];
+		if ((_opr[i]->isBinary() && nd->getLeft() && nd->getRight() ||
+				!_opr[i]->isBinary() && _opr[i]->isLeftToRight() && nd->getLeft() ||
+				!_opr[i]->isBinary() && !_opr[i]->isLeftToRight() && nd->getRight()))
 			return _opr[i];
 	}
+
 	return nullptr;
 }
 

@@ -67,6 +67,14 @@ void unknown<_ITEM, _NDTYPE>::set(const void* opr, bool binary, bool isLeftToRig
 		_pointer = opr;
 	}
 
+	if (!binary && _left && _right)
+	{
+		if (isLeftToRight)
+			static_cast<unknown<_ITEM, _NDTYPE>*>(_right)->node<_ITEM, _NDTYPE>::switchToUpNode();
+		else
+			static_cast<unknown<_ITEM, _NDTYPE>*>(_left)->node<_ITEM, _NDTYPE>::switchToUpNode();
+	}
+
 	for (unknown<_ITEM, _NDTYPE>* parent = static_cast<unknown<_ITEM, _NDTYPE>*>(_parent);
 				_pointer && parent && parent->_type == ndUnknown && parent->_pointer &&
 					!(_flag & (PMB_PARSER_NODES_UNKNOWN_USERDEFFUNCTION | PMB_PARSER_NODES_UNKNOWN_BUILDINFUNCTION))
