@@ -287,7 +287,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 		if (lf.lfItalic)
 			tr.right += 2;
 
-		if (bCalc)
+		if (false && bCalc)
 		{
 			int resultWidth = 0;
 			if (nd->getType() == pmb::parser::ndUnknown)
