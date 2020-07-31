@@ -12,7 +12,7 @@ namespace nodes
 
 
 template<class _ITEM, class _NDTYPE>
-calc<_ITEM, _NDTYPE>::calc(typename cnode::cNdType type, int ini, int end)
+calc<_ITEM, _NDTYPE>::calc(typename cnode::cNdType type, ISIZE ini, ISIZE end)
 	: node<_ITEM, _NDTYPE>(type, ini, end)
 {
 }

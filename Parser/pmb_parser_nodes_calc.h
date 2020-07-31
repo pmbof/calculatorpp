@@ -18,7 +18,7 @@ public:
 	typedef typename node<_ITEM, _NDTYPE> cnode;
 
 protected:
-	calc(typename cnode::cNdType type, int ini, int end);
+	calc(typename cnode::cNdType type, ISIZE ini, ISIZE end);
 
 public:
 	~calc();
