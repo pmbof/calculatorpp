@@ -23,7 +23,7 @@ namespace nodes
 
 
 template<class _ITEM, class _NDTYPE>
-unknown<_ITEM, _NDTYPE>::unknown(int ini, int end)
+unknown<_ITEM, _NDTYPE>::unknown(ISIZE ini, ISIZE end)
 	: calc(ndUnknown, ini, end), _pointer(nullptr)
 {
 }
@@ -83,6 +83,16 @@ void unknown<_ITEM, _NDTYPE>::set(const void* opr, bool binary, bool isLeftToRig
 				parent = static_cast<unknown<_ITEM, _NDTYPE>*>(_parent))
 		switchToUpNode();
 }
+
+
+
+template<class _ITEM, class _NDTYPE>
+unknown<_ITEM, _NDTYPE>* unknown<_ITEM, _NDTYPE>::add(ISIZE ini)
+{
+	return nullptr;
+}
+
+
 
 template<class _ITEM, class _NDTYPE>
 bool unknown<_ITEM, _NDTYPE>::isFirstLeft() const

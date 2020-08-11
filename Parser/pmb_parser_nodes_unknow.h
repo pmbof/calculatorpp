@@ -18,13 +18,14 @@ template<class _ITEM, class _NDTYPE>
 class unknown : public calc<_ITEM, _NDTYPE>
 {
 public:
-	unknown(int ini, int end);
+	unknown(ISIZE ini, ISIZE end);
 	~unknown();
 
 	const void* pointer() const;
 
 	void set(const void* opr, bool binary, bool isLeftToRight, int precedence, bool canCreateLVariable, bool canCreateRVariable, const void* buildInFnc, const void* userFnc);
 
+	unknown* add(ISIZE ini);
 
 	bool isValid() const;
 	bool operator!() const;
