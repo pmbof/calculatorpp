@@ -664,6 +664,12 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_parentheses(node<_ITEM, _NDTY
 			insertToRight(newNode);
 		}
 		break;
+	case ndUnknown:
+		if (0 <= newOpened)
+			insertToRight(newNode);
+		else
+			insertParenthesesClose(newNode);
+		break;
 	default:
 		insertToRight(newNode);
 		break;
