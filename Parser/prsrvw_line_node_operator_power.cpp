@@ -38,19 +38,19 @@ void CParserView::line::node_operator_power::set(sset* ss)
 		new_instance(&_left, this, lnd)->set(ss);
 		CRect rl = _left->rect();
 		left = rl.right;
-		right = left + 2;
+		right = left;
 		top = rl.top;
 		bottom = rl.bottom;
 		if (ss->bEditing)
 		{
 			CFont* pFont = ss->pline->font(type(), ss->index);
 			CFont* oldFont = ss->pDC->SelectObject(pFont);
-			CString sn(ss->pstr + _ini, nd->len());
 
-			CRect cr(this);
-			ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-			right = left + cr.Width();
-			bottom = top + cr.Height();
+			CSize te;
+			GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, nd->len(), &te);
+
+			right = left + te.cx;
+			bottom = top + te.cy;
 			ss->pDC->SelectObject(oldFont);
 		}
 		_middle = _left->_middle;
@@ -111,7 +111,7 @@ void CParserView::line::node_operator_power::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_operator_power::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_operator_power::type() const
 {
 	return bndOprPower;
 }

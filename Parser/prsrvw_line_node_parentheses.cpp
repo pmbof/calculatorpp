@@ -33,14 +33,9 @@ void CParserView::line::node_parentheses::set(sset* ss)
 
 	CFont* pFont = ss->pline->font(type(), ss->index);
 	CFont* oldFont = ss->pDC->SelectObject(pFont);
-	CString sn;
 
 	short np;
-	if (get_np(ss, _parent, np, false))
-		sn = CString(ss->pstr + _ini, np);
-	else
-		sn = CString(ss->pstr + _ini, ss->nd->len());
-
+	get_np(ss, _parent, np, false);
 
 	if (lnd)
 	{
@@ -68,14 +63,11 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		bottom = rr.bottom;
 	}
 
-	CRect cr(this);
-	ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-	right = left + cr.Width();
-	LOGFONT lf;
-	pFont->GetLogFont(&lf);
-	if (lf.lfItalic)
-		right += 2;
-	if (lnd)
+	CSize te;
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, np, &te);
+	right = left + te.cx * np;
+
+	if (lnd && right != left)
 		_left->rect_move(right - left, 0);
 
 	check_error(ss);
@@ -140,12 +132,18 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 
 bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, short& np, bool bDraw) const
 {
-	if (sb->bEditing|| !pnd || pnd->type() != bndOprDivision && pnd->type() != bndOprRoot
+	if (sb->bEditing || !pnd || pnd->type() != bndOprDivision && pnd->type() != bndOprRoot
 		&& (pnd->type() != bndOprPower || pnd->is_left_parentheses(this))
-		|| 1 < _nparentheses || _nparentheses < -1)
+		|| _nparentheses != 0)
 	{
-		np = !sb->bEditing && pnd && (pnd->type() == bndOprDivision || pnd->type() == bndOprRoot || pnd->type() == bndOprPower && !pnd->is_left_parentheses(this))
-			? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
+		if (!sb->bEditing && pnd)
+		{
+			bnodetypes tp = pnd->type();
+			np = tp == bndOprDivision || tp == bndOprRoot || tp == bndParentheses && pnd->nparentheses() < 0 || tp == bndOprPower && !pnd->is_left_parentheses(this)
+				? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
+		}
+		else
+			np = _nparentheses < 0 ? -_nparentheses : _nparentheses;
 
 		if (!np)
 		{
@@ -158,10 +156,11 @@ bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, sh
 					np = _end - _ini;
 			}
 			else
-				np = 1;
+				np = 0;
 		}
 		return true;
 	}
+	np = 0;
 	return false;
 }
 
@@ -169,7 +168,7 @@ bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, sh
 
 
 
-bool CParserView::line::node_parentheses::parentheses() const
+inline bool CParserView::line::node_parentheses::parentheses() const
 {
 	return true;
 }
@@ -177,7 +176,7 @@ bool CParserView::line::node_parentheses::parentheses() const
 
 
 
-short CParserView::line::node_parentheses::nparentheses() const
+inline short CParserView::line::node_parentheses::nparentheses() const
 {
 	return _nparentheses;
 }
@@ -185,7 +184,7 @@ short CParserView::line::node_parentheses::nparentheses() const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_parentheses::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_parentheses::type() const
 {
 	return bndParentheses;
 }

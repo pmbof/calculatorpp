@@ -70,6 +70,10 @@ int CParserView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	CFont* pFont = m_resource.init(true, 120, L"Times New Roman", RGB(0xFF, 0xFF, 0xFF), RGB(0x00, 0x00, 0x00));
+	//CFont* pFont = m_resource.init(true, 120, L"Mathcad UnMath Prime", RGB(0xFF, 0xFF, 0xFF), RGB(0x00, 0x00, 0x00));
+
+	_scaleNum = CSize(150, 150);
+	_scaleDen = CSize(100, 100);
 
 	LOGFONT lf;
 	pFont->GetLogFont(&lf);
@@ -78,11 +82,12 @@ int CParserView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	lf.lfItalic = FALSE;
 	lf.lfWeight = FW_BOLD;
 	m_resource.add_style("@operators", &lf, RGB(0x60, 0x00, 0x00));
-	lf.lfItalic = TRUE;
-	lf.lfWeight = FW_NORMAL;
-	m_resource.add_style("@variables", &lf, RGB(0x00, 0x00, 0x00));
-	m_resource.add_style("@Build-in functions", &lf, RGB(0x00, 0x00, 0x00));
-	m_resource.add_style("@user-def functions", &lf, RGB(0x00, 0x60, 0x60));
+	m_resource.add_style("@variables", 120, L"Times New Roman Italic", RGB(0x00, 0x00, 0x80));
+	CFont* pFonti = m_resource.font("@variables", 0);
+	LOGFONT lfi;
+	pFonti->GetLogFont(&lfi);
+	m_resource.add_style("@Build-in functions", &lfi, RGB(0x00, 0x00, 0x00));
+	m_resource.add_style("@user-def functions", &lfi, RGB(0x00, 0x60, 0x60));
 	m_resource.add_style("@parentheses", &lf, RGB(0x00, 0x00, 0x00));
 	m_resource.add_style("@list", &lf, RGB(0x00, 0x00, 0x00));
 	m_resource.add_style("@strings", &lf, RGB(0x00, 0x80, 0x00));
@@ -153,6 +158,9 @@ void CParserView::OnInitialUpdate()
 
 void CParserView::OnDraw(CDC* pDC)
 {
+	pDC->SetMapMode(MM_ISOTROPIC);
+	pDC->SetViewportExt(_scaleNum);
+	pDC->SetWindowExt(_scaleDen);
 	if (m_resource.pretty())
 		m_line[0].draw(pDC);
 	else
@@ -580,6 +588,8 @@ void CParserView::OnNextunknow()
 
 void CParserView::OnMouseMove(UINT nFlags, CPoint point)
 {
+	point.x = point.x * _scaleDen.cx / _scaleNum.cx;
+	point.y = point.y * _scaleDen.cy / _scaleNum.cy;
 	if (GetDocument()->m_error.item() && m_error.PtInRect(point))
 	{
 		if (m_tooltipId != 1)
@@ -612,16 +622,25 @@ BOOL CParserView::PreTranslateMessage(MSG* pMsg)
 }
 
 
+
+
+inline void CParserView::set_caret()
+{
+	CreateSolidCaret(_scaleNum.cx < _scaleDen.cx  ? 1 : _scaleNum.cx / _scaleDen.cx, m_caret.height * _scaleNum.cy / _scaleDen.cy);
+	CPoint pc(m_caret.pos[1].x * _scaleNum.cx / _scaleDen.cx, m_caret.pos[1].y * _scaleNum.cy / _scaleDen.cx);
+	SetCaretPos(pc);
+	ShowCaret();
+}
+
+
+
 void CParserView::OnSetFocus(CWnd* pOldWnd)
 {
 	CView::OnSetFocus(pOldWnd);
 
 	if (m_resource.pretty() && !m_line.empty())
 		m_line[0](m_caret);
-
-	CreateSolidCaret(1, m_caret.height);
-	SetCaretPos(m_caret.pos[1]);
-	ShowCaret();
+	set_caret();
 }
 
 
@@ -689,10 +708,7 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if (m_caret.spos[1] != old1)
 		{
 			if (m_line[0](m_caret))
-			{
-				CreateSolidCaret(1, m_caret.height);
-				SetCaretPos(m_caret.pos[1]);
-			}
+				set_caret();
 		}
 	}
 	else if (m_caret.spos[1] != old1)
@@ -700,7 +716,7 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		CDC* pDC = GetDC();
 		draw_line(pDC, true);
 		ReleaseDC(pDC);
-		SetCaretPos(m_caret.pos[1]);
+		set_caret();
 
 		if (!(GetKeyState(VK_LSHIFT) & 0x8000))
 		{
@@ -776,10 +792,7 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if (m_caret.spos[1] != old1)
 		{
 			if (m_line[0](m_caret))
-			{
-				CreateSolidCaret(1, m_caret.height);
-				SetCaretPos(m_caret.pos[1]);
-			}
+				set_caret();
 		}
 	}
 	else if (m_caret.spos[1] != old1)
@@ -787,7 +800,7 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		CDC* pDC = GetDC();
 		draw_line(pDC, true);
 		ReleaseDC(pDC);
-		SetCaretPos(m_caret.pos[1]);
+		set_caret();
 
 		if (!(GetKeyState(VK_LSHIFT) & 0x8000))
 		{
@@ -813,7 +826,7 @@ void CParserView::OnLButtonDown(UINT nFlags, CPoint point)
 		int x = point.x;
 		draw_line(pDC, true, &x);
 		ReleaseDC(pDC);
-		SetCaretPos(m_caret.pos[1]);
+		set_caret();
 
 		if (!(GetKeyState(VK_LSHIFT) & 0x8000))
 		{

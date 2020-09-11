@@ -44,7 +44,7 @@ void CParserView::line::node_operator_minus::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_operator_minus::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_operator_minus::type() const
 {
 	return bndOprMinus;
 }

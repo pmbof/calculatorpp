@@ -54,41 +54,42 @@ void CParserView::line::node_alpha::set(sset* ss)
 	{
 		CFont* pFont = ss->pline->font(type(), ss->index);
 		CFont* oldFont = ss->pDC->SelectObject(pFont);
-		CString sn(ss->pstr + _ini, _end - _ini);
 
-		int pt = sn.Find(L".");
-		if (0 < pt && pt + 1 < sn.GetLength())
-			sn = sn.Mid(0, pt);
-		else
-			pt = -1;
+		item::SIZETP end;
+		for (end = _ini + 1; end < _end && ss->pstr[end] != '.'; ++end)
+			;
 
-		CRect cr(this);
-		ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-		right = left + cr.Width();
-		if (lnd && rl.Height() != cr.Height())
+/*		CSize te = ss->pDC->GetOutputTextExtent(sn);
+		ABCFLOAT vectA[256];
+		ss->pDC->GetCharABCWidths(0, 255, vectA);
+		float widthA = 0;
+		for (int k = 0; k < sn.GetLength(); ++k)
+			widthA += (0 < vectA[sn[k]].abcfA ? vectA[sn[k]].abcfA : 0) + vectA[sn[k]].abcfB + vectA[sn[k]].abcfC;*/
+		CSize te;
+		GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, end - _ini, &te);
+
+		right = left + te.cx + 1;
+		if (lnd && rl.Height() != te.cy)
 		{
-			top = _middle - cr.Height() / 2 - cr.Height() % 2;
-			bottom = top + cr.Height();
+			top = _middle - te.cy / 2 - te.cy % 2;
+			bottom = top + te.cy;
 		}
 		else if (!lnd)
 		{
-			top = _middle - cr.Height() / 2;
-			bottom = top + cr.Height();
+			top = _middle - te.cy / 2;
+			bottom = top + te.cy;
 		}
-		LOGFONT lf;
-		pFont->GetLogFont(&lf);
-		if (lf.lfItalic)
-			right += 2;
 		ss->pDC->SelectObject(oldFont);
-		if (0 < pt)
+		if (end < _end)
 		{
 			_right = new node_alpha(this, ss->nd);;
-			static_cast<node_alpha*>(_right)->_ini += pt + (ss->bEditing ? 0 : 1);
+			static_cast<node_alpha*>(_right)->_ini = end + (ss->bEditing ? 0 : 1);
+			_end = end;
 
 			ss->index += 2;
 			_right->set(ss);
 			ss->index -= 2;
-			_right->rect_move(lf.lfItalic ? -2 : 0, Height() / 2);
+			_right->rect_move(0, Height() / 2);
 			rnd = nullptr;
 		}
 	}
@@ -141,7 +142,7 @@ void CParserView::line::node_alpha::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_alpha::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_alpha::type() const
 {
 	return bndAlpha;
 }

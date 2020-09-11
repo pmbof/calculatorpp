@@ -15,7 +15,7 @@ CParserView::line::node_list::node_list(bnode* parent, const tnode* nd)
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_list::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_list::type() const
 {
 	return bndList;
 }

@@ -8,13 +8,13 @@
 
 
 CParserView::line::node_buildin_function::node_buildin_function(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+	: node_alpha(parent, nd)
 {
 }
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_buildin_function::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_buildin_function::type() const
 {
 	return bndBIFunction;
 }

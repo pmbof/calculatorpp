@@ -8,14 +8,14 @@
 
 
 CParserView::line::node_function::node_function(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+	: node_alpha(parent, nd)
 {
 }
 
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_function::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_function::type() const
 {
 	return bndFunction;
 }

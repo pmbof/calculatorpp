@@ -315,9 +315,9 @@ CFont* CParserView::resource::_get_font(const std::string& fontName, short point
 		if (pDC)
 		{
 			CFont* oldFont = pDC->SelectObject(sf.pFont);
-			CRect r(0, 0, 10, 10);
-			pDC->DrawText(L"Mg", r, DT_SINGLELINE | DT_LEFT | DT_TOP | DT_CALCRECT);
-			h = r.Height();
+			TEXTMETRIC tm;
+			pDC->GetTextMetrics(&tm);
+			h = tm.tmHeight;
 			pDC->SelectObject(oldFont);
 		}
 		else
@@ -346,9 +346,9 @@ CFont* CParserView::resource::_get_font(const LOGFONT* plf, CDC* pDC)
 		if (pDC)
 		{
 			CFont* oldFont = pDC->SelectObject(sf.pFont);
-			CRect r(0, 0, 10, 10);
-			pDC->DrawText(L"Mg", r, DT_SINGLELINE | DT_LEFT | DT_TOP | DT_CALCRECT);
-			h = r.Height();
+			TEXTMETRIC tm;
+			pDC->GetTextMetrics(&tm);
+			h = tm.tmHeight;
 			pDC->SelectObject(oldFont);
 		}
 		else

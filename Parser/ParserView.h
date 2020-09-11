@@ -237,7 +237,7 @@ private:
 		};
 
 
-		struct node_function : node
+		struct node_function : node_alpha
 		{
 			node_function(bnode* parent, const tnode* nd);
 
@@ -245,7 +245,7 @@ private:
 		};
 
 
-		struct node_buildin_function : node
+		struct node_buildin_function : node_alpha
 		{
 			node_buildin_function(bnode* parent, const tnode* nd);
 
@@ -256,6 +256,8 @@ private:
 		struct node_number : node
 		{
 			node_number(bnode* parent, const tnode* nd);
+
+			void set(sset* ss) override;
 
 			bnodetypes type() const override;
 		};
@@ -645,9 +647,12 @@ private:
 	CPoint m_p0;
 	bool m_bShowResult;
 
+	CSize _scaleNum;
+	CSize _scaleDen;
 
 private:
 	void draw_line(CDC* pDC, bool bCalc = false, int* x_pos = nullptr);
+	void set_caret();
 
 // Implementation
 public:

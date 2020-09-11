@@ -48,7 +48,7 @@ void CParserView::line::node_operator_division::set(sset* ss)
 
 		CRect rr = _right->rect();
 		int width = rr.Width() < rl.Width() ? rl.Width() : rr.Width();
-		right = left + width + 2;
+		right = left + width;
 		top += _middle - 2;
 		bottom = _middle + 4;
 		_left->rect_move(width / 2 - rl.Width() / 2, _middle - rl.bottom - 2);

@@ -15,7 +15,7 @@ CParserView::line::node_space::node_space(bnode* parent, const tnode* nd)
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_space::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_space::type() const
 {
 	return bndSpace;
 }

@@ -153,25 +153,21 @@ void CParserView::line::node::set(sset* ss)
 	{
 		CFont* pFont = ss->pline->font(type(), ss->index);
 		CFont* oldFont = ss->pDC->SelectObject(pFont);
-		CString sn(ss->pstr + _ini, ss->nd->len());
 
-		CRect cr(this);
-		ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-		right = left + cr.Width();
-		if (lnd && rl.Height() != cr.Height())
+		CSize te;
+		GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len(), &te);
+
+		right = left + te.cx;
+		if (lnd && rl.Height() != te.cy)
 		{
-			top = _middle - cr.Height() / 2 - cr.Height() % 2;
-			bottom = top + cr.Height();
+			top = _middle - te.cy / 2 - te.cy % 2;
+			bottom = top + te.cy;
 		}
 		else if (!lnd)
 		{
-			top = _middle - cr.Height() / 2;
-			bottom = top + cr.Height();
+			top = _middle - te.cy / 2;
+			bottom = top + te.cy;
 		}
-		LOGFONT lf;
-		pFont->GetLogFont(&lf);
-		if (lf.lfItalic)
-			right += 2;
 		ss->pDC->SelectObject(oldFont);
 	}
 	if (rnd)

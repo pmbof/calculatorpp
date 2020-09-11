@@ -51,12 +51,12 @@ void CParserView::line::node_operator_root::set(sset* ss)
 		{
 			CFont* pFont = ss->pline->font(type(), ss->index);
 			CFont* oldFont = ss->pDC->SelectObject(pFont);
-			CString sn(ss->pstr + _ini, nd->len());
 
-			CRect cr(this);
-			ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-			right = left + cr.Width() + 1;
-			bottom = top + cr.Height();
+			CSize te;
+			GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, nd->len(), &te);
+
+			right = left + te.cx + 1;
+			bottom = top + te.cy;
 			ss->pDC->SelectObject(oldFont);
 		}
 		ss->nd = rnd;
@@ -149,7 +149,7 @@ void CParserView::line::node_operator_root::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_operator_root::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_operator_root::type() const
 {
 	return bndOprRoot;
 }

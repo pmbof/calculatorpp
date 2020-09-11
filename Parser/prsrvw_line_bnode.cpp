@@ -138,7 +138,7 @@ bool CParserView::line::bnode::is_left_parentheses(const bnode* parent) const
 
 
 
-CParserView::line::bnode& CParserView::line::bnode::operator=(const CRect& right)
+inline CParserView::line::bnode& CParserView::line::bnode::operator=(const CRect& right)
 {
 	*static_cast<CRect*>(this) = right;
 	return *this;
@@ -146,7 +146,7 @@ CParserView::line::bnode& CParserView::line::bnode::operator=(const CRect& right
 
 
 
-CParserView::line::bnode* CParserView::line::bnode::node_mright()
+inline CParserView::line::bnode* CParserView::line::bnode::node_mright()
 {
 	bnode* rnd;
 	for (rnd = this; rnd && rnd->_right; rnd = rnd->_right)
@@ -170,7 +170,7 @@ void CParserView::line::bnode::rect_move(int dx, int dy)
 }
 
 
-void CParserView::line::bnode::_rect_move(int dx, int dy)
+inline void CParserView::line::bnode::_rect_move(int dx, int dy)
 {
 	left += dx;
 	right += dx;
@@ -192,7 +192,7 @@ CRect CParserView::line::bnode::rect() const
 
 
 
-void CParserView::line::bnode::max_rect(CRect& r, const CRect& r2) const
+inline void CParserView::line::bnode::max_rect(CRect& r, const CRect& r2) const
 {
 	if (r2.top < r.top)
 		r.top = r2.top;
@@ -237,28 +237,32 @@ const CParserView::line::bnode* CParserView::line::bnode::get_first() const
 	return const_cast<bnode*>(this)->get_first();
 }
 
-const CParserView::line::bnode* CParserView::line::bnode::get_root() const
+
+inline const CParserView::line::bnode* CParserView::line::bnode::get_root() const
 {
 	return const_cast<bnode*>(this)->get_root();
 }
 
-const CParserView::line::bnode* CParserView::line::bnode::get_first_child() const
+
+inline const CParserView::line::bnode* CParserView::line::bnode::get_first_child() const
 {
 	return const_cast<bnode*>(this)->get_first_child();
 }
 
-const CParserView::line::bnode* CParserView::line::bnode::get_next() const
+
+inline const CParserView::line::bnode* CParserView::line::bnode::get_next() const
 {
 	return const_cast<bnode*>(this)->get_next();
 }
 
 
-CParserView::line::bnode* CParserView::line::bnode::get_first()
+inline CParserView::line::bnode* CParserView::line::bnode::get_first()
 {
 	return get_root()->get_first_child();
 }
 
-CParserView::line::bnode* CParserView::line::bnode::get_root()
+
+inline CParserView::line::bnode* CParserView::line::bnode::get_root()
 {
 	bnode* ndr;
 	for (ndr = this; ndr && ndr->_parent; ndr = ndr->_parent)
@@ -267,7 +271,7 @@ CParserView::line::bnode* CParserView::line::bnode::get_root()
 }
 
 
-CParserView::line::bnode* CParserView::line::bnode::get_first_child()
+inline CParserView::line::bnode* CParserView::line::bnode::get_first_child()
 {
 	bnode* ndl = this;
 	do
@@ -283,7 +287,7 @@ CParserView::line::bnode* CParserView::line::bnode::get_first_child()
 }
 
 
-CParserView::line::bnode* CParserView::line::bnode::get_next()
+inline CParserView::line::bnode* CParserView::line::bnode::get_next()
 {
 	bnode* ndl = _parent;
 	if (ndl && ndl->_right != this)

@@ -46,7 +46,6 @@ void CParserView::line::node_operator_product::draw(sdraw* sd) const
 	sd->pDC->SetPixel(mx + hw - mw, _middle - hw, sd->pline->color(type()));
 
 	sd->pDC->SelectObject(oldPen);
-
 	if (_right)
 	{
 		const bnode* pnd = sd->pnd;
@@ -60,7 +59,7 @@ void CParserView::line::node_operator_product::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_operator_product::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_operator_product::type() const
 {
 	return bndOprProduct;
 }

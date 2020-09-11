@@ -51,20 +51,20 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 	}
 	CFont* pFont = ss->pline->font(type(), ss->index);
 	CFont* oldFont = ss->pDC->SelectObject(pFont);
-	CString sn(ss->pstr + _ini, ss->nd->len());
 
-	CRect cr(this);
-	ss->pDC->DrawText(sn, cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-	right = left + cr.Width();
-	if (lnd && rl.Height() != cr.Height())
+	CSize te;
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len(), &te);
+
+	right = left + te.cx;
+	if (lnd && rl.Height() != te.cy)
 	{
-		top = _middle - cr.Height() / 2 - cr.Height() % 2;
-		bottom = top + cr.Height();
+		top = _middle - te.cy / 2 - te.cy % 2;
+		bottom = top + te.cy;
 	}
 	else if (!lnd)
 	{
-		bottom = top + cr.Height();
-		_middle = top + cr.Height() / 2;
+		bottom = top + te.cy;
+		_middle = top + te.cy / 2;
 	}
 	LOGFONT lf;
 	pFont->GetLogFont(&lf);
@@ -128,7 +128,7 @@ void CParserView::line::node_operator_equal::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_operator_equal::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_operator_equal::type() const
 {
 	return bndOprEqual;
 }

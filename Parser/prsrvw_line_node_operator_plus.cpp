@@ -29,7 +29,7 @@ void CParserView::line::node_operator_plus::draw(sdraw* sd) const
 	const short w2 = Width() / 2;
 	const short mx = left + w2;
 	const bool bw = Height() < Width() - 2;
-	const short hw = bw ? Height() / 2 : w2 - 1;
+	const short hw = bw ? Height() / 2 : w2;
 
 	CPen pen;
 	pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
@@ -42,7 +42,6 @@ void CParserView::line::node_operator_plus::draw(sdraw* sd) const
 	sd->pDC->LineTo(mx+ hw + 1, _middle);
 
 	sd->pDC->SelectObject(oldPen);
-
 	if (_right)
 	{
 		const bnode* pnd = sd->pnd;
@@ -56,7 +55,7 @@ void CParserView::line::node_operator_plus::draw(sdraw* sd) const
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_operator_plus::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_operator_plus::type() const
 {
 	return bndOprPlus;
 }

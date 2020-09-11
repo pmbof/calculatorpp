@@ -64,13 +64,15 @@ void CParserView::line::node_result::set(sset* ss)
 
 		CFont* pFont = ss->pline->font(type(), ss->index);
 		CFont* oldFont = ss->pDC->SelectObject(pFont);
-		CRect cr(this);
-		ss->pDC->DrawText(L" = ", cr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
-		right += cr.Width();
-		if (rl.Height() != cr.Height())
+
+		CSize te;
+		GetTextExtentPointA(ss->pDC->m_hDC, " =", 2, &te);
+
+		right += te.cx;
+		if (rl.Height() != te.cy)
 		{
-			top = _middle - cr.Height() / 2 - cr.Height() % 2;
-			bottom = top + cr.Height();
+			top = _middle - te.cy / 2 - te.cy % 2;
+			bottom = top + te.cy;
 		}
 		ss->pDC->SelectObject(oldFont);
 	}
@@ -81,7 +83,10 @@ void CParserView::line::node_result::set(sset* ss)
 
 		nss.nd = resnd;
 		node::new_instance(&_right, this, nss.nd);
+		bool bEditing = nss.bEditing;
+		nss.bEditing = false;
 		_right->set(&nss);
+		nss.bEditing = bEditing;
 		CRect rr = _right->rect();
 		max_rect(*this, rr);
 	}
@@ -108,38 +113,18 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 		if (_left)
 			_left->draw(sd);
 
-		CString sn;
-		if (!_bNodes)
-			sn = L" = ";
-		if (_ini < _end)
-			sn += CString(nsd.pstr + _ini, _end - _ini);
-		if (!sn.IsEmpty())
+		if (!_parent)
 		{
-			COLORREF oldColor = sd->pDC->SetTextColor(sd->pline->color(type()));
-			CFont* pFont = sd->pline->font(type(), sd->index);
-			CFont* oldFont = sd->pDC->SelectObject(pFont);
-			CRect r(this);
-			if (_bNodes)
-			{
-				if (_left)
-				{
-					r.left = _left->right;
-					r.top = _left->_middle - Height() / 2;
-					r.bottom = r.top + Height();
-				}
-				if (_right)
-				{
-					r.right = _right->left;
-					if (!_left)
-					{
-						r.top = _right->_middle - Height() / 2;
-						r.bottom = r.top + Height();
-					}
-				}
-			}
-			sd->pDC->DrawText(sn, r, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-			sd->pDC->SelectObject(oldFont);
-			sd->pDC->SetTextColor(oldColor);
+			CPen pen;
+			pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
+			CPen* oldPen = sd->pDC->SelectObject(&pen);
+
+			LONG r = (_right ? _right->get_first_child()->left : right) - 2;
+			sd->pDC->MoveTo(left + 2, _middle - 2);
+			sd->pDC->LineTo(r - 2, _middle - 2);
+			sd->pDC->MoveTo(left + 2, _middle + 2);
+			sd->pDC->LineTo(r - 2, _middle + 2);
+			sd->pDC->SelectObject(oldPen);
 		}
 		if (_right)
 			_right->draw(&nsd);
@@ -159,14 +144,14 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 
 
 
-bool CParserView::line::node_result::empty() const
+inline bool CParserView::line::node_result::empty() const
 {
 	return false;
 }
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_result::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_result::type() const
 {
 	return bndResult;
 }

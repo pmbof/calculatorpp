@@ -16,7 +16,7 @@ CParserView::line::node_string::node_string(bnode* parent, const tnode* nd)
 
 
 
-CParserView::line::bnodetypes CParserView::line::node_string::type() const
+inline CParserView::line::bnodetypes CParserView::line::node_string::type() const
 {
 	return bndString;
 }
