@@ -465,7 +465,7 @@ void CParserDoc::update(const char* expr)
 		m_result.clear();
 		if (!bResult)
 		{
-			pmb::log::instance()->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str());
+			pmb::log::instance()->trace(pmb::logError, "Exception: \"%s\"\n", ex.message(m_expr).c_str());
 			m_error = ex;
 		}
 	}
