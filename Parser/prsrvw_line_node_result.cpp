@@ -108,7 +108,7 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 	CParserDoc* pDoc = sd->pline->_parent->GetDocument();
 	if (pDoc)
 	{
-		sdraw nsd(sd->pline, this, sd->pDC, pDoc->m_result.c_str(), false);
+		sdraw nsd(sd->pline, this, sd->pDC, pDoc->m_result.c_str(), false, sd->_carpos);
 
 		if (_left)
 			_left->draw(sd);
@@ -141,6 +141,35 @@ void CParserView::line::node_result::draw(sdraw* sd) const
 	sd->end_expr(this);
 }
 
+
+
+bool CParserView::line::node_result::set_caret_pos(sdraw* sd, scaret& caret) const
+{
+	bool bOk = false;
+	CParserDoc* pDoc = sd->pline->_parent->GetDocument();
+	if (pDoc)
+	{
+		if (_left)
+			bOk = _left->set_caret_pos(sd, caret);
+
+		if (!bOk && !_parent)
+		{
+			LONG r = (_right ? _right->get_first_child()->left : right) - 2;
+			sd->pDC->MoveTo(left + 2, _middle - 2);
+			sd->pDC->LineTo(r - 2, _middle - 2);
+			sd->pDC->MoveTo(left + 2, _middle + 2);
+			sd->pDC->LineTo(r - 2, _middle + 2);
+		}
+	}
+	else if (_right)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _right->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	return bOk;
+}
 
 
 

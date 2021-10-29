@@ -35,8 +35,8 @@ CParserView::line::sset::sset(line* pl, const tnode* pnd, CDC* pdc, const char* 
 
 
 
-CParserView::line::sdraw::sdraw(line* pl, const bnode* pbnd, CDC* pdc, const char* pExpr, bool bediting, const char* pExpr2)
-	: sbase(pl, pdc, pExpr, bediting), pnd(pbnd), postr(pExpr2)
+CParserView::line::sdraw::sdraw(line* pl, const bnode* pbnd, CDC* pdc, const char* pExpr, bool bediting, item::SIZETP carpos, const char* pExpr2)
+	: sbase(pl, pdc, pExpr, bediting), pnd(pbnd), _carpos(carpos), postr(pExpr2)
 {
 }
 

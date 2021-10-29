@@ -129,6 +129,66 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 
 
 
+bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret) const
+{
+	bool bOk = false;
+	if (_left)
+	{
+		const bnode* pnd = sd->pnd;
+		//sd->pnd = nullptr;
+		bOk = _left->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+
+	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	{
+		CRect r(this);
+		r.top -= Height();
+		r.bottom += Height();
+
+		int cx = 0;
+		if (_ini < caret.spos[1])
+		{
+			short np;
+			if (get_np(sd, sd->pnd, np, true))
+			{
+				if (_left || !_nparentheses)
+				{
+					for (short n = 0; n < np; ++n)
+					{
+						r.right = ++r.left + 3 * Height();
+						r.left = r.left + Width() / np;
+						cx = r.left;
+					}
+				}
+				if (!_left || !_nparentheses)
+				{
+					for (short n = 0; n < np; ++n)
+					{
+						r.left = --r.right - 3 * Height();
+						r.right = r.right - Width() / np;
+						cx = r.left;
+					}
+				}
+			}
+		}
+		caret.pos[1].x = left + cx;
+		caret.pos[1].y = r.top;
+		caret.height = r.Height();
+		bOk = true;
+	}
+
+	if (!bOk && _right)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _right->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	return bOk;
+}
+
+
 
 bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, short& np, bool bDraw) const
 {

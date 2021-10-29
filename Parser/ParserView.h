@@ -115,10 +115,11 @@ private:
 
 		struct sdraw : sbase
 		{
-			sdraw(line* pl, const bnode* pbnd, CDC* pdc, const char* pExpr, bool bediting, const char* pExpr2 = nullptr);
+			sdraw(line* pl, const bnode* pbnd, CDC* pdc, const char* pExpr, bool bediting, item::SIZETP carpos, const char* pExpr2 = nullptr);
 
 			const bnode* pnd;
 			const char* postr;
+			item::SIZETP _carpos;
 
 			void begin_expr(const bnode* pnd);
 			void end_expr(const bnode* pnd);
@@ -140,6 +141,7 @@ private:
 
 			virtual void set(sset* ss) = 0;
 			virtual void draw(sdraw* sd) const = 0;
+			virtual bool set_caret_pos(sdraw* sd, scaret& caret) const = 0;
 
 			virtual bool empty() const = 0;
 
@@ -203,6 +205,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bool empty() const override;
 
@@ -232,6 +235,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
 		};
@@ -285,6 +289,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bool parentheses() const override;
 			short nparentheses() const override;
@@ -313,6 +318,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
 		};
@@ -324,6 +330,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
 		};
@@ -335,6 +342,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bool empty() const override;
 
@@ -350,6 +358,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
 
@@ -364,6 +373,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
 		};
@@ -396,6 +406,7 @@ private:
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
+			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
 		};
@@ -639,6 +650,7 @@ private:
 
 	struct scaret
 	{
+		CDC* pDC;
 		int height;
 		CPoint pos[2];
 		item::SIZETP spos[2];

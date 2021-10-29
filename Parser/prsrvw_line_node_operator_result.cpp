@@ -55,7 +55,7 @@ void CParserView::line::node_operator_result::set(sset* ss)
 	CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 	CSize te;
-	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len() - (rnd && pDoc && !pDoc->m_result.empty() ? 1 : 0), & te);
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len() - (rnd && pDoc && !pDoc->m_result.empty() ? 1 : 0), &te);
 
 	right = left + te.cx;
 	if (lnd && rl.Height() != te.cy)
@@ -144,6 +144,39 @@ void CParserView::line::node_operator_result::draw(sdraw* sd) const
 	sd->end_expr(this);
 }
 
+
+
+bool CParserView::line::node_operator_result::set_caret_pos(sdraw* sd, scaret& caret) const
+{
+	bool bOk = false;
+	if (_left)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _left->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	{
+		int cx;
+		if (_ini < caret.spos[1])
+			cx = Width();
+		else
+			cx = 0;
+		caret.pos[1].x = left + cx;
+		caret.pos[1].y = top;
+		caret.height = Height();
+		bOk = true;
+	}
+	if (!bOk && _right)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _right->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	return bOk;
+}
 
 
 

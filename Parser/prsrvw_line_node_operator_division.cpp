@@ -104,6 +104,40 @@ void CParserView::line::node_operator_division::draw(sdraw* sd) const
 
 
 
+bool CParserView::line::node_operator_division::set_caret_pos(sdraw* sd, scaret& caret) const
+{
+	bool bOk = false;
+	if (_left)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _left->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	if (!bOk)
+	{
+		if (_left && _right && sd->pline->_parent->m_fstyle & PMB_STYLE_CPPEDIT_MULTILINE)
+		{
+			const bnode* pnd = sd->pnd;
+			sd->pnd = this;
+			bOk = _right->set_caret_pos(sd, caret);
+			sd->pnd = pnd;
+		}
+		else
+		{
+			if (_right)
+			{
+				const bnode* pnd = sd->pnd;
+				sd->pnd = this;
+				bOk = _right->set_caret_pos(sd, caret);
+				sd->pnd = pnd;
+			}
+		}
+	}
+	return bOk;
+}
+
+
 
 CParserView::line::bnodetypes CParserView::line::node_operator_division::type() const
 {

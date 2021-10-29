@@ -127,6 +127,40 @@ void CParserView::line::node_operator_equal::draw(sdraw* sd) const
 
 
 
+bool CParserView::line::node_operator_equal::set_caret_pos(sdraw* sd, scaret& caret) const
+{
+	bool bOk = false;
+	if (_left)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _left->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	{
+		int cx;
+		if (_ini < caret.spos[1])
+			cx = Width();
+		else
+			cx = 0;
+		caret.pos[1].x = left + cx;
+		caret.pos[1].y = top;
+		caret.height = Height();
+		bOk = true;
+	}
+
+	if (!bOk && _right)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _right->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	return bOk;
+}
+
+
 
 inline CParserView::line::bnodetypes CParserView::line::node_operator_equal::type() const
 {

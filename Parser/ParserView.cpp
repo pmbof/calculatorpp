@@ -148,8 +148,8 @@ void CParserView::OnInitialUpdate()
 
 		CDC* pDC = GetDC();
 		m_line[0].set(pDC, m_p0.x, m_p0.y);
-		m_line[0](m_caret);
 		ReleaseDC(pDC);
+		m_line[0](m_caret);
 	}
 }
 
@@ -628,8 +628,14 @@ inline void CParserView::set_caret()
 {
 	CreateSolidCaret(_scaleNum.cx < _scaleDen.cx  ? 1 : _scaleNum.cx / _scaleDen.cx, m_caret.height * _scaleNum.cy / _scaleDen.cy);
 	CPoint pc(m_caret.pos[1].x * _scaleNum.cx / _scaleDen.cx, m_caret.pos[1].y * _scaleNum.cy / _scaleDen.cx);
+
+	pmb::log* lg = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
+	lg->trace(pmb::logDebug, "caret pos x = %d; caret pos y = %d; caret height = %d\n", m_caret.pos[1].x, m_caret.pos[1].y, m_caret.height);
+
 	SetCaretPos(pc);
 	ShowCaret();
+
+	lg->endFunction();
 }
 
 
@@ -699,11 +705,11 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
 		if (bModified)
 		{
-			CDC* pDC = GetDC();
 			GetDocument()->update(m_expr.c_str());
+			CDC* pDC = GetDC();
 			m_line[0].set(pDC, m_p0.x, m_p0.y);
-			InvalidateRect(nullptr, 1);
 			ReleaseDC(pDC);
+			InvalidateRect(nullptr, 1);
 		}
 		if (m_caret.spos[1] != old1)
 		{
@@ -783,11 +789,11 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
 		if (bModified)
 		{
-			GetDocument()->update(m_expr.c_str());
 			CDC* pDC = GetDC();
+			GetDocument()->update(m_expr.c_str());
 			m_line[0].set(pDC, m_p0.x, m_p0.y);
-			ReleaseDC(pDC);
 			InvalidateRect(nullptr, 1);
+			ReleaseDC(pDC);
 		}
 		if (m_caret.spos[1] != old1)
 		{

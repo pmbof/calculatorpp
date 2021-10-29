@@ -142,6 +142,48 @@ void CParserView::line::node_alpha::draw(sdraw* sd) const
 
 
 
+bool CParserView::line::node_alpha::set_caret_pos(sdraw* sd, scaret& caret) const
+{
+	bool bOk = false;
+	if (_left)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		bOk = _left->set_caret_pos(sd, caret);
+		sd->pnd = pnd;
+	}
+	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	{
+		int cx;
+		if (_ini < caret.spos[1])
+		{
+			CFont* oldFont = sd->pDC->SelectObject(sd->pline->font(type(), sd->index));
+			CString sn(sd->pstr + _ini, caret.spos[1] - _ini);
+
+			cx = sd->pDC->GetTextExtent(sn).cx;
+			sd->pDC->SelectObject(oldFont);
+		}
+		else
+			cx = 0;
+		caret.pos[1].x = left + cx;
+		caret.pos[1].y = top;
+		caret.height = Height();
+		bOk = true;
+	}
+	if (!bOk && _right)
+	{
+		const bnode* pnd = sd->pnd;
+		sd->pnd = this;
+		sd->index += 2;
+		bOk = _right->set_caret_pos(sd, caret);
+		sd->index -= 2;
+		sd->pnd = pnd;
+	}
+	return bOk;
+}
+
+
+
 inline CParserView::line::bnodetypes CParserView::line::node_alpha::type() const
 {
 	return bndAlpha;
