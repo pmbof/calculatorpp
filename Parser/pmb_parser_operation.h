@@ -90,14 +90,38 @@ class operation_table
 public:
 	typedef typename _OPR operation;
 	typedef unsigned short size_t;
+	typedef typename _NODE::ISIZE ISIZE;
+
+public:
+	struct sfoperation {
+		const operation* opr;
+		ISIZE len;
+	};
+
+protected:
+	struct sfndrec {
+		const _NODE* nd;
+		const char* expr;
+		sfoperation** vopr;
+		size_t sz;
+		unsigned char vflag;
+	};
+
 
 public:
 	operation_table(const operation** opr, size_t size);
 
-	const operation* find(const _NODE* nd, const char* expr) const;
+	size_t find(const _NODE* nd, const char* expr, sfoperation** vopr) const;
 
 	const operation* get(size_t i) const;
 	size_t size() const;
+
+protected:
+	bool _check(const _NODE* nd, const operation* opr) const;
+	bool _check2(const _NODE* nd, const operation* opr) const;
+	bool _check3(sfndrec* sfo, const operation* opr, size_t iter) const;
+
+	size_t _find_recursive(sfndrec* sfo, size_t iter, ISIZE offset) const;
 
 protected:
 	const operation** _opr;

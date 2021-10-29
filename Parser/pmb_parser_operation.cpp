@@ -224,41 +224,116 @@ operation_table<_OPR, _NODE>::operation_table(const operation** opr, size_t size
 
 
 
-
 template<class _OPR, class _NODE>
-const typename operation_table<_OPR, _NODE>::operation*
-	operation_table<_OPR, _NODE>::find(const _NODE* nd, const char* expr) const
+typename operation_table<_OPR, _NODE>::size_t
+	operation_table<_OPR, _NODE>::find(const _NODE* nd, const char* expr, sfoperation** vopr) const
 {
 	std::vector<size_t> vfs;
+	size_t sz = nd->len();
 	for(size_t i = 0; i < _oprSize; ++i)
 	{
-		if (_opr[i]->compare(nd->getCharPtr(expr), nd->len()))
+		if (_opr[i]->compare(nd->getCharPtr(expr), sz))
 		{
 			vfs.push_back(i);
-			if((_opr[i]->isBinary() && nd->getLeft() && nd->getRight() || 
-					!_opr[i]->isBinary() && _opr[i]->isLeftToRight() && nd->getLeft() && !nd->getRight() || 
-					!_opr[i]->isBinary() && !_opr[i]->isLeftToRight() && !nd->getLeft() && nd->getRight()))
-				return _opr[i];
+			if (_check(nd, _opr[i]))
+			{
+				*vopr = new sfoperation[1];
+				(*vopr)->opr = _opr[i];
+				return size_t(1);
+			}
 		}
 	}
 
 	for (size_t vi = 0; vi < vfs.size(); ++vi)
 	{
 		size_t i = vfs[vi];
-		if ((_opr[i]->isBinary() && nd->getLeft() && nd->getRight() ||
-				!_opr[i]->isBinary() && _opr[i]->isLeftToRight() && nd->getLeft() ||
-				!_opr[i]->isBinary() && !_opr[i]->isLeftToRight() && nd->getRight()))
-			return _opr[i];
+		if (_check2(nd, _opr[i]))
+		{
+			*vopr = new sfoperation[1];
+			(*vopr)->opr = _opr[i];
+			return size_t(1);
+		}
 	}
 
-	return nullptr;
+	size_t nopr;
+	if (1 < sz)
+	{
+		sfndrec sfo = {nd, expr, vopr, sz, 0};
+		*vopr = new sfoperation[sz];
+		if (!(nopr = _find_recursive(&sfo, 0, 0)))
+			delete[] *vopr;
+	}
+	else
+		nopr = size_t(0);
+	return nopr;
 }
 
 
 
 
 template<class _OPR, class _NODE>
-const typename operation_table<_OPR, _NODE>::operation*
+inline bool operation_table<_OPR, _NODE>::_check(const _NODE* nd, const operation* opr) const
+{
+	return		opr->isBinary() &&   nd->getLeft()       &&  nd->getRight()
+			|| !opr->isBinary() && (opr->isLeftToRight() &&  nd->getLeft()  && !nd->getRight()
+								|| !opr->isLeftToRight() && !nd->getLeft()  &&  nd->getRight());
+}
+
+
+
+template<class _OPR, class _NODE>
+inline bool operation_table<_OPR, _NODE>::_check2(const _NODE* nd, const operation* opr) const
+{
+	return		opr->isBinary() &&   nd->getLeft()       && nd->getRight()
+			|| !opr->isBinary() && (opr->isLeftToRight() && nd->getLeft()
+								|| !opr->isLeftToRight() && nd->getRight());
+}
+
+
+
+template<class _OPR, class _NODE>
+inline bool operation_table<_OPR, _NODE>::_check3(sfndrec* sfo, const operation* opr, size_t iter) const
+{
+
+	return true;
+}
+
+
+
+template<class _OPR, class _NODE>
+typename operation_table<_OPR, _NODE>::size_t
+	operation_table<_OPR, _NODE>::_find_recursive(sfndrec* sfo, size_t iter, ISIZE offset) const
+{
+	for (size_t ilen = iter + 1; ilen < sfo->sz - offset; ++ilen)
+	{
+		for (size_t i = 0; i < _oprSize; ++i)
+		{
+			if (_opr[i]->compare(sfo->nd->getCharPtr(sfo->expr + offset), ilen) && _check3(sfo, _opr[i], iter))
+			{
+				(*sfo->vopr)[iter].opr = _opr[i];
+				(*sfo->vopr)[iter].len = ilen;
+				if (iter + 1 < sfo->sz)
+				{
+					size_t n = _find_recursive(sfo, iter + 1, offset + ilen);
+					if (n)
+						return n;
+				}
+				else
+					return iter + 1;
+			}
+		}
+	}
+
+	return size_t(0);
+}
+
+
+
+
+
+
+template<class _OPR, class _NODE>
+inline const typename operation_table<_OPR, _NODE>::operation*
 	operation_table<_OPR, _NODE>::get(size_t i) const
 {
 	return _opr[i];
@@ -268,7 +343,7 @@ const typename operation_table<_OPR, _NODE>::operation*
 
 
 template<class _OPR, class _NODE>
-typename operation_table<_OPR, _NODE>::size_t operation_table<_OPR, _NODE>::size() const
+inline typename operation_table<_OPR, _NODE>::size_t operation_table<_OPR, _NODE>::size() const
 {
 	return _oprSize;
 }

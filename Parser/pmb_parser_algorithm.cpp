@@ -144,31 +144,38 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::mapUnknown()
 	node* nd;
 	for(nd = _tree->getRootNode()->getFirstUnknownNode(); nd; nd = nd->getNextUnknownNode())
 	{
-		const operation* opr = _oprTable->find(nd, _expr._expr);
-		if(opr)
+		_OPRTABLE::sfoperation* opr;
+		_OPRTABLE::size_t nopr = _oprTable->find(nd, _expr._expr, &opr);
+		if(nopr)
 		{
-			const tptree* fncTree = NULL;
-			typename _BLOCK::pair_function fnc;
-			if(opr->canCallFunction())
-				fnc = _pBlock->find_function(nd, _expr._expr, opr->isLeftToRight(), _findFirstInFunction);
-			if (fnc._userDef)
-				plg->trace(logDebug, "\t\t\t+ user function found. _findFirstInFunction = %s\n", _findFirstInFunction ? "true" : "false");
-			if (fnc._buildin)
-				plg->trace(logDebug, "\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", fnc._buildin->getName(), fnc._buildin->getNArgs(), fnc._buildin->getDescription(), _findFirstInFunction ? "true": "false");
+			for (_OPRTABLE::size_t o = 0; o < nopr; ++o)
+			{
+				if (o)
+					nd = static_cast<node_unknown*>(nd)->add(opr[o - 1].len);
+				const tptree* fncTree = NULL;
+				typename _BLOCK::pair_function fnc;
+				if (opr[o].opr->canCallFunction())
+					fnc = _pBlock->find_function(nd, _expr._expr, opr[o].opr->isLeftToRight(), _findFirstInFunction);
+				if (fnc._userDef)
+					plg->trace(logDebug, "\t\t\t+ user function found. _findFirstInFunction = %s\n", _findFirstInFunction ? "true" : "false");
+				if (fnc._buildin)
+					plg->trace(logDebug, "\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", fnc._buildin->getName(), fnc._buildin->getNArgs(), fnc._buildin->getDescription(), _findFirstInFunction ? "true" : "false");
 
-			static_cast<node_unknown*>(nd)->set(
-				reinterpret_cast<const void*>(opr), opr->isBinary(), opr->isLeftToRight(), opr->getPrecedence(), opr->canCreateLVariable(), opr->canCreateRVariable(),
-				reinterpret_cast<const void*>(fnc._buildin),
-				reinterpret_cast<void*>(fnc._userDef));
-			plg->trace(logDebug, "\t- Mapping operation: ");
-			if (fnc._userDef)
-				*plg << "(call user function) ";
-			if (fnc._buildin)
-				*plg << "(call build-in function) ";
-			*plg << "pointer: " << opr << " -> '" << opr->getSymbol() << "'"
-				<< " <" << opr->getName() << ", " << opr->getDescription() << ">["
-				<< (opr->isBinary() ? "b": "u") << "," << (opr->isLeftToRight() ? "L": "R") << "," << opr->getPrecedence() << "]";
-			TRACE_NODE(logDebug, ",", _expr, nd);
+				static_cast<node_unknown*>(nd)->set(
+					reinterpret_cast<const void*>(opr[o].opr), opr[o].opr->isBinary(), opr[o].opr->isLeftToRight(), opr[o].opr->getPrecedence(), opr[o].opr->canCreateLVariable(), opr[o].opr->canCreateRVariable(),
+					reinterpret_cast<const void*>(fnc._buildin),
+					reinterpret_cast<void*>(fnc._userDef));
+				plg->trace(logDebug, "\t- Mapping operation: ");
+				if (fnc._userDef)
+					*plg << "(call user function) ";
+				if (fnc._buildin)
+					*plg << "(call build-in function) ";
+				*plg << "pointer: " << opr[o].opr << " -> '" << opr[o].opr->getSymbol() << "'"
+					<< " <" << opr[o].opr->getName() << ", " << opr[o].opr->getDescription() << ">["
+					<< (opr[o].opr->isBinary() ? "b" : "u") << "," << (opr[o].opr->isLeftToRight() ? "L" : "R") << "," << opr[o].opr->getPrecedence() << "]";
+				TRACE_NODE(logDebug, ",", _expr, nd);
+			}
+			delete[] opr;
 		}
 		else
 			TRACE_NODE(logWarning, "\t- No mapping for: ", _expr, nd);
