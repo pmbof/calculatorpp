@@ -7,16 +7,9 @@
 #pragma endregion includes
 
 
-CParserView::line::node_result::node_result(bnode* parent, const tnode* nd)
-	: node(parent)
+CParserView::line::node_result::node_result(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
-	if (nd)
-	{
-		_ini = nd->getIni();
-		_end = nd->getEnd();
-	}
-	else
-		_end = _ini = -1;
 }
 
 
@@ -79,10 +72,10 @@ void CParserView::line::node_result::set(sset* ss)
 
 	if (resnd)
 	{
-		_ini = _end = 0;
+		//_ini = _end = 0;
 
-		nss.nd = resnd;
-		node::new_instance(&_right, this, nss.nd);
+		nss.tnd = resnd;
+		node::new_instance(&_right, this, nss.tnd);
 		bool bEditing = nss.bEditing;
 		nss.bEditing = false;
 		_right->set(&nss);
@@ -169,6 +162,27 @@ bool CParserView::line::node_result::set_caret_pos(sdraw* sd, scaret& caret) con
 		sd->pnd = pnd;
 	}
 	return bOk;
+}
+
+
+
+inline item::SIZETP CParserView::line::node_result::get_ini() const
+{
+	return _ptnd ? _ptnd->getIni() : 0;
+}
+
+
+
+inline item::SIZETP CParserView::line::node_result::get_end() const
+{
+	return _ptnd ? _ptnd->getEnd() : 0;
+}
+
+
+
+inline item::SIZETP CParserView::line::node_result::get_length() const
+{
+	return _ptnd ? _ptnd->len() : 0;
 }
 
 

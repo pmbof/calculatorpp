@@ -19,8 +19,8 @@ CParserView::line::sbase::sbase(line* pl, CDC* pdc, const char* pExpr, bool bedi
 
 
 
-CParserView::line::sset::sset(line* pl, const tnode* pnd, CDC* pdc, const char* pExpr, bool bediting)
-	: sbase(pl, pdc, pExpr, bediting), nd(pnd)
+CParserView::line::sset::sset(line* pl, const tnode* ptnd, CDC* pdc, const char* pExpr, bool bediting)
+	: sbase(pl, pdc, pExpr, bediting), tnd(ptnd)
 {
 }
 

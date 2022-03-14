@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_buildin_function::node_buildin_function(bnode* parent, const tnode* nd)
-	: node_alpha(parent, nd)
+CParserView::line::node_buildin_function::node_buildin_function(const tnode* nd, bnode* parent)
+	: node_alpha(nd, parent)
 {
 }
 

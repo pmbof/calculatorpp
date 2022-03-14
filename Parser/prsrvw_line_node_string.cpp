@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_string::node_string(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_string::node_string(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
 }
 

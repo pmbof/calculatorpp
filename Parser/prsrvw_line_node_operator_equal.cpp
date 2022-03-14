@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_equal::node_operator_equal(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_operator_equal::node_operator_equal(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
 }
 
@@ -17,8 +17,10 @@ CParserView::line::node_operator_equal::node_operator_equal(bnode* parent, const
 
 void CParserView::line::node_operator_equal::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (_parent)
 		set_rect_fromparent();
@@ -33,10 +35,9 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 
 	if (lnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = lnd;
+		ss->tnd = lnd;
 		new_instance(&_left, this, lnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 
 	CRect rl;
@@ -53,7 +54,7 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 	CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 	CSize te;
-	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len(), &te);
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), get_length(), &te);
 
 	right = left + te.cx;
 	if (lnd && rl.Height() != te.cy)
@@ -73,22 +74,20 @@ void CParserView::line::node_operator_equal::set(sset* ss)
 
 	if (rnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		new_instance(&_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 	else
 	{
 		CParserDoc* pDoc = ss->pline->_parent->GetDocument();
 		if (pDoc && !pDoc->m_result.empty())
 		{
-			const tnode* nd = ss->nd;
-			ss->nd = rnd;
+			ss->tnd = rnd;
 
-			_right = ss->pline->_result = new node_result(this, nullptr);
+			_right = ss->pline->_result = new node_result(rnd, this); // old call:  (nullptr, this);
 			_right->set(ss);
-			ss->nd = nd;
+			ss->tnd = _ptnd;
 		}
 	}
 	check_error(ss);
@@ -137,10 +136,10 @@ bool CParserView::line::node_operator_equal::set_caret_pos(sdraw* sd, scaret& ca
 		bOk = _left->set_caret_pos(sd, caret);
 		sd->pnd = pnd;
 	}
-	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	if (!bOk && get_ini() <= caret.spos[1] && caret.spos[1] <= get_end())
 	{
 		int cx;
-		if (_ini < caret.spos[1])
+		if (get_ini() < caret.spos[1])
 			cx = Width();
 		else
 			cx = 0;

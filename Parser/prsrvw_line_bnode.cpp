@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::bnode::bnode(bnode* parent)
-	: _parent(parent), _left(nullptr), _right(nullptr)
+CParserView::line::bnode::bnode(const tnode* ptnd,  bnode* parent)
+	: _ptnd(ptnd), _parent(parent), _left(nullptr), _right(nullptr)
 {
 }
 
@@ -120,6 +120,28 @@ void CParserView::line::bnode::debug_check_all() const
 
 
 
+item::SIZETP CParserView::line::bnode::get_ini() const
+{
+	return _ptnd->getIni();
+}
+
+
+
+item::SIZETP CParserView::line::bnode::get_end() const
+{
+	return _ptnd->getEnd();
+}
+
+
+
+item::SIZETP CParserView::line::bnode::get_length() const
+{
+	return _ptnd->len();
+}
+
+
+
+
 void CParserView::line::bnode::set_rect_fromparent()
 {
 	top = _parent->top;
@@ -208,7 +230,7 @@ inline void CParserView::line::bnode::max_rect(CRect& r, const CRect& r2) const
 
 void CParserView::line::bnode::check_error(sset* ss)
 {
-	ss->pline->check_error(ss->nd, this);
+	ss->pline->check_error(ss->tnd, this);
 }
 
 
@@ -230,6 +252,12 @@ void CParserView::line::bnode::end(sset* ss)
 
 
 
+
+
+const tnode* CParserView::line::bnode::get_tnode() const
+{
+	return _ptnd;
+}
 
 
 const CParserView::line::bnode* CParserView::line::bnode::get_first() const

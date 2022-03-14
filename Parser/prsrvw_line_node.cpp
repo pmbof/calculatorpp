@@ -8,14 +8,9 @@
 
 
 
-CParserView::line::node::node(bnode* parent)
-	: bnode(parent)
-{
-}
 
-
-CParserView::line::node::node(bnode* parent, const tnode* nd)
-	: bnode(parent), _ini(nd->getIni()), _end(nd->getEnd())
+CParserView::line::node::node(const tnode* ptnd, bnode* parent)
+	: bnode(ptnd, parent)
 {
 }
 
@@ -31,7 +26,7 @@ CParserView::line::node::~node()
 void CParserView::line::node::print_line(pmb::log_type tplg, const char* text) const
 {
 	if (this)
-		pmb::log::instance()->trace(tplg, "%s = 0x%08X [%d, %d]\n", text, this, _ini, _end);
+		pmb::log::instance()->trace(tplg, "%s = 0x%08X [%d, %d]\n", text, this, get_ini(), get_end());
 	else
 		bnode::print_line(tplg, text);
 }
@@ -58,31 +53,31 @@ CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bno
 	switch (nd->getType())
 	{
 	case pmb::parser::ndSpace:
-		*ndLR = nnd = new node_space(parent, nd);
+		*ndLR = nnd = new node_space(nd, parent);
 		break;
 	case pmb::parser::ndAlpha:
 		if (nd->getParent() && nd->getParent()->getType() == pmb::parser::ndUnknown)
 		{
 			const pmb::parser::nodes::unknown<item, ndtype>* uk = static_cast<const pmb::parser::nodes::unknown<item, ndtype>*>(nd->getParent());
 			if (uk->isBinary() && uk->isCallFunction() && (uk->isFirstLeft() && uk->getLeft() == nd || uk->isFirstRight() && uk->getRight() == nd))
-				*ndLR = nnd = uk->isCallBuildInFunction() ? static_cast<node*>(new node_buildin_function(parent, nd)) : new node_function(parent, nd);
+				*ndLR = nnd = uk->isCallBuildInFunction() ? static_cast<node*>(new node_buildin_function(nd, parent)) : new node_function(nd, parent);
 			else
-				*ndLR = nnd = new node_alpha(parent, nd);
+				*ndLR = nnd = new node_alpha(nd, parent);
 		}
 		else
-			*ndLR = nnd = new node_alpha(parent, nd);
+			*ndLR = nnd = new node_alpha(nd, parent);
 		break;
 	case pmb::parser::ndNumber:
-		*ndLR = nnd = new node_number(parent, nd);
+		*ndLR = nnd = new node_number(nd, parent);
 		break;
 	case pmb::parser::ndString:
-		*ndLR = nnd = new node_string(parent, nd);
+		*ndLR = nnd = new node_string(nd, parent);
 		break;
 	case pmb::parser::ndList:
-		*ndLR = nnd = new node_list(parent, nd);
+		*ndLR = nnd = new node_list(nd, parent);
 		break;
 	case pmb::parser::ndParentheses:
-		*ndLR = nnd = new node_parentheses(parent, nd);
+		*ndLR = nnd = new node_parentheses(nd, parent);
 		break;
 	case pmb::parser::ndUnknown:
 	{
@@ -93,7 +88,7 @@ CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bno
 			*ndLR = nnd = opr->new_instance(parent, nd);
 		}
 		else
-			*ndLR = nnd = new node_unknown(parent, nd);
+			*ndLR = nnd = new node_unknown(nd, parent);
 	}
 		break;
 	default:
@@ -117,8 +112,8 @@ CParserView::line::node* CParserView::line::node::new_instance(bnode** ndLR, bno
 
 void CParserView::line::node::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (_parent)
 		set_rect_fromparent();
@@ -133,10 +128,9 @@ void CParserView::line::node::set(sset* ss)
 
 	if (lnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = lnd;
+		ss->tnd = lnd;
 		new_instance(&_left, this, lnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 
 	CRect rl;
@@ -149,13 +143,13 @@ void CParserView::line::node::set(sset* ss)
 		bottom = rl.bottom;
 		_middle = _left->_middle;
 	}
-	if (_ini < _end)
+	if (get_ini() < get_end())
 	{
 		CFont* pFont = ss->pline->font(type(), ss->index);
 		CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 		CSize te;
-		GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len(), &te);
+		GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), get_length(), &te);
 
 		right = left + te.cx;
 		if (lnd && rl.Height() != te.cy)
@@ -172,10 +166,9 @@ void CParserView::line::node::set(sset* ss)
 	}
 	if (rnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		new_instance(&_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 	check_error(ss);
 }
@@ -192,11 +185,11 @@ void CParserView::line::node::draw(sdraw* sd) const
 		_left->draw(sd);
 		sd->pnd = pnd;
 	}
-	if (_ini < _end)
+	if (get_ini() < get_end())
 	{
 		COLORREF oldColor = sd->pDC->SetTextColor(sd->pline->color(type()));
 		CFont* oldFont = sd->pDC->SelectObject(sd->pline->font(type(), sd->index));
-		CString sn(sd->pstr + _ini, _end - _ini);
+		CString sn(sd->pstr + get_ini(), get_length());
 
 		sd->pDC->DrawText(sn, const_cast<CRect*>(static_cast<const CRect*>(this)), DT_LEFT | DT_TOP | DT_SINGLELINE);
 		sd->pDC->SetTextColor(oldColor);
@@ -224,13 +217,13 @@ bool CParserView::line::node::set_caret_pos(sdraw* sd, scaret& caret) const
 		bOk = _left->set_caret_pos(sd, caret);
 		sd->pnd = pnd;
 	}
-	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	if (!bOk && get_ini() <= caret.spos[1] && caret.spos[1] <= get_end())
 	{
 		int cx;
-		if (_ini < caret.spos[1])
+		if (get_ini() < caret.spos[1])
 		{
 			CFont* oldFont = sd->pDC->SelectObject(sd->pline->font(type(), sd->index));
-			CString sn(sd->pstr + _ini, caret.spos[1] - _ini);
+			CString sn(sd->pstr + get_ini(), caret.spos[1] - get_ini());
 
 			cx = sd->pDC->GetTextExtent(sn).cx;
 			sd->pDC->SelectObject(oldFont);
@@ -258,7 +251,7 @@ bool CParserView::line::node::set_caret_pos(sdraw* sd, scaret& caret) const
 
 bool CParserView::line::node::empty() const
 {
-	return _ini == _end && !_ini && !_left && !_right;
+	return get_ini() == get_end() && !get_ini() && !_left && !_right;
 }
 
 
@@ -274,18 +267,5 @@ short CParserView::line::node::nparentheses() const
 {
 	return 0;
 }
-
-
-item::SIZETP CParserView::line::node::get_ini() const
-{
-	return _ini;
-}
-
-
-item::SIZETP CParserView::line::node::get_end() const
-{
-	return _end;
-}
-
 
 

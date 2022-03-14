@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_alpha::node_alpha(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_alpha::node_alpha(const tnode* nd, bnode* parent)
+	: node(nd, parent), _ini(nd->getIni()), _end(nd->getEnd())
 {
 }
 
@@ -16,8 +16,10 @@ CParserView::line::node_alpha::node_alpha(bnode* parent, const tnode* nd)
 
 void CParserView::line::node_alpha::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (_parent)
 		set_rect_fromparent();
@@ -33,10 +35,9 @@ void CParserView::line::node_alpha::set(sset* ss)
 	if (lnd)
 	{
 		ASSERT(false); // because doble left in  a.0
-		const tnode* nd = ss->nd;
-		ss->nd = lnd;
+		ss->tnd = lnd;
 		new_instance(&_left, this, lnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 
 	CRect rl;
@@ -82,7 +83,7 @@ void CParserView::line::node_alpha::set(sset* ss)
 		ss->pDC->SelectObject(oldFont);
 		if (end < _end)
 		{
-			_right = new node_alpha(this, ss->nd);;
+			_right = new node_alpha(_ptnd, this);;
 			static_cast<node_alpha*>(_right)->_ini = end + (ss->bEditing ? 0 : 1);
 			_end = end;
 
@@ -95,13 +96,12 @@ void CParserView::line::node_alpha::set(sset* ss)
 	}
 	if (rnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		bnode* lright;
 		for (lright = this; static_cast<node_alpha*>(lright)->bnode::_right; lright = static_cast<node_alpha*>(lright)->bnode::_right)
 			;
 		new_instance(&static_cast<node_alpha*>(lright)->bnode::_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 	check_error(ss);
 }
@@ -189,3 +189,23 @@ inline CParserView::line::bnodetypes CParserView::line::node_alpha::type() const
 	return bndAlpha;
 }
 
+
+
+item::SIZETP CParserView::line::node_alpha::get_ini() const
+{
+	return _ini;
+}
+
+
+
+item::SIZETP CParserView::line::node_alpha::get_end() const
+{
+	return _end;
+}
+
+
+
+item::SIZETP CParserView::line::node_alpha::get_length() const
+{
+	return _end - _ini;
+}

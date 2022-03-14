@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_parentheses::node_parentheses(bnode* parent, const tnode* nd)
-	: node(parent, nd), _nparentheses(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
+CParserView::line::node_parentheses::node_parentheses(const tnode* nd, bnode* parent)
+	: node(nd, parent), _nparentheses(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
 {
 }
 
@@ -17,8 +17,10 @@ CParserView::line::node_parentheses::node_parentheses(bnode* parent, const tnode
 
 void CParserView::line::node_parentheses::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (_parent)
 		set_rect_fromparent();
@@ -39,10 +41,9 @@ void CParserView::line::node_parentheses::set(sset* ss)
 
 	if (lnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = lnd;
+		ss->tnd = lnd;
 		new_instance(&_left, this, lnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 
 		CRect rr = _left->rect();
 		left = right = rr.left;
@@ -52,10 +53,9 @@ void CParserView::line::node_parentheses::set(sset* ss)
 
 	if (rnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		new_instance(&_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 
 		CRect rr = _right->rect();
 		left = right = rr.right;
@@ -64,7 +64,7 @@ void CParserView::line::node_parentheses::set(sset* ss)
 	}
 
 	CSize te;
-	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, np, &te);
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), np, &te);
 	right = left + te.cx * np;
 
 	if (lnd && right != left)
@@ -140,14 +140,14 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 		sd->pnd = pnd;
 	}
 
-	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	if (!bOk && get_ini() <= caret.spos[1] && caret.spos[1] <= get_end())
 	{
 		CRect r(this);
 		r.top -= Height();
 		r.bottom += Height();
 
 		int cx = 0;
-		if (_ini < caret.spos[1])
+		if (get_ini() < caret.spos[1])
 		{
 			short np;
 			if (get_np(sd, sd->pnd, np, true))
@@ -210,10 +210,10 @@ bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, sh
 			if (sb->bEditing)
 			{
 				if (bDraw)
-					for (short i = 0; sb->pstr[_ini + i] == '('; ++i, ++np)
+					for (short i = 0; sb->pstr[get_ini() + i] == '('; ++i, ++np)
 						;
 				else
-					np = _end - _ini;
+					np = get_length();
 			}
 			else
 				np = 0;

@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_result::node_operator_result(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_operator_result::node_operator_result(const tnode* nd, bnode* parent)
+	: node(nd, parent), _ini(nd->getIni()), _end(nd->getEnd())
 {
 }
 
@@ -17,8 +17,10 @@ CParserView::line::node_operator_result::node_operator_result(bnode* parent, con
 
 void CParserView::line::node_operator_result::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (_parent)
 		set_rect_fromparent();
@@ -33,10 +35,9 @@ void CParserView::line::node_operator_result::set(sset* ss)
 
 	if (lnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = lnd;
+		ss->tnd = lnd;
 		new_instance(&_left, this, lnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 
 	CRect rl;
@@ -55,7 +56,7 @@ void CParserView::line::node_operator_result::set(sset* ss)
 	CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 	CSize te;
-	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len() - (rnd && pDoc && !pDoc->m_result.empty() ? 1 : 0), &te);
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, _end - _ini - (rnd && pDoc && !pDoc->m_result.empty() ? 1 : 0), &te);
 
 	right = left + te.cx;
 	if (lnd && rl.Height() != te.cy)
@@ -71,18 +72,17 @@ void CParserView::line::node_operator_result::set(sset* ss)
 
 	if (rnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		if (pDoc && !pDoc->m_result.empty())
 		{
 			// split operator =. to = \ .
 			node_operator_result* nrnr;
-			_right = nrnr = new node_operator_result(this, rnd->getParent());
+			_right = nrnr = new node_operator_result(rnd->getParent(), this);
 			++nrnr->_ini;
 			--_end;
 			nrnr->set_rect_fromparent();
 
-			nrnr->_left = ss->pline->_result = new node_result(nrnr, nullptr);
+			nrnr->_left = ss->pline->_result = new node_result(nullptr, nrnr);
 			nrnr->_left->set(ss);
 
 			CRect rect = nrnr->_left->rect();
@@ -94,16 +94,15 @@ void CParserView::line::node_operator_result::set(sset* ss)
 		}
 		else
 			new_instance(&_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 	else if (pDoc && !pDoc->m_result.empty())
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 
-		_right = ss->pline->_result = new node_result(this, nullptr);
+		_right = ss->pline->_result = new node_result(rnd, this); // old call: (null, this);
 		_right->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 	check_error(ss);
 }
@@ -124,7 +123,7 @@ void CParserView::line::node_operator_result::draw(sdraw* sd) const
 	CPen pen;
 	pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
 	CPen* oldPen = sd->pDC->SelectObject(&pen);
-	if (sd->pstr[_ini] == '=')
+	if (sd->pstr[get_ini()] == '=')
 	{
 		sd->pDC->MoveTo(left + 2, _middle - 2);
 		sd->pDC->LineTo(right - 2, _middle - 2);
@@ -156,10 +155,10 @@ bool CParserView::line::node_operator_result::set_caret_pos(sdraw* sd, scaret& c
 		bOk = _left->set_caret_pos(sd, caret);
 		sd->pnd = pnd;
 	}
-	if (!bOk && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	if (!bOk && get_ini() <= caret.spos[1] && caret.spos[1] <= get_end())
 	{
 		int cx;
-		if (_ini < caret.spos[1])
+		if (get_ini() < caret.spos[1])
 			cx = Width();
 		else
 			cx = 0;

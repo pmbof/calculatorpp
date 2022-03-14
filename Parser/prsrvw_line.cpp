@@ -139,6 +139,8 @@ void CParserView::line::normalize(int xo, int yo)
 
 void CParserView::line::check_error(const tnode* nd, const bnode* nnd)
 {
+	assert(nd == nnd->get_tnode());
+
 	CParserDoc* pDoc = _parent->GetDocument();
 	if (pDoc && nd == pDoc->m_error.item())
 		_nerror = nnd;
@@ -232,8 +234,9 @@ bool CParserView::line::operator()(scaret& caret) const
 	const bnode* nend = nullptr;
 	for (const bnode* nd = _root->get_first(); nd; nd = nd->get_next())
 	{
-		if (nd->get_ini() <= caret.spos[1] && caret.spos[1] <= nd->get_end())
+//		if (nd->get_ini() <= caret.spos[1] && caret.spos[1] <= nd->get_end())
 		{
+			nd = _root;
 			CDC* pDC = _parent->GetDC();
 			sdraw sd((line*)this, nd, pDC, _parent->m_expr.c_str(), _parent->m_bEditing, caret.spos[0]);
 			bool bOk = nd->set_caret_pos(&sd, caret);
@@ -278,4 +281,15 @@ void CParserView::line::_swith_expr_end(const bnode* pnd, sdraw* sd) const
 		sd->pDC->SetBkMode(TRANSPARENT);
 		sd->bEditing = false;
 	}
+
+#ifdef DEBUG
+	if (_parent->m_pNd == pnd->get_tnode())
+	{
+		sd->pDC->DrawFocusRect(pnd);
+		COLORREF oldColor = sd->pDC->SetTextColor(RGB(0x00, 0x00, 0x80));
+		sd->pDC->MoveTo(pnd->left, pnd->_middle);
+		sd->pDC->LineTo(pnd->right, pnd->_middle);
+		sd->pDC->SetTextColor(oldColor);
+	}
+#endif // DEBUG
 }

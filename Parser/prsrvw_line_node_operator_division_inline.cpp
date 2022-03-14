@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_division_inline::node_operator_division_inline(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_operator_division_inline::node_operator_division_inline(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
 }
 

@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_root::node_operator_root(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_operator_root::node_operator_root(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
 }
 
@@ -17,8 +17,10 @@ CParserView::line::node_operator_root::node_operator_root(bnode* parent, const t
 
 void CParserView::line::node_operator_root::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (rnd)
 	{
@@ -33,11 +35,10 @@ void CParserView::line::node_operator_root::set(sset* ss)
 			_middle = top + Height() / 2;
 		}
 
-		const tnode* nd = ss->nd;
 		CRect rl;
 		if (lnd)
 		{
-			ss->nd = lnd;
+			ss->tnd = lnd;
 			new_instance(&_left, this, lnd);
 			++ss->index;
 			_left->set(ss);
@@ -53,14 +54,15 @@ void CParserView::line::node_operator_root::set(sset* ss)
 			CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 			CSize te;
-			GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, nd->len(), &te);
+			GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), get_length(), &te);
 
 			right = left + te.cx + 1;
 			bottom = top + te.cy;
 			ss->pDC->SelectObject(oldFont);
 		}
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		new_instance(&_right, this, rnd)->set(ss);
+		ss->tnd = _ptnd;
 		CRect rr = _right->rect();
 		bool bdouble = 3 * Height() < 2 * rr.Height();
 		top = rr.top - 2;
@@ -106,7 +108,7 @@ void CParserView::line::node_operator_root::draw(sdraw* sd) const
 		COLORREF oldColor = sd->pDC->SetTextColor(sd->pline->color(type()));
 		CFont* pFont = sd->pline->font(type(), sd->index);
 		CFont* oldFont = sd->pDC->SelectObject(pFont);
-		CString sn(sd->pstr + _ini, _end - _ini);
+		CString sn(sd->pstr + get_ini(), get_length());
 
 		sd->pDC->DrawText(sn, const_cast<CRect*>(static_cast<const CRect*>(this)), DT_LEFT | DT_TOP | DT_SINGLELINE);
 		sd->pDC->SelectObject(oldFont);
@@ -160,14 +162,14 @@ bool CParserView::line::node_operator_root::set_caret_pos(sdraw* sd, scaret& car
 		--sd->index;
 		sd->pnd = pnd;
 	}
-	if (!bOk && !_right && _ini <= caret.spos[1] && caret.spos[1] <= _end)
+	if (!bOk && !_right && get_ini() <= caret.spos[1] && caret.spos[1] <= get_end())
 	{
 		int cx;
-		if (_ini < caret.spos[1])
+		if (get_ini() < caret.spos[1])
 		{
 			CFont* pFont = sd->pline->font(type(), sd->index);
 			CFont* oldFont = sd->pDC->SelectObject(pFont);
-			CString sn(sd->pstr + _ini, caret.spos[1] - _ini);
+			CString sn(sd->pstr + get_ini(), caret.spos[1] - get_ini());
 
 			cx = sd->pDC->GetTextExtent(sn).cx;
 			sd->pDC->SelectObject(oldFont);

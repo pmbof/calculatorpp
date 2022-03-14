@@ -108,9 +108,9 @@ private:
 
 		struct sset : sbase
 		{
-			sset(line* pl, const tnode* pnd, CDC* pdc, const char* pExpr, bool bediting);
+			sset(line* pl, const tnode* ptnd, CDC* pdc, const char* pExpr, bool bediting);
 
-			const tnode* nd;
+			const tnode* tnd;
 		};
 
 		struct sdraw : sbase
@@ -129,7 +129,7 @@ private:
 		struct bnode : CRect
 		{
 		protected:
-			bnode(bnode* parent);
+			bnode(const tnode* ptnd, bnode* parent);
 
 		public:
 			virtual ~bnode();
@@ -150,8 +150,9 @@ private:
 			virtual bool parentheses() const = 0;
 			virtual short nparentheses() const = 0;
 
-			virtual item::SIZETP get_ini() const = 0;
-			virtual item::SIZETP get_end() const = 0;
+			virtual item::SIZETP get_ini() const;
+			virtual item::SIZETP get_end() const;
+			virtual item::SIZETP get_length() const;
 
 			void set_rect_fromparent();
 
@@ -169,6 +170,7 @@ private:
 			void check_error(sset* ss);
 			void end(sset* ss);
 
+			const tnode* get_tnode() const;
 			const bnode* get_first() const;
 			const bnode* get_root() const;
 			const bnode* get_first_child() const;
@@ -183,6 +185,7 @@ private:
 			int _middle;
 
 		protected:
+			const tnode* _ptnd;
 			bnode* _parent;
 			bnode* _left;
 			bnode* _right;
@@ -193,8 +196,7 @@ private:
 		struct node : bnode
 		{
 		protected:
-			node(bnode* parent);
-			node(bnode* parent, const tnode* nd);
+			node(const tnode* ptnd, bnode* parent);
 
 		public:
 			virtual ~node();
@@ -211,19 +213,12 @@ private:
 
 			bool parentheses() const override;
 			short nparentheses() const override;
-
-			item::SIZETP get_ini() const override;
-			item::SIZETP get_end() const override;
-
-		protected:
-			item::SIZETP _ini;
-			item::SIZETP _end;
 		};
 
 
 		struct node_space : node
 		{
-			node_space(bnode* parent, const tnode* nd);
+			node_space(const tnode* nd, bnode* parent);
 
 			bnodetypes type() const override;
 		};
@@ -231,19 +226,27 @@ private:
 
 		struct node_alpha : node
 		{
-			node_alpha(bnode* parent, const tnode* nd);
+			node_alpha(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
+
+			item::SIZETP get_ini() const override;
+			item::SIZETP get_end() const override;
+			item::SIZETP get_length() const override;
+
+		protected:
+			item::SIZETP _ini;
+			item::SIZETP _end;
 		};
 
 
 		struct node_function : node_alpha
 		{
-			node_function(bnode* parent, const tnode* nd);
+			node_function(const tnode* nd, bnode* parent);
 
 			bnodetypes type() const override;
 		};
@@ -251,7 +254,7 @@ private:
 
 		struct node_buildin_function : node_alpha
 		{
-			node_buildin_function(bnode* parent, const tnode* nd);
+			node_buildin_function(const tnode* nd, bnode* parent);
 
 			bnodetypes type() const override;
 		};
@@ -259,7 +262,7 @@ private:
 
 		struct node_number : node
 		{
-			node_number(bnode* parent, const tnode* nd);
+			node_number(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 
@@ -269,7 +272,7 @@ private:
 
 		struct node_string : node
 		{
-			node_string(bnode* parent, const tnode* nd);
+			node_string(const tnode* nd, bnode* parent);
 
 			bnodetypes type() const override;
 		};
@@ -277,7 +280,7 @@ private:
 
 		struct node_list : node
 		{
-			node_list(bnode* parent, const tnode* nd);
+			node_list(const tnode* nd, bnode* parent);
 
 			bnodetypes type() const override;
 		};
@@ -285,7 +288,7 @@ private:
 
 		struct node_parentheses : node
 		{
-			node_parentheses(bnode* parent, const tnode* nd);
+			node_parentheses(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -306,7 +309,7 @@ private:
 
 		struct node_unknown : node
 		{
-			node_unknown(bnode* parent, const tnode* nd);
+			node_unknown(const tnode* nd, bnode* parent);
 
 			bnodetypes type() const override;
 		};
@@ -314,7 +317,7 @@ private:
 
 		struct node_operator_equal : node
 		{
-			node_operator_equal(bnode* parent, const tnode* nd);
+			node_operator_equal(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -326,27 +329,36 @@ private:
 
 		struct node_operator_result : node
 		{
-			node_operator_result(bnode* parent, const tnode* nd);
+			node_operator_result(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
 			bnodetypes type() const override;
+
+		protected:
+			item::SIZETP _ini;
+			item::SIZETP _end;
 		};
 
 
 		struct node_result : node
 		{
-			node_result(bnode* parent, const tnode* nd);
+			node_result(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 			bool set_caret_pos(sdraw* sd, scaret& caret) const override;
 
+			item::SIZETP get_ini() const override;
+			item::SIZETP get_end() const override;
+			item::SIZETP get_length() const override;
+
 			bool empty() const override;
 
 			bnodetypes type() const override;
+
 		protected:
 			bool _bNodes;
 		};
@@ -354,7 +366,7 @@ private:
 
 		struct node_operator_root : node
 		{
-			node_operator_root(bnode* parent, const tnode* nd);
+			node_operator_root(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -369,7 +381,7 @@ private:
 
 		struct node_operator_power : node
 		{
-			node_operator_power(bnode* parent, const tnode* nd);
+			node_operator_power(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -381,7 +393,7 @@ private:
 
 		struct node_operator_product : node
 		{
-			node_operator_product(bnode* parent, const tnode* nd);
+			node_operator_product(const tnode* nd, bnode* parent);
 
 			void draw(sdraw* sd) const override;
 
@@ -391,7 +403,7 @@ private:
 
 		struct node_operator_division_inline : node
 		{
-			node_operator_division_inline(bnode* parent, const tnode* nd);
+			node_operator_division_inline(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -402,7 +414,7 @@ private:
 
 		struct node_operator_division : node
 		{
-			node_operator_division(bnode* parent, const tnode* nd);
+			node_operator_division(const tnode* nd, bnode* parent);
 
 			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
@@ -414,7 +426,7 @@ private:
 
 		struct node_operator_plus : node
 		{
-			node_operator_plus(bnode* parent, const tnode* nd);
+			node_operator_plus(const tnode* nd, bnode* parent);
 
 			void draw(sdraw* sd) const override;
 
@@ -424,7 +436,7 @@ private:
 
 		struct node_operator_minus : node
 		{
-			node_operator_minus(bnode* parent, const tnode* nd);
+			node_operator_minus(const tnode* nd, bnode* parent);
 
 			void draw(sdraw* sd) const override;
 

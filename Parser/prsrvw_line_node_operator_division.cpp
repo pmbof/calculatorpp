@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_operator_division::node_operator_division(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_operator_division::node_operator_division(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
 }
 
@@ -17,8 +17,10 @@ CParserView::line::node_operator_division::node_operator_division(bnode* parent,
 
 void CParserView::line::node_operator_division::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (lnd && rnd && ss->pline->_parent->m_fstyle & PMB_STYLE_CPPEDIT_MULTILINE)
 	{
@@ -33,18 +35,17 @@ void CParserView::line::node_operator_division::set(sset* ss)
 			_middle = top + Height() / 2;
 		}
 
-		const tnode* nd = ss->nd;
 		if (lnd)
 		{
-			ss->nd = lnd;
+			ss->tnd = lnd;
 			new_instance(&_left, this, lnd)->set(ss);
 		}
 
 		CRect rl = _left->rect();
 
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		new_instance(&_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 
 		CRect rr = _right->rect();
 		int width = rr.Width() < rl.Width() ? rl.Width() : rr.Width();

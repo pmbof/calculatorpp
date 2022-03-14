@@ -7,8 +7,8 @@
 #pragma endregion includes
 
 
-CParserView::line::node_number::node_number(bnode* parent, const tnode* nd)
-	: node(parent, nd)
+CParserView::line::node_number::node_number(const tnode* nd, bnode* parent)
+	: node(nd, parent)
 {
 }
 
@@ -16,8 +16,10 @@ CParserView::line::node_number::node_number(bnode* parent, const tnode* nd)
 
 void CParserView::line::node_number::set(sset* ss)
 {
-	const tnode* lnd = ss->nd->getLeft();
-	const tnode* rnd = ss->nd->getRight();
+	assert(ss->tnd == _ptnd);
+
+	const tnode* lnd = _ptnd->getLeft();
+	const tnode* rnd = _ptnd->getRight();
 
 	if (_parent)
 		set_rect_fromparent();
@@ -32,10 +34,9 @@ void CParserView::line::node_number::set(sset* ss)
 
 	if (lnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = lnd;
+		ss->tnd = lnd;
 		new_instance(&_left, this, lnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 
 	CRect rl;
@@ -48,13 +49,13 @@ void CParserView::line::node_number::set(sset* ss)
 		bottom = rl.bottom;
 		_middle = _left->_middle;
 	}
-	if (_ini < _end)
+	if (get_ini() < get_end())
 	{
 		CFont* pFont = ss->pline->font(type(), ss->index);
 		CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 		CSize te;
-		GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + _ini, ss->nd->len(), &te);
+		GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), get_length(), &te);
 
 		right = left + te.cx;
 		if (lnd && rl.Height() != te.cy)
@@ -75,10 +76,9 @@ void CParserView::line::node_number::set(sset* ss)
 	}
 	if (rnd)
 	{
-		const tnode* nd = ss->nd;
-		ss->nd = rnd;
+		ss->tnd = rnd;
 		new_instance(&_right, this, rnd)->set(ss);
-		ss->nd = nd;
+		ss->tnd = _ptnd;
 	}
 	check_error(ss);
 }
