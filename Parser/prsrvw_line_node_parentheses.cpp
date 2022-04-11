@@ -8,7 +8,7 @@
 
 
 CParserView::line::node_parentheses::node_parentheses(const tnode* nd, bnode* parent)
-	: node(nd, parent), _nparentheses(static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(nd)->getOpened())
+	: node(nd, parent)
 {
 }
 
@@ -46,10 +46,18 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		ss->tnd = _ptnd;
 
 		CRect rr = _left->rect();
-		left = right = rr.left;
+		left = right = rr.right;
 		top = rr.top;
 		bottom = rr.bottom;
+		_middle = _left->_middle;
 	}
+
+	CSize te;
+	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), np, &te);
+	right = left + te.cx;
+
+	if (!_right && !_left)
+		bottom = top + te.cy;
 
 	if (rnd)
 	{
@@ -58,17 +66,12 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		ss->tnd = _ptnd;
 
 		CRect rr = _right->rect();
-		left = right = rr.right;
 		top = rr.top;
 		bottom = rr.bottom;
+		if (rr.left != right || _middle != _right->_middle)
+			_right->rect_move(_right->left - right, _right->_middle - _middle);
+		_middle = _right->_middle;
 	}
-
-	CSize te;
-	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), np, &te);
-	right = left + te.cx * np;
-
-	if (lnd && right != left)
-		_left->rect_move(right - left, 0);
 
 	check_error(ss);
 }
@@ -97,7 +100,8 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 	short np;
 	if (get_np(sd, sd->pnd, np, true))
 	{
-		if (_left || !_nparentheses)
+		short nPrnths = nparentheses();
+		if (!_left || !nPrnths)
 		{
 			for (short n = 0; n < np; ++n)
 			{
@@ -106,7 +110,7 @@ void CParserView::line::node_parentheses::draw(sdraw* sd) const
 				r.left = r.left + Width() / np;
 			}
 		}
-		if (!_left || !_nparentheses)
+		if (_left || !nPrnths)
 		{
 			for (short n = 0; n < np; ++n)
 			{
@@ -143,16 +147,17 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 	if (!bOk && get_ini() <= caret.spos[1] && caret.spos[1] <= get_end())
 	{
 		CRect r(this);
-		r.top -= Height();
-		r.bottom += Height();
 
 		int cx = 0;
-		if (get_ini() < caret.spos[1])
+		if (caret.spos[1] == get_ini())
+			bOk = true;
+		else if (caret.spos[1] < get_end())
 		{
 			short np;
 			if (get_np(sd, sd->pnd, np, true))
 			{
-				if (_left || !_nparentheses)
+				short nPrnths = nparentheses();
+				if (_left || !nPrnths)
 				{
 					for (short n = 0; n < np; ++n)
 					{
@@ -161,7 +166,7 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 						cx = r.left;
 					}
 				}
-				if (!_left || !_nparentheses)
+				if (!_left || !nPrnths)
 				{
 					for (short n = 0; n < np; ++n)
 					{
@@ -171,11 +176,20 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 					}
 				}
 			}
+			bOk = true;
 		}
-		caret.pos[1].x = left + cx;
-		caret.pos[1].y = r.top;
-		caret.height = r.Height();
-		bOk = true;
+		else if (!_right && get_end() == caret.spos[1])
+		{
+			cx = Width();
+			bOk = true;
+		}
+
+		if (bOk)
+		{
+			caret.pos[1].x = left + cx;
+			caret.pos[1].y = r.top;
+			caret.height = r.Height();
+		}
 	}
 
 	if (!bOk && _right)
@@ -192,18 +206,19 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 
 bool CParserView::line::node_parentheses::get_np(sbase* sb, const bnode* pnd, short& np, bool bDraw) const
 {
+	short nPrnths = nparentheses();
 	if (sb->bEditing || !pnd || pnd->type() != bndOprDivision && pnd->type() != bndOprRoot
 		&& (pnd->type() != bndOprPower || pnd->is_left_parentheses(this))
-		|| _nparentheses != 0)
+		|| nPrnths != 0)
 	{
 		if (!sb->bEditing && pnd)
 		{
 			bnodetypes tp = pnd->type();
 			np = tp == bndOprDivision || tp == bndOprRoot || tp == bndParentheses && pnd->nparentheses() < 0 || tp == bndOprPower && !pnd->is_left_parentheses(this)
-				? _nparentheses < 0 ? -_nparentheses - 1 : _nparentheses - 1 : _nparentheses < 0 ? -_nparentheses : _nparentheses;
+				? nPrnths < 0 ? -nPrnths - 1 : nPrnths - 1 : nPrnths < 0 ? -nPrnths : nPrnths;
 		}
 		else
-			np = _nparentheses < 0 ? -_nparentheses : _nparentheses;
+			np = nPrnths < 0 ? -nPrnths : nPrnths;
 
 		if (!np)
 		{
@@ -238,7 +253,7 @@ inline bool CParserView::line::node_parentheses::parentheses() const
 
 inline short CParserView::line::node_parentheses::nparentheses() const
 {
-	return _nparentheses;
+	return static_cast<const pmb::parser::nodes::parentheses<item, ndtype>*>(_ptnd)->getOpened();
 }
 
 
