@@ -22,7 +22,7 @@ namespace parser
 
 template <class _ITEM, class _NDTYPE>
 node<_ITEM, _NDTYPE>::node(cNdType type, ISIZE ini, ISIZE end)
-	: item(ini, end), _parent(NULL), _left(NULL), _right(NULL), _type(type)
+	: item(ini, end), _parent(nullptr), _left(nullptr), _right(nullptr), _type(type)
 {
 	TRACE_NODE(logDebug, "New", nullptr, this, true);
 }
@@ -533,7 +533,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert(node<_ITEM, _NDTYPE>* newNode
 		ndRet = insert_unknown(newNode);
 		break;
 	default:
-		ndRet = NULL;
+		ndRet = nullptr;
 		break;
 	}
 	return ndRet;
@@ -543,7 +543,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert(node<_ITEM, _NDTYPE>* newNode
 template <class _ITEM, class _NDTYPE>
 node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_alpha(node<_ITEM, _NDTYPE>* newNode)
 {
-	cnode* ndRet = NULL;
+	cnode* ndRet = nullptr;
 	switch(_type)
 	{
 	case ndAlpha:
@@ -605,7 +605,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_string(node<_ITEM, _NDTYPE>* 
 template <class _ITEM, class _NDTYPE>
 node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_space(node<_ITEM, _NDTYPE>* newNode)
 {
-	node<_ITEM, _NDTYPE>* ndRet = NULL;
+	node<_ITEM, _NDTYPE>* ndRet = nullptr;
 	switch(_type)
 	{
 	case ndAlpha:
@@ -695,7 +695,7 @@ void node<_ITEM, _NDTYPE>::insertWithLowPriority(node<_ITEM, _NDTYPE>* newNode)
 template <class _ITEM, class _NDTYPE>
 node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_list(cnode* newNode)
 {
-	node<_ITEM, _NDTYPE>* ndRet = NULL;
+	node<_ITEM, _NDTYPE>* ndRet = nullptr;
 	switch(_type)
 	{
 	case ndSpace:

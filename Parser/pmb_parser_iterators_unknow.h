@@ -28,7 +28,7 @@ struct unknown: public _baseIterator
 			}
 			++s;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 
@@ -40,7 +40,7 @@ struct unknown: public _baseIterator
 
 	node<_ITEM, _NDTYPE>* release()
 	{
-		node<_ITEM, _NDTYPE>* nd = _valid ? node<_ITEM, _NDTYPE>::newNodeUnknown(_ini, _i0) : NULL;
+		node<_ITEM, _NDTYPE>* nd = _valid ? node<_ITEM, _NDTYPE>::newNodeUnknown(_ini, _i0) : nullptr;
 		_valid = false;
 		return nd;
 	}

@@ -67,19 +67,19 @@ void function<_TVALUE>::operator()(_TVALUE& result, int nArgs, const _TVALUE* va
 
 template<class _TVALUE, class _ITEM, typename _NDTYPE>
 pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::pair_ffnc()
-	: ptree(NULL), pFunc(NULL)
+	: ptree(nullptr), pFunc(nullptr)
 {
 }
 
 template<class _TVALUE, class _ITEM, typename _NDTYPE>
 pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::pair_ffnc(tptree* pTree)
-	: ptree(pTree), pFunc(NULL)
+	: ptree(pTree), pFunc(nullptr)
 {
 }
 
 template<class _TVALUE, class _ITEM, typename _NDTYPE>
 pair_ffnc<_TVALUE, _ITEM, _NDTYPE>::pair_ffnc(const function<_TVALUE>* pFnc)
-	: pFunc(pFnc), ptree(NULL)
+	: pFunc(pFnc), ptree(nullptr)
 {
 }
 

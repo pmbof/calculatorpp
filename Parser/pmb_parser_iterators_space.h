@@ -22,8 +22,7 @@ struct space: public _baseIterator
 		for( ; s.isSpace(); ++s)
 			;
 		_end = (typename _IT::idx)s;
-		return NULL;
-
+		return nullptr;
 //		return is < s && is != 0 && s() ? node<_ITEM, _NDTYPE>::newNodeSpace(is, s): NULL;
 	}
 

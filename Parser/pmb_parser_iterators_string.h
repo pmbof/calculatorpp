@@ -25,7 +25,7 @@ struct string: public _baseIterator
 			for(++s ; s() != '"' && !bScape; ++s)
 				bScape = s() == _scape && !bScape;
 		}
-		return a < s ? node<_ITEM, _NDTYPE>::newNodeString(a, s._i) : NULL;
+		return a < s ? node<_ITEM, _NDTYPE>::newNodeString(a, s._i) : nullptr;
 	}
 
 

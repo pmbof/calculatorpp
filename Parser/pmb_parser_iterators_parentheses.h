@@ -38,7 +38,7 @@ struct parentheses: public _baseIterator
 				s._i = space;
 
 		}
-		return p < s ? new nodes::parentheses<_ITEM, _NDTYPE>(p, s._i, open[type], opened): NULL;
+		return p < s ? new nodes::parentheses<_ITEM, _NDTYPE>(p, s._i, open[type], opened): nullptr;
 	}
 
 protected:

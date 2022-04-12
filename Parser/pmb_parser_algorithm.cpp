@@ -152,7 +152,7 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::mapUnknown()
 			{
 				if (o)
 					nd = static_cast<node_unknown*>(nd)->add(opr[o - 1].len);
-				const tptree* fncTree = NULL;
+				const tptree* fncTree = nullptr;
 				typename _BLOCK::pair_function fnc;
 				if (opr[o].opr->canCallFunction())
 					fnc = _pBlock->find_function(nd, _expr._expr, opr[o].opr->isLeftToRight(), _findFirstInFunction);

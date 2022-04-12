@@ -18,7 +18,7 @@ struct list: public _baseIterator
 
 	node<_ITEM, _NDTYPE>* operator()()
 	{
-		return s() == ',' ? node<_ITEM, _NDTYPE>::newNodeList((typename _IT::idx)++s) : NULL;
+		return s() == ',' ? node<_ITEM, _NDTYPE>::newNodeList((typename _IT::idx)++s) : nullptr;
 	}
 
 

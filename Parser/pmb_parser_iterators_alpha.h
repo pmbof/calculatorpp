@@ -22,7 +22,7 @@ struct alpha: public _baseIterator
 		for( ; s() && ('A' <= s() && s() <= 'Z' || 'a' <= s() && s() <= 'z' || s() == '_'
 					|| a < s && ('0' <= s() && s() <= '9' || !bDecimal && s() == '.')); ++s)
 			bDecimal = s() == '.' ? true: bDecimal;
-		return a < s ? node<_ITEM, _NDTYPE>::newNodeAlpha(a, (typename _IT::idx)s) : NULL;
+		return a < s ? node<_ITEM, _NDTYPE>::newNodeAlpha(a, (typename _IT::idx)s) : nullptr;
 	}
 
 protected:

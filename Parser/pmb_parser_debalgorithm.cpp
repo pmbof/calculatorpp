@@ -14,7 +14,7 @@ namespace debug
 
 
 algorithm::algorithm(operation_table* opr_table, block* pBlock)
-	: _base(opr_table, pBlock), _ai(_expr), _newNode(NULL), _newNodeUnknown(NULL)
+	: _base(opr_table, pBlock), _ai(_expr), _newNode(nullptr), _newNodeUnknown(nullptr)
 {
 }
 
@@ -71,7 +71,7 @@ bool algorithm::nextStep()
 			if(_newNodeUnknown)
 				_tree->insert(_newNodeUnknown);
 			_tree->insert(_newNode);
-			_newNode = NULL;
+			_newNode = nullptr;
 		}
 		if(!_newNode)
 			_expr.incrStep();

@@ -53,7 +53,7 @@ struct auto_iterator
 
 	node<_ITEM, _NDTYPE>* operator()()
 	{
-		node<_ITEM, _NDTYPE>* nd = NULL;
+		node<_ITEM, _NDTYPE>* nd = nullptr;
 		switch(_it._step0) {
 		case -1:
 			_next.initLoop();
@@ -106,7 +106,7 @@ struct auto_iterator<6, _IT, _ITEM, _NDTYPE>
 
 	node<_ITEM, _NDTYPE>* operator()()
 	{
-		node<_ITEM, _NDTYPE>* nd = _it._step0 == 6 ? _unknown() : NULL;
+		node<_ITEM, _NDTYPE>* nd = _it._step0 == 6 ? _unknown() : nullptr;
 		if(6 < _it._step0)
 			_it._step0 = -2;
 		return nd;
@@ -127,7 +127,7 @@ struct auto_iterator<6, _IT, _ITEM, _NDTYPE>
 
 	const char* getClassName() const
 	{
-		return _it._step0 == 6 ? "unknow": NULL;
+		return _it._step0 == 6 ? "unknow": nullptr;
 	}
 
 protected:
