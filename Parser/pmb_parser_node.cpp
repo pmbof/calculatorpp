@@ -314,7 +314,7 @@ void node<_ITEM, _NDTYPE>::insertToRight(cnode* newNode)
 	for(ndR = this; ndR->_right; ndR = ndR->_right)
 		;
 	ndR->_right = newNode;
-	ndR->_right->_parent = this;
+	newNode->_parent = ndR;
 
 	pLg->endFunction();
 }
@@ -656,7 +656,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_parentheses(node<_ITEM, _NDTY
 		if (0 <= newOpened)
 			insertEmptyUnknown(newNode)->insertToRight(newNode);
 		else
-			insertParenthesesClose(newNode);
+			newNode = insertParenthesesClose(newNode);
 		break;
 	case ndSpace:
 		{
@@ -668,7 +668,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insert_parentheses(node<_ITEM, _NDTY
 		if (0 <= newOpened)
 			insertToRight(newNode);
 		else
-			insertParenthesesClose(newNode);
+			newNode = insertParenthesesClose(newNode);
 		break;
 	default:
 		insertToRight(newNode);
@@ -793,7 +793,7 @@ node<_ITEM, _NDTYPE>* node<_ITEM, _NDTYPE>::insertParenthesesClose(node* newPare
 			newParenthesesClose = pnewParenClose;
 		close += open;
 	}
-	return pNode;
+	return newParenthesesClose;
 }
 
 
