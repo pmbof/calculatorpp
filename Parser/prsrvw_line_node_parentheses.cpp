@@ -33,9 +33,6 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		_middle = top + Height() / 2;
 	}
 
-	CFont* pFont = ss->pline->font(type(), ss->index);
-	CFont* oldFont = ss->pDC->SelectObject(pFont);
-
 	short np;
 	get_np(ss, _parent, np, false);
 
@@ -51,6 +48,9 @@ void CParserView::line::node_parentheses::set(sset* ss)
 		bottom = rr.bottom;
 		_middle = _left->_middle;
 	}
+
+	CFont* pFont = ss->pline->font(type(), ss->index);
+	CFont* oldFont = ss->pDC->SelectObject(pFont);
 
 	CSize te;
 	GetTextExtentPointA(ss->pDC->m_hDC, ss->pstr + get_ini(), np, &te);
@@ -153,29 +153,10 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 			bOk = true;
 		else if (caret.spos[1] < get_end())
 		{
-			short np;
-			if (get_np(sd, sd->pnd, np, true))
-			{
-				short nPrnths = nparentheses();
-				if (_left || !nPrnths)
-				{
-					for (short n = 0; n < np; ++n)
-					{
-						r.right = ++r.left + 3 * Height();
-						r.left = r.left + Width() / np;
-						cx = r.left;
-					}
-				}
-				if (!_left || !nPrnths)
-				{
-					for (short n = 0; n < np; ++n)
-					{
-						r.left = --r.right - 3 * Height();
-						r.right = r.right - Width() / np;
-						cx = r.left;
-					}
-				}
-			}
+			short nPrnths = nparentheses();
+			if (nPrnths < 0)
+				nPrnths *= -1;
+			cx = Width() / nPrnths * (caret.spos[1] - get_ini());
 			bOk = true;
 		}
 		else if (!_right && get_end() == caret.spos[1])
