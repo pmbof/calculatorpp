@@ -75,9 +75,9 @@ parentheses<_ITEM, _NDTYPE>* parentheses<_ITEM, _NDTYPE>::split_right(unsigned s
 template<class _ITEM, class _NDTYPE>
 parentheses<_ITEM, _NDTYPE>* parentheses<_ITEM, _NDTYPE>::split(unsigned short count)
 {
-	parentheses* newParentheses = new parentheses(_end - count, _end, _prtype, _opened < 0 ? -count: count);
-	_opened += count;
-	_end -= count;
+	parentheses* newParentheses = new parentheses(_ini + count, _end, _prtype, _opened < 0 ? _opened + count: _opened - count);
+	_opened = _opened < 0  ? -count : count;
+	_end = newParentheses->_ini;
 	return newParentheses;
 }
 
