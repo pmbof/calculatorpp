@@ -33,8 +33,8 @@ exception<_ITEM>::exception(const _ITEM* pItem, const char* message, bool deleta
 template<class _ITEM>
 exception<_ITEM>::~exception()
 {
-	if (_item && _deletable)
-		delete _item;
+//	if (_item && _deletable)
+//		delete _item;
 }
 
 
