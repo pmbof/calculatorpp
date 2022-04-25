@@ -127,7 +127,7 @@ void COutputTree::OnPaint()
 	if(!pDoc)
 		return;
 
-	CString expr(pDoc->m_expr);
+	CString expr(pDoc->m_expr.c_str());
 
 	CFont f;
 	f.CreatePointFont(100, L"Bookman Old Style", &dc);

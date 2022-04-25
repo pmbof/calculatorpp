@@ -215,9 +215,9 @@ afx_msg LRESULT CPropertiesWnd::OnChargeProperties(WPARAM wParam, LPARAM lParam)
 
 	CMFCPropertyGridProperty* pExprGrp = new CMFCPropertyGridProperty(_T("Expression"));
 	CParserDoc* pDoc = static_cast<CParserDoc*>(GetParentFrame()->GetActiveFrame()->GetActiveDocument());
-	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)) && pDoc->m_expr)
+	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)) && !pDoc->m_expr.empty())
 	{
-		CString str(pDoc->m_expr);
+		CString str(pDoc->m_expr.c_str());
 		CString name;
 		name.Format(_T("Expression[%d]: \"%s\""), str.GetLength(), (LPCTSTR)str);
 		pExprGrp->SetName(name);
@@ -359,7 +359,7 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)))
 	{
 		str += L"[";
-		item::string se = pNd->getString(pDoc->m_expr);
+		item::string se = pNd->getString(pDoc->m_expr.c_str());
 		for(unsigned int i = 0; se[i]; ++i)
 			expr += se[i];
 		str += expr;
@@ -469,7 +469,7 @@ CMFCPropertyGridProperty* CPropertiesWnd::getPropertyNode(WPARAM wParam, LPARAM 
 	CMFCPropertyGridProperty* pPropExpr = new CMFCPropertyGridProperty(expr, 0);
 	if(pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CParserDoc)))
 	{
-		item::string se = pNd->getString(pDoc->m_expr);
+		item::string se = pNd->getString(pDoc->m_expr.c_str());
 		for(unsigned int i = 0; se[i]; ++i)
 		{
 			CString pos;

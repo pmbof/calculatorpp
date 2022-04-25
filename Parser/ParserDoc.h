@@ -18,6 +18,9 @@
 #include "pmb_calculate_symbol.h"
 
 
+#define CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP			_T("backup")
+#define CALCULATOR_PROFILE_DOCUMENT_BACKUP_OPEN_PATTERN		_T("usnf.%d")
+
 //typedef pmb::parser::transporter<pmb::parser::number<double> > transporter;
 
 typedef pmb::calculate::number<double> number_double;
@@ -111,7 +114,8 @@ public:
 	SYSTEMTIME m_time_end;
 	int	m_countIterators;
 
-	const char* m_expr;
+	//const char* m_expr;
+	std::string m_expr;
 	std::string m_result;
 	const pmb::parser::debug::auto_iterator<0, pmb::parser::debug::iterator, item, ndtype>* m_iterators;
 	const pmb::parser::debug::iterator* m_iterator;
@@ -128,6 +132,7 @@ public:
 	bool check_operation_table() const;
 
 protected:
+	CString m_profile_back_entry;
 	symbol m_symbols;
 	pmb::calculator<block, operation_table> m_calculator;
 	block _block;
@@ -139,7 +144,8 @@ public:
 public:
 	bool nextStep();
 
-	void update(const char* expr);
+	void backup();
+	void update();
 
 // Overrides
 public:
@@ -179,4 +185,6 @@ protected:
 public:
 	afx_msg void OnIterationMoveNext();
 	afx_msg void OnNextunknow();
+	virtual void OnCloseDocument();
+	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 };

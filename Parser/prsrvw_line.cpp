@@ -97,7 +97,7 @@ void CParserView::line::set(CDC* pDC, int xo, int yo)
 	pDoc->check_operation_table();
 	if (node::new_instance(&_root, nullptr, nd))
 	{
-		sset ss(this, nd, pDC, _parent->m_expr.c_str(), editing());
+		sset ss(this, nd, pDC, _parent->getExpression().c_str(), editing());
 		_root->set(&ss);
 		_root->end(&ss);
 		bnode* root = _root->get_root();
@@ -182,7 +182,7 @@ void CParserView::line::draw(CDC* pDC)
 {
 	if (_root && !_root->empty())
 	{
-		sdraw sd(this, nullptr, pDC, _parent->m_expr.c_str(), editing(), -1);
+		sdraw sd(this, nullptr, pDC, _parent->getExpression().c_str(), editing(), -1);
 		_root->draw(&sd);
 		draw_error(pDC);
 	}
@@ -227,9 +227,13 @@ bool CParserView::line::operator()(scaret& caret) const
 	{
 		if (caret.spos[c] < 0)
 			caret.spos[c] = 0;
-		else if (_parent->m_expr.size() < caret.spos[c])
-			caret.spos[c] = _parent->m_expr.size();
+		else if (_parent->getExpression().size() < caret.spos[c])
+			caret.spos[c] = _parent->getExpression().size();
 	}
+
+	CDC* pDC = _parent->GetDC();
+	if (!pDC)
+		return false;
 
 	const bnode* nend = nullptr;
 	for (const bnode* nd = _root->get_first(); nd; nd = nd->get_next())
@@ -237,8 +241,7 @@ bool CParserView::line::operator()(scaret& caret) const
 //		if (nd->get_ini() <= caret.spos[1] && caret.spos[1] <= nd->get_end())
 		{
 			nd = _root;
-			CDC* pDC = _parent->GetDC();
-			sdraw sd((line*)this, nd, pDC, _parent->m_expr.c_str(), _parent->m_bEditing, caret.spos[0]);
+			sdraw sd((line*)this, nd, pDC, _parent->getExpression().c_str(), _parent->m_bEditing, caret.spos[0]);
 			bool bOk = nd->set_caret_pos(&sd, caret);
 			_parent->ReleaseDC(pDC);
 			return bOk;
@@ -246,6 +249,8 @@ bool CParserView::line::operator()(scaret& caret) const
 		if (caret.spos[1] == nd->get_end())
 			nend = nd;
 	}
+	_parent->ReleaseDC(pDC);
+
 	if (nend)
 	{
 		caret.pos[1].x = nend->right;
@@ -263,7 +268,7 @@ void CParserView::line::_swith_expr_begin(const bnode* pnd, sdraw* sd) const
 	if (_ndres == pnd)
 	{
 		sd->postr = sd->pstr;
-		sd->pstr = _parent->m_expr.c_str();
+		sd->pstr = _parent->getExpression().c_str();
 		sd->pDC->SetBkMode(OPAQUE);
 		sd->pDC->SetBkColor(RGB(0xFF, 0xFF, 0xFF));
 		sd->bEditing = sd->pline->editing();

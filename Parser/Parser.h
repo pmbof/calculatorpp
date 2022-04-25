@@ -36,6 +36,12 @@ public:
 // Implementation
 	UINT  m_nAppLook;
 	BOOL  m_bHiColorIcons;
+	bool  m_bClosing;
+
+	CString getAppDataPath(const CString& filename) const;
+
+private:
+	void openLastDocumentsOpen(CMultiDocTemplate* pDocTemplate);
 
 	virtual void PreLoadState();
 	virtual void LoadCustomState();

@@ -579,7 +579,6 @@ private:
 	vline m_line;
 	bool m_bEditing;
 	UINT m_fstyle;
-	std::string m_expr;
 	std::string m_result;
 
 
@@ -675,6 +674,7 @@ private:
 private:
 	void draw_line(CDC* pDC, bool bCalc = false, int* x_pos = nullptr);
 	void set_caret();
+	const std::string& getExpression() const;
 
 // Implementation
 public:

@@ -29,6 +29,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(MM_CHARGENEWDOC, &CMainFrame::OnChargeNewdoc)
 	ON_MESSAGE(MM_CHANGEEXPRESSION, &CMainFrame::OnMmChangeExpression)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -429,4 +430,11 @@ afx_msg LRESULT CMainFrame::OnMmChangeExpression(WPARAM wParam, LPARAM lParam)
 {
 	SendMessageToDescendants(MM_CHANGEEXPRESSION, wParam, lParam);
 	return 0;
+}
+
+
+void CMainFrame::OnClose()
+{
+	theApp.m_bClosing = true;
+	CMDIFrameWndEx::OnClose();
 }

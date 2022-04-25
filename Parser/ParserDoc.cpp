@@ -126,6 +126,7 @@ CParserDoc::CParserDoc()
 
 CParserDoc::~CParserDoc()
 {
+	m_error.reset();
 }
 
 
@@ -269,7 +270,7 @@ int determinante(int orden, const int* matriz)
 BOOL CParserDoc::OnNewDocument()
 {
 	pmb::log* log = pmb::log::beginFunction(pmb::logDebug, __FUNCTION__);
-	m_expr = nullptr;
+	m_expr.clear();
 	if (!CDocument::OnNewDocument())
 	{
 		log->endFunction();
@@ -285,6 +286,57 @@ BOOL CParserDoc::OnNewDocument()
 	m_symbols.select_search("Variables");
 	AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 
+	bool bMoveTitle = false;
+	CString title = GetTitle();
+	for (int i = 0; true; ++i)
+	{
+		CString nf;
+		nf.Format(CALCULATOR_PROFILE_DOCUMENT_BACKUP_OPEN_PATTERN, i);
+		if (bMoveTitle)
+		{
+			for (int i = title.GetLength() - 1; 0 < i; --i)
+			{
+				if (title[i] < L'0' || L'9' < title[i])
+				{
+					CString stitle = title.Mid(0, ++i);
+					int ntitle = atoi(CStringA(title.Mid(i))) + 1;
+					title.Format(_T("%s%d"), (LPCTSTR)stitle, ntitle);
+					SetTitle(title);
+					break;
+				}
+			}
+			bMoveTitle = false;
+		}
+		CString filename = theApp.GetProfileString(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nf);
+		if (filename.IsEmpty() || filename == title)
+		{
+			POSITION pos = theApp.GetFirstDocTemplatePosition();
+			CDocTemplate* pDT = theApp.GetNextDocTemplate(pos);
+			for (pos = pDT->GetFirstDocPosition(); pos; )
+			{
+				CParserDoc* pDoc = static_cast<CParserDoc*>(pDT->GetNextDoc(pos));
+				if (!pDoc->m_profile_back_entry.IsEmpty() && pDoc->GetTitle() == title)
+				{
+					bMoveTitle = true;
+					break;
+				}
+			}
+			if (!bMoveTitle)
+			{
+				m_profile_back_entry = nf;
+				int fp = nf.Find(L'.');
+				nf = nf.Mid(0, fp);
+				int pidx = theApp.GetProfileInt(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nf, 0);
+				if (pidx <= i)
+					theApp.WriteProfileInt(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nf, i + 1);
+				theApp.WriteProfileString(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, m_profile_back_entry, title);
+				SaveModified();
+				break;
+			}
+		}
+	}
+
+	backup();
 	log->endFunction();
 	return true;
 
@@ -359,7 +411,7 @@ BOOL CParserDoc::OnNewDocument()
 			bResult = false;
 		try
 		{
-			m_calculator.calculate(m_expr = std::get<0>(test[i]));
+			m_calculator.calculate((m_expr = std::get<0>(test[i])).c_str());
 			result();
 			bResult = true;
 			if (_block.nresult() != std::get<2>(test[i]) || !std::get<1>(test[i]))
@@ -380,7 +432,7 @@ BOOL CParserDoc::OnNewDocument()
 			m_result.clear();
 			if (!bResult || std::get<1>(test[i]))
 			{
-				log->trace(pmb::logError, "Exception \"%s\": %s = <NULL> =! %f\n", ex.message(m_expr).c_str(), m_expr, std::get<2>(test[i]));
+				log->trace(pmb::logError, "Exception \"%s\": %s = <NULL> =! %f\n", ex.message(m_expr.c_str()).c_str(), m_expr, std::get<2>(test[i]));
 				m_error = ex;
 				++errors;
 			}
@@ -399,13 +451,13 @@ BOOL CParserDoc::OnNewDocument()
 	return true;
 	try
 	{
-		m_calculator.parser(m_expr = "f(x) = 4 x");
-		m_calculator.parser(m_expr = "a = 3 f(2)");
-		m_calculator.parser(m_expr = "e = 2.71828182");
+		m_calculator.parser((m_expr = "f(x) = 4 x").c_str());
+		m_calculator.parser((m_expr = "a = 3 f(2)").c_str());
+		m_calculator.parser((m_expr = "e = 2.71828182").c_str());
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
-		pmb::log::instance()->trace(pmb::logError, "Error: %s\n", ex.message(m_expr).c_str());
+		pmb::log::instance()->trace(pmb::logError, "Error: %s\n", ex.message(m_expr.c_str()).c_str());
 		m_error = ex;
 		AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 		return true;
@@ -428,11 +480,11 @@ BOOL CParserDoc::OnNewDocument()
 	try
 	{
 		m_expr = "f(x, y, z) = 2 pi + 4 * x sin y * z";
-		m_calculator.parser(m_expr);
+		m_calculator.parser(m_expr.c_str());
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
-		pmb::log::instance()->trace(pmb::logError, "Error: %s\n", ex.message(m_expr).c_str());
+		pmb::log::instance()->trace(pmb::logError, "Error: %s\n", ex.message(m_expr.c_str()).c_str());
 	}
 //	m_expr = "a = y(pi)";
 //	m_calculator.parser(m_expr);
@@ -444,19 +496,118 @@ BOOL CParserDoc::OnNewDocument()
 }
 
 
+
+BOOL CParserDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+	LPCTSTR pattern = CALCULATOR_PROFILE_DOCUMENT_BACKUP_OPEN_PATTERN;
+
+	int iheader = 0;
+	for (int i = 0; lpszPathName[i] && lpszPathName[i] == pattern[i]; ++i)
+	{
+		if (lpszPathName[i] == '.' && lpszPathName[i + 1])
+		{
+			int i0 = ++i;
+			for (; lpszPathName[i] && L'0' <= lpszPathName[i] && lpszPathName[i] <= L'9'; ++i)
+				;
+			if (i0 < i && lpszPathName[i] == L'|' && lpszPathName[i + 1])
+			{
+				iheader = i + 1;
+				CString path = theApp.getAppDataPath(L"");
+
+				int j;
+				for (j = 0; j < path.GetLength() && lpszPathName[iheader + j] == path[j]; ++j)
+					;
+				if (j == path.GetLength() && lpszPathName[iheader + j])
+				{
+					int je;
+					for (je = j + 1; lpszPathName[iheader + je] && lpszPathName[iheader + je] != L'\\'; ++je)
+						;
+					if (j + 1 < je && !lpszPathName[iheader + je])
+					{
+						CString title(lpszPathName + iheader + j);
+						SetTitle(title);
+						m_profile_back_entry = CString(lpszPathName, i);
+					}
+					else
+					{
+						return false;
+					}
+				}
+			}
+		}
+	}
+
+	if (!CDocument::OnOpenDocument(lpszPathName + iheader))
+		return FALSE;
+
+	return TRUE;
+}
+
+
+
+void CParserDoc::OnCloseDocument()
+{
+	if (!theApp.m_bClosing && !m_profile_back_entry.IsEmpty())
+	{
+		if (!m_expr.empty())
+		{
+			POSITION pos = GetFirstViewPosition();
+			if (pos)
+			{
+				CView* pVw = GetNextView(pos);
+				if (pVw && pVw->MessageBox(L"You lost change, do you want to continue?", nullptr, MB_ICONQUESTION | MB_YESNO) == IDNO)
+				{
+					return;
+				}
+			}
+		}
+		int pf = m_profile_back_entry.Find(L'.');
+		CString nf = m_profile_back_entry.Mid(pf + 1);
+		int i = _ttoi(nf);
+		nf = m_profile_back_entry.Mid(0, pf);
+		int pidx = theApp.GetProfileInt(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nf, 0);
+		if (pidx <= i + 1)
+			theApp.WriteProfileInt(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nf, i);
+		theApp.WriteProfileString(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, m_profile_back_entry, _T(""));
+	}
+	CDocument::OnCloseDocument();
+}
+
+
+
 bool CParserDoc::nextStep()
 {
 	return false;// m_parser.nextStep();
 }
 
 
-void CParserDoc::update(const char* expr)
+
+void CParserDoc::backup()
+{
+	CString title = GetTitle();
+	CString sfn = theApp.getAppDataPath(title);
+	CFile file;
+	file.Open(sfn, CFile::modeCreate | CFile::typeBinary | CFile::modeReadWrite);
+	file.Write(m_expr.c_str(), m_expr.size());
+	file.Close();
+}
+
+
+
+void CParserDoc::update()
 {
 	bool bResult = false;
+
+	if (!m_profile_back_entry.IsEmpty())
+		backup();
+	else
+		m_bModified = true;
+
+
 	try
 	{
-		m_calculator.calculate(m_expr = expr);
 		m_error.reset();
+		m_calculator.calculate(m_expr.c_str());
 		bResult = true;
 		result();
 	}
@@ -465,7 +616,7 @@ void CParserDoc::update(const char* expr)
 		m_result.clear();
 		if (!bResult)
 		{
-			pmb::log::instance()->trace(pmb::logError, "Exception: \"%s\"\n", ex.message(m_expr).c_str());
+			pmb::log::instance()->trace(pmb::logError, "Exception: \"%s\"\n", ex.message(m_expr.c_str()).c_str());
 			m_error = ex;
 		}
 	}
@@ -559,11 +710,22 @@ void CParserDoc::Serialize(CArchive& ar)
 {
 	if (ar.IsStoring())
 	{
-		// TODO: add storing code here
+		ar.Write(m_expr.c_str(), m_expr.size());
 	}
 	else
 	{
-		// TODO: add loading code here
+		m_expr.clear();
+		const UINT bfsz = 1024;
+		char buffer[bfsz];
+		for (UINT br = ar.Read(buffer, bfsz); br; )
+		{
+			m_expr += std::string(buffer, br);
+			br = br == bfsz ? ar.Read(buffer, bfsz) : 0;
+			CString oldvalue = m_profile_back_entry;
+			m_profile_back_entry.Empty();
+			update();
+			m_profile_back_entry = oldvalue;
+		}
 	}
 }
 
@@ -959,7 +1121,7 @@ bool CParserDoc::load_configuration()
 		catch (pmb::parser::exception<item>& ex)
 		{
 			m_expr = m_calculator.expression();
-			pmb::log::instance()->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr).c_str(), m_expr);
+			pmb::log::instance()->trace(pmb::logError, "Exception \"%s\": %s\n", ex.message(m_expr.c_str()).c_str(), m_expr);
 			m_error = ex;
 			AfxGetMainWnd()->PostMessage(MM_CHARGENEWDOC, WPARAM(m_symbols.get()));
 			return true;
@@ -1207,3 +1369,6 @@ void CParserDoc::binf_acotg(transporter_args& args)
 void CParserDoc::binf_if(transporter_args& args)
 {
 }
+
+
+

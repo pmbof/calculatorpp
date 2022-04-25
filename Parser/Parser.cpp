@@ -247,7 +247,56 @@ BOOL CParserApp::InitInstance()
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
 
+	openLastDocumentsOpen(pDocTemplate);
+
+	m_bClosing = false;
 	return TRUE;
+}
+
+
+
+void CParserApp::openLastDocumentsOpen(CMultiDocTemplate* pDocTemplate)
+{
+	CString nfidx(CALCULATOR_PROFILE_DOCUMENT_BACKUP_OPEN_PATTERN);
+	int pf = nfidx.Find(L'.');
+	nfidx = nfidx.Mid(0, pf);
+	int pidx = theApp.GetProfileInt(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nfidx, 0);
+	int lastnotempty = -1;
+	for (int i = 0; true; ++i)
+	{
+		CString nf;
+		nf.Format(CALCULATOR_PROFILE_DOCUMENT_BACKUP_OPEN_PATTERN, i);
+		CString filename = theApp.GetProfileString(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nf);
+		if (filename.IsEmpty())
+		{
+			if (pidx - 1 <= i)
+			{
+				theApp.WriteProfileInt(CALCULATOR_PROFILE_DOCUMENT_SECTION_BACKUP, nfidx, lastnotempty + 1);
+				break;
+			}
+		}
+		else
+		{
+			lastnotempty = i;
+			CRecentFileList* pOld = m_pRecentFileList;
+			m_pRecentFileList = nullptr;
+			pDocTemplate->OpenDocumentFile(nf + L"|" + getAppDataPath(filename));
+			m_pRecentFileList = pOld;
+		}
+	}
+}
+
+
+
+CString CParserApp::getAppDataPath(const CString& filename) const
+{
+	CString pathfn;
+	WCHAR buffer[512];
+	if (GetEnvironmentVariable(L"APPDATA", buffer, sizeof(buffer)))
+		pathfn = buffer + CString("\\PMB\\Calculatorpp\\") + filename;
+	else
+		pathfn = filename;
+	return pathfn;
 }
 
 

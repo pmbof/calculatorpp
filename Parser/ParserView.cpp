@@ -131,15 +131,10 @@ void CParserView::OnInitialUpdate()
 	CParserDoc* pDoc = GetDocument();
 	pDoc->print_operation_table();
 
-	if (pDoc->m_expr)
-		m_expr = pDoc->m_expr;
-	else
-		m_expr.clear();
-
 	m_caret.pos[1] = m_p0;
 	--m_caret.pos[1].x;
 	m_caret.pos[0] = m_caret.pos[1];
-	m_caret.spos[0] = m_caret.spos[1] = m_expr.size();
+	m_caret.spos[0] = m_caret.spos[1] = pDoc->m_expr.size();
 
 	if (m_resource.pretty())
 	{
@@ -194,7 +189,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 	if (!bCalc)
 		HideCaret();
 
-	CString expr(m_expr.c_str());
+	CString expr(pDoc->m_expr.c_str());
 	CRect wr;
 	GetClientRect(&wr);
 
@@ -284,7 +279,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 			if (!bCalc)
 				oldColor = oc;
 		}
-		CString sn(m_expr.c_str() + nd->getIni(), nd->len());
+		CString sn(pDoc->m_expr.c_str() + nd->getIni(), nd->len());
 		CRect ctr = tr;
 		ctr.right += 100;
 		pDC->DrawText(sn, ctr, DT_CALCRECT | DT_LEFT | DT_TOP | DT_SINGLELINE);
@@ -320,7 +315,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 				for (int i = nd->getIni(); i < nd->getEnd(); ++i)
 				{
 					ABC width;
-					pDC->GetCharABCWidths(m_expr[i], m_expr[i], &width);
+					pDC->GetCharABCWidths(pDoc->m_expr[i], pDoc->m_expr[i], &width);
 					//pDC->GetOutputCharWidth(m_expr[i], m_expr[i], &width);
 					x += width.abcA + width.abcB + width.abcC;
 					if (i + 1 == nd->getEnd())
@@ -479,7 +474,7 @@ void CParserView::draw_line(CDC* pDC, bool bCalc, int* x_pos)
 			sr += pDoc->m_result.c_str();
 		}
 		else
-			sr = pDoc->m_error.message(pDoc->m_expr).c_str();
+			sr = pDoc->m_error.message(pDoc->m_expr.c_str()).c_str();
 		pDC->DrawText(sr, tr, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 	}
 
@@ -594,7 +589,7 @@ void CParserView::OnMouseMove(UINT nFlags, CPoint point)
 	{
 		if (m_tooltipId != 1)
 		{
-			CString text(GetDocument()->m_error.message(GetDocument()->m_expr).c_str());
+			CString text(GetDocument()->m_error.message(GetDocument()->m_expr.c_str()).c_str());
 			//m_tooltip.SetTitle(0, text);
 			m_tooltip.UpdateTipText(text, this);
 			m_tooltip.Popup();
@@ -640,6 +635,13 @@ inline void CParserView::set_caret()
 
 
 
+const std::string& CParserView::getExpression() const
+{
+	return GetDocument()->m_expr;
+}
+
+
+
 void CParserView::OnSetFocus(CWnd* pOldWnd)
 {
 	CView::OnSetFocus(pOldWnd);
@@ -665,6 +667,7 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	HideCaret();
 
+	CParserDoc* pDoc = GetDocument();
 	bool bModified = false;
 
 	item::SIZETP old0 = m_caret.spos[0];
@@ -681,16 +684,16 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		m_caret.spos[1] = 0;
 		break;
 	case VK_END:
-		m_caret.spos[1] = m_expr.size();
+		m_caret.spos[1] = pDoc->m_expr.size();
 		break;
 	case VK_DELETE:
-		if (m_caret.spos[1] < m_expr.size() - 1)
+		if (m_caret.spos[1] < pDoc->m_expr.size() - 1)
 		{
 			bModified = true;
-			std::string nexpr = m_expr.substr(0, m_caret.spos[1]);
-			if (m_caret.spos[1] + 1 < m_expr.size())
-				nexpr += m_expr.substr(m_caret.spos[1] + 1);
-			m_expr = nexpr;
+			std::string nexpr = pDoc->m_expr.substr(0, m_caret.spos[1]);
+			if (m_caret.spos[1] + 1 < pDoc->m_expr.size())
+				nexpr += pDoc->m_expr.substr(m_caret.spos[1] + 1);
+			pDoc->m_expr = nexpr;
 		}
 		break;
 	default:
@@ -698,14 +701,14 @@ void CParserView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	}
 	if (m_caret.spos[1] < 0)
 		m_caret.spos[1] = 0;
-	else if (m_expr.size() < m_caret.spos[1])
-		m_caret.spos[1] = m_expr.size();
+	else if (pDoc->m_expr.size() < m_caret.spos[1])
+		m_caret.spos[1] = pDoc->m_expr.size();
 
 	if (m_resource.pretty())
 	{
 		if (bModified)
 		{
-			GetDocument()->update(m_expr.c_str());
+			GetDocument()->update();
 			CDC* pDC = GetDC();
 			m_line[0].set(pDC, m_p0.x, m_p0.y);
 			ReleaseDC(pDC);
@@ -742,6 +745,8 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	HideCaret();
 
+	CParserDoc* pDoc = GetDocument();
+
 	bool bModified = false;
 
 	item::SIZETP old0 = m_caret.spos[0];
@@ -752,10 +757,10 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if (0 < m_caret.spos[1])
 		{
 			bModified = true;
-			std::string nexpr = m_expr.substr(0, m_caret.spos[1] - 1);
-			if (m_caret.spos[1] < m_expr.size())
-				nexpr += m_expr.substr(m_caret.spos[1]);
-			m_expr = nexpr;
+			std::string nexpr = pDoc->m_expr.substr(0, m_caret.spos[1] - 1);
+			if (m_caret.spos[1] < pDoc->m_expr.size())
+				nexpr += pDoc->m_expr.substr(m_caret.spos[1]);
+			pDoc->m_expr = nexpr;
 			--m_caret.spos[1];
 		}
 		break;
@@ -771,26 +776,26 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 			bModified = true;
 			std::string nexpr;
 			if (0 < m_caret.spos[1])
-				nexpr = m_expr.substr(0, m_caret.spos[1]);
+				nexpr = pDoc->m_expr.substr(0, m_caret.spos[1]);
 			nexpr += (char)nChar;
-			if (m_caret.spos[1] < m_expr.size())
-				nexpr += m_expr.substr(m_caret.spos[1]);
-			m_expr = nexpr;
+			if (m_caret.spos[1] < pDoc->m_expr.size())
+				nexpr += pDoc->m_expr.substr(m_caret.spos[1]);
+			pDoc->m_expr = nexpr;
 			++m_caret.spos[1];
 		}
 		break;
 	}
 	if (m_caret.spos[1] < 0)
 		m_caret.spos[1] = 0;
-	else if (m_expr.size() < m_caret.spos[1])
-		m_caret.spos[1] = m_expr.size();
+	else if (pDoc->m_expr.size() < m_caret.spos[1])
+		m_caret.spos[1] = pDoc->m_expr.size();
 
 	if (m_resource.pretty())
 	{
 		if (bModified)
 		{
 			CDC* pDC = GetDC();
-			GetDocument()->update(m_expr.c_str());
+			GetDocument()->update();
 			m_line[0].set(pDC, m_p0.x, m_p0.y);
 			InvalidateRect(nullptr, 1);
 			ReleaseDC(pDC);
