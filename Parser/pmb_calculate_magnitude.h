@@ -366,6 +366,13 @@ public:
 	bool vector() const;
 	bool matrix() const;
 
+	void stringstream(std::stringstream& ssOut) const;
+	bool equal_unit(const magnitude& right) const;
+
+	const _TYPE& get_number() const;
+	const unit& get_unit() const;
+
+protected:
 	_TYPE _number;
 	unit _unit;
 };

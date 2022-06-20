@@ -50,6 +50,7 @@ public:
 	_MyT operator-() const;
 
 	_MyT operator*(const _MyT& right) const;
+	_MyT operator*(const _TypeValue& right) const;
 	_MyT operator/(const _MyT& right) const;
 	_MyT operator/(const _TypeValue& right) const;
 	_MyT operator%(const _MyT& right) const;

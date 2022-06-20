@@ -221,6 +221,14 @@ inline number<_TYPE> number<_TYPE>::operator*(const _MyT& right) const
 
 
 template<class _TYPE>
+inline number<_TYPE> number<_TYPE>::operator*(const _TypeValue& right) const
+{
+	return _MyT(_number * right);
+}
+
+
+
+template<class _TYPE>
 inline number<_TYPE> number<_TYPE>::operator/(const _MyT& right) const
 {
 	return _MyT(_number / right._number);

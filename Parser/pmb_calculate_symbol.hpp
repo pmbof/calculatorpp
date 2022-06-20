@@ -410,8 +410,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 			prefix::const_iterator pf = _prefix->find(sprefix);
 			if (pf == _prefix->end())
 				continue;
-			value = _TVALUE(new _TVALUE::tpValue(*(ui->second.first)));
-			(*value)->_number *= pf->first->getFactor(_prefix->base());
+			value = _TVALUE(new _TVALUE::tpValue(ui->second.first->get_number() * pf->first->getFactor(_prefix->base()), ui->second.first->get_unit()));
 			return true;
 		}
 
@@ -430,8 +429,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 				typename prefix::mapName::const_iterator pf = _prefix->find_by_name(sprefix);
 				if (pf == _prefix->end_by_name())
 					continue;
-				value = _TVALUE(new _TVALUE::tpValue(*(ui->second.first)));
-				(*value)->_number *= pf->first->getFactor(_prefix->base());
+				value = _TVALUE(new _TVALUE::tpValue(ui->second.first->get_number() * pf->first->getFactor(_prefix->base()), ui->second.first->get_unit()));
 				return true;
 			}
 		}
@@ -471,7 +469,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 	if (refVal.dimensionless())
 	{
 		sunit.clear();
-		val = refVal._number;
+		val = refVal.get_number();
 		bRet = false;
 	}
 	else
@@ -495,11 +493,11 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 					: symbol(s), unit(_unit), ppow(1), pow(_pow) { }
 
 				bool operator <(const s_unit& right) const {
-					return unit._unit.nDims() == right.unit._unit.nDims()
+					return unit.get_unit().nDims() == right.unit.get_unit().nDims()
 						&& (vunit.size() < right.vunit.size()
 							|| vunit.size() == right.vunit.size() && (0 < ppow && ppow < right.ppow || ppow < 0 && right.ppow < ppow
-								|| ppow == right.ppow && unit._number < right.unit._number))
-						|| unit._unit.nDims() < right.unit._unit.nDims();
+								|| ppow == right.ppow && unit.get_number() < right.unit.get_number()))
+						|| unit.get_unit().nDims() < right.unit.get_unit().nDims();
 				}
 
 				void insert() {
@@ -509,7 +507,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 						if (0 < pow && pow < i->pow || pow < 0 && i->pow < pow)
 							break;
 					}
-					vunit.insert(i, s_powunit(symbol, unit._unit, pow));
+					vunit.insert(i, s_powunit(symbol, unit.get_unit(), pow));
 				}
 
 				void set(const std::string& s, const tpValue& u, tpUnit::_tpInt p) {
@@ -532,7 +530,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 							ss << " ";
 						if (!i && pr)
 						{
-							const prefix::prefix* ppr = pr->find_prefix(unit._number, vunit[i].pow);
+							const prefix::prefix* ppr = pr->find_prefix(unit.get_number(), vunit[i].pow);
 							if (ppr)
 							{
 								factor = pr->getFactor(ppr, vunit[i].pow);
@@ -567,12 +565,12 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 					continue;
 				if (!*iu->second.first)
 					continue;
-				tpUnit::_tpInt pow = refVal._unit.compare(iu->second.first->_unit);
+				tpUnit::_tpInt pow = refVal.get_unit().compare(iu->second.first->get_unit());
 				if (pow)
 				{
 					for (int i = 0; i < vunit.size(); ++i)
 					{
-						tpUnit::_tpInt pow2 = vunit[i].unit._unit.compare(iu->second.first->_unit);
+						tpUnit::_tpInt pow2 = vunit[i].unit.get_unit().compare(iu->second.first->get_unit());
 						if (pow2)
 							vunit[i].set(iu->first, vunit[i].unit / iu->second.first->pow(pow2), pow2);
 					}
@@ -592,14 +590,14 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 			if (bRet = vunit.size())
 			{
 				sunit = vunit[min].str(bPrefix ? _prefix : nullptr);
-				val = vunit[min].unit._number / vunit[min].factor;
+				val = vunit[min].unit.get_number() / vunit[min].factor;
 			}
 		}
 
 		if (!bRet)
 		{
-			sunit = refVal._unit.get_dimension();
-			val = refVal._number;
+			sunit = refVal.get_unit().get_dimension();
+			val = refVal.get_number();
 		}
 		bRet = true;
 	}
@@ -767,7 +765,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 				ssmapb::const_iterator ci = _grp_unit.find(item);
 				if (ci == _grp_unit.end())
 					_grp_unit.insert(ssmapb::value_type(item, const_cast<_TVALUE&>(val)));
-				else if ((**(ci->second._val))._unit != (**val)._unit)
+				else if (!(**(ci->second._val)).equal_unit(**val))
 					return false; // invalid unit
 				_grp_unit[item][sname].insert(_grp_unit[item][sname].end(), last_defined.begin(), last_defined.end());
 			}
@@ -776,7 +774,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 		{
 			if ((*val)->one_dimension())
 			{
-				std::string item((**val)._unit[0]->name(), (**val)._unit[0]->name_size());
+				std::string item((**val).get_unit()[0]->name(), (**val).get_unit()[0]->name_size());
 				ssmapb::const_iterator ci = _grp_unit.find(item);
 				if (ci == _grp_unit.end())
 					_grp_unit.insert(ssmapb::value_type(item, const_cast<_TVALUE&>(val)));
@@ -787,7 +785,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 				bRet = false;
 				for (ssmapb::iterator ug = _grp_unit.begin(); ug != _grp_unit.end(); ++ug)
 				{
-					if ((*ug->second._val)->_unit == (*val)->_unit)
+					if ((*ug->second._val)->equal_unit(**val))
 					{
 						ug->second[sname].insert(ug->second[sname].end(), last_defined.begin(), last_defined.end());
 						bRet = true;

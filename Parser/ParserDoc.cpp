@@ -417,7 +417,7 @@ BOOL CParserDoc::OnNewDocument()
 			if (_block.nresult() != std::get<2>(test[i]) || !std::get<1>(test[i]))
 			{
 				std::stringstream sr;
-				sr << _block.result()._number;
+				_block.result().stringstream(sr);
 				if (std::get<1>(test[i]))
 					log->trace(pmb::logError, "%s = %f != %f\n", m_expr, _block.result(), std::get<2>(test[i]));
 				else

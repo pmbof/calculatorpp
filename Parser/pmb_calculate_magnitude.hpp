@@ -1544,6 +1544,36 @@ inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::matrix() const
 
 
 
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::stringstream(std::stringstream& ssOut) const
+{
+	ssOut << _number;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::equal_unit(const magnitude& right) const
+{
+	return _unit == right._unit;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline const _TYPE& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_number() const
+{
+	return _number;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline const typename magnitude<_TYPE, _INT, _CHAR, _SZSTR>::unit& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_unit() const
+{
+	return _unit;
+}
+
 
 
 }

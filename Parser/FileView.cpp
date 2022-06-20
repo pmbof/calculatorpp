@@ -112,7 +112,9 @@ void CFileView::FillFileView(WPARAM wParam)
 			HTREEITEM hVar = m_wndFileView.InsertItem(str, 1, 1, hSrc);
 			if (!j->second.isNull())
 			{
-				str.Format(_T("%f"), j->second->_number);
+				std::stringstream ss;
+				j->second->stringstream(ss);
+				str = ss.str().c_str();
 				m_wndFileView.InsertItem(str, 2, 2, hVar);
 			}
 			str = "j->second._getState()";

@@ -407,7 +407,7 @@ inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tpValue::_TypeV
 {
 	if (!_lastResult || _lastResult->getValues().result().isNull())
 		throw exception<cItem>("No result found");
-	return _lastResult->getValues().result()->_number;
+	return _lastResult->getValues().result()->get_number();
 }
 
 
