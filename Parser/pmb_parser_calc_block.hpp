@@ -567,7 +567,7 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 			else if (childs[arg]->getType() == ndNumber)
 			{
 				const istring& snumber = childs[arg]->getString(st->_expr);
-				*vals[arg] = new transporter::tpValue(snumber, childs[arg]->len());
+				*vals[arg] = new transporter::tpValue(snumber, snumber.size());
 			}
 			else if (!st->_it_calc->is_varDependent() && st->_it_calc->lastNode() != childs[arg] && st->_it_calc->lastJoinNode() != childs[arg])
 			{
