@@ -152,6 +152,22 @@ inline bool number<_TYPE>::operator<=(const _TypeValue& right) const
 
 
 
+template<class _TYPE>
+inline bool number<_TYPE>::operator>=(const _MyT& right) const
+{
+	return _number >= right._number;
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::operator>=(const _TypeValue& right) const
+{
+	return _number >= right;
+}
+
+
+
 // Friend operators:
 template<class _TYPE>
 inline bool operator <(const _TYPE& left, const number<_TYPE>& right)

@@ -42,8 +42,8 @@ public:
 
 	const _CHAR* symbol() const;
 	const _CHAR* name() const;
-	const _SIZE& symbol_size() const;
-	const _SIZE& name_size() const;
+	const _SIZE symbol_size() const;
+	const _SIZE name_size() const;
 
 private:
 	void clear();
@@ -296,6 +296,9 @@ public:
 	typename typedef _TYPE _TypeValue;
 	typename typedef _TypeValue::_TypeValue _2TypeValue;
 	typename typedef _INT _TypeInt;
+	typename typedef _CHAR _TypeChar;
+	typename typedef _SZSTR _TypeSzstr;
+
 	typedef magnitude<_TYPE, _INT, _CHAR, _SZSTR> _MyT;
 	typedef typename unit<_INT, _CHAR, _SZSTR> unit;
 	typedef typename unit::dimension dimension;
@@ -308,6 +311,9 @@ public:
 	explicit magnitude(const _CHAR* str, const _SZSTR& len);
 	explicit magnitude(const dimension* dim);
 	explicit magnitude(const _TYPE& n, const unit& u);
+
+
+	bool is_numeric() const;
 
 	// Operators:
 	void positive(const _MyT& right);
@@ -351,6 +357,12 @@ public:
 
 	magnitude pow(_TypeInt p) const;
 	magnitude operator/(const magnitude& right) const;
+
+	bool equal(const magnitude& right) const;
+	bool less_equal(const magnitude& right) const;
+	bool less(const magnitude& right) const;
+	bool greater(const magnitude& right) const;
+	bool greater_equal(const magnitude& right) const;
 
 	// check:
 	bool zero() const;

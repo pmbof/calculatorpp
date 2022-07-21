@@ -34,6 +34,8 @@ public:
 	bool operator>(const _MyT& right) const;
 	bool operator<=(const _MyT& right) const;
 	bool operator<=(const _TypeValue& right) const;
+	bool operator>=(const _MyT& right) const;
+	bool operator>=(const _TypeValue& right) const;
 
 	template<class _TYPE>
 	friend bool operator <(const _TypeValue& left, const number<_TYPE>& right);

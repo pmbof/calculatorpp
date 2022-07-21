@@ -61,6 +61,20 @@ const operation* CParserDoc::_operation[] = {
 	new CParserView::operation(          "&",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
 	new CParserView::opr_minus(          "-",   50, true,   true, "substract",             "substraction",                                        &CParserDoc::opr_subtraction),
 	new CParserView::opr_plus(           "+",   50, true,   true, "add",                   "addition",                                            &CParserDoc::opr_addition),
+
+	new CParserView::operation(         "==",   40, true,   true, "equal to",              "equal to",                                            &CParserDoc::opr_equal),
+	new CParserView::operation(         "<=",   40, true,   true, "less equal to",         "less equal to",                                       &CParserDoc::opr_less_equal),
+	new CParserView::operation(          "<",   40, true,   true, "less to",               "less to",                                             &CParserDoc::opr_less_equal),
+	new CParserView::operation(         ">=",   40, true,   true, "greater equal to",      "greater equal to",                                    &CParserDoc::opr_greater_equal),
+	new CParserView::operation(          ">",   40, true,   true, "greater to",            "greater to",                                          &CParserDoc::opr_greater),
+	new CParserView::operation(          "!",   31, false, false, "not",                   "not",                                                 &CParserDoc::opr_not),
+	new CParserView::operation(         "&&",   30, true,   true, "and",                   "and",                                                 &CParserDoc::opr_and),
+	new CParserView::operation(         "&|",   29, true,   true, "xor",                   "xor",                                                 &CParserDoc::opr_xor),
+	new CParserView::operation(         "||",   28, true,   true, "or",	                   "or",                                                  &CParserDoc::opr_or),
+	new CParserView::operation(          "?",   20, true,   true, "if",	                   "if",                                                  &CParserDoc::opr_or),
+	new CParserView::operation(			 ":",   19, true,   true, "if cases",	           "if cases",                                            &CParserDoc::opr_or),
+
+
 	new CParserView::opr_equal(          "=",   10, false,  true, "assignation",           "assignation",                                         &CParserDoc::opr_assignation,     false,  true,   false),
 	new CParserView::opr_equal(          "=",    0, true,  false, "result",                "result",                                              &CParserDoc::opr_result),
 	new CParserView::opr_result(         "=.",   0, true,   true, "result modify",         "result modify",                                       &CParserDoc::opr_result_modify)
@@ -419,13 +433,13 @@ BOOL CParserDoc::OnNewDocument()
 				std::stringstream sr;
 				_block.result().stringstream(sr);
 				if (std::get<1>(test[i]))
-					log->trace(pmb::logError, "%s = %f != %f\n", m_expr, _block.result(), std::get<2>(test[i]));
+					log->trace(pmb::logError, "%s = %f != %f\n", m_expr, *_block.result().numeric(), std::get<2>(test[i]));
 				else
-					log->trace(pmb::logError, "%s = %f != <NULL>\n", m_expr, _block.result());
+					log->trace(pmb::logError, "%s = %f != <NULL>\n", m_expr, *_block.result().numeric());
 				++errors;
 			}
 			else
-				log->trace(pmb::logWarning, "%s == %f\n", m_expr, _block.result());
+				log->trace(pmb::logWarning, "%s == %f\n", m_expr, *_block.result().numeric());
 		}
 		catch (pmb::parser::exception<item>& ex)
 		{
@@ -537,6 +551,8 @@ BOOL CParserDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		}
 	}
 
+	m_symbols.add_set_variable("Variables");
+
 	if (!CDocument::OnOpenDocument(lpszPathName + iheader))
 		return FALSE;
 
@@ -555,7 +571,7 @@ void CParserDoc::OnCloseDocument()
 			if (pos)
 			{
 				CView* pVw = GetNextView(pos);
-				if (pVw && pVw->MessageBox(L"You lost change, do you want to continue?", nullptr, MB_ICONQUESTION | MB_YESNO) == IDNO)
+				if (pVw && pVw->MessageBox(L"You lost change, do you want to continue?", GetTitle(), MB_ICONQUESTION | MB_YESNO) == IDNO)
 				{
 					return;
 				}
@@ -1138,7 +1154,7 @@ void CParserDoc::result()
 {
 	try
 	{
-		const magnitude& val = _block.result();
+		const tvobject& val = _block.result();
 		number_double number;
 		std::string sunit;
 		m_symbols.value(val, number, sunit, true);
@@ -1154,6 +1170,21 @@ void CParserDoc::result()
 		sres << sn << sunit;
 		m_result = sres.str();
 		m_calculator.parser_result(m_result.c_str());
+	}
+	catch (operation::exception& ex)
+	{
+		try
+		{
+			const tvobject& val = _block.result();
+			std::stringstream sres;
+			val.stringstream(sres);
+			m_result = sres.str();
+			m_calculator.parser_result(m_result.c_str());
+		}
+		catch (...)
+		{
+			m_result.clear();
+		}
 	}
 	catch (pmb::parser::exception<item>& ex)
 	{
@@ -1217,6 +1248,52 @@ void CParserDoc::opr_addition(transporter_args& args)
 {
 	args.result()->addition(**args.left(), **args.right());
 }
+
+void CParserDoc::opr_equal(transporter_args& args)
+{
+	args.result()->equal(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_less_equal(transporter_args& args)
+{
+	args.result()->less_equal(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_less(transporter_args& args)
+{
+	args.result()->less(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_greater_equal(transporter_args& args)
+{
+	args.result()->greater_equal(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_greater(transporter_args& args)
+{
+	args.result()->greater(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_not(transporter_args& args)
+{
+	args.result()->not(**args.right());
+}
+
+void CParserDoc::opr_and(transporter_args& args)
+{
+	args.result()->and(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_xor(transporter_args& args)
+{
+	args.result()->xor(**args.left(), **args.right());
+}
+
+void CParserDoc::opr_or(transporter_args& args)
+{
+	args.result()->or(**args.left(), **args.right());
+}
+
 
 void CParserDoc::opr_subtraction(transporter_args & args)
 {

@@ -156,3 +156,5 @@ protected:
 }
 }
 }
+
+#include "pmb_parser_calc_block.hpp"

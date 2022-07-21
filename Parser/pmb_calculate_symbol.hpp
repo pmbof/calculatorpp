@@ -489,7 +489,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 			struct s_unit {
 				typedef std::vector<s_powunit> vector;
 
-				s_unit(const std::string& s, const tpValue& _unit, tpUnit::_tpInt _pow)
+				s_unit(const std::string& s, tpValue _unit, tpUnit::_tpInt _pow)
 					: symbol(s), unit(_unit), ppow(1), pow(_pow) { }
 
 				bool operator <(const s_unit& right) const {
@@ -510,7 +510,7 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 					vunit.insert(i, s_powunit(symbol, unit.get_unit(), pow));
 				}
 
-				void set(const std::string& s, const tpValue& u, tpUnit::_tpInt p) {
+				void set(const std::string& s, tpValue u, tpUnit::_tpInt p) {
 					insert();
 					symbol = s;
 					unit = u;
@@ -649,6 +649,7 @@ symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::symbol()
 }
 
 
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::~symbol()
 {
@@ -658,6 +659,7 @@ symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::~symbol()
 	for (map_prefix::const_iterator pi = _mprefix.begin(); pi != _mprefix.end(); ++pi)
 		delete pi->second;
 }
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
@@ -673,6 +675,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::exists_prefix(const
 {
 	return _mprefix.find(name) != _mprefix.end();
 }
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
@@ -697,6 +700,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::exists_system(const
 {
 	return _msystems.find(name) != _msystems.end();
 }
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
@@ -726,6 +730,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_system(const tp
 }
 
 
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system(const tpChar* name)
 {
@@ -737,6 +742,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system(const tp
 	map_system::const_iterator is = _msystems.find(name);
 	return _define_system = is != _msystems.end() ? is->second : nullptr;
 }
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
@@ -798,6 +804,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_by_name(const t
 }
 
 
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_default_system(const tpChar* name)
 {
@@ -814,6 +821,8 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_default_system(
 	return _default_system;
 }
 
+
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system_constants(const tpChar* name)
 {
@@ -822,6 +831,8 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::set_system_constant
 		add_set_variable(name);
 	return _save_last_define;
 }
+
+
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::add_constant(const tpChar* name)
@@ -923,11 +934,13 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 }
 
 
+
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
 inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::defining_unit() const
 {
 	return _define_system;
 }
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>
@@ -964,6 +977,7 @@ inline bool symbol<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpChar*
 	}
 	return false;
 }
+
 
 
 template<typename _POWER, typename _BASE, class _TVALUE, class _ITSTRING, class _MAP>

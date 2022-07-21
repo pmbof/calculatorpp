@@ -162,14 +162,14 @@ inline const _CHAR* dimension<_CHAR, _SIZE>::name() const
 
 
 template<typename _CHAR, typename _SIZE>
-inline const _SIZE& dimension<_CHAR, _SIZE>::symbol_size() const
+inline const _SIZE dimension<_CHAR, _SIZE>::symbol_size() const
 {
 	return _symbol ? _slen: 0;
 }
 
 
 template<typename _CHAR, typename _SIZE>
-inline const _SIZE& dimension<_CHAR, _SIZE>::name_size() const
+inline const _SIZE dimension<_CHAR, _SIZE>::name_size() const
 {
 	return _name ? _nlen : 0;
 }
@@ -1176,7 +1176,7 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _CHAR* str, const 
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
-inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const dimension * dim)
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const dimension* dim)
 	: _number(1), _unit(dim)
 {
 }
@@ -1187,6 +1187,14 @@ template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _TYPE& n, const unit& u)
 	: _number(n), _unit(u)
 {
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::is_numeric() const
+{
+	return true;
 }
 
 
@@ -1449,6 +1457,53 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
 	if (!right._number)
 		throw "Divide by zero";
 	return magnitude(_number / right._number, _unit / right._unit);
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::equal(const magnitude& right) const
+{
+	return _number == right._number && _unit == right._unit;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::less_equal(const magnitude& right) const
+{
+	if (_unit != right._unit)
+		throw "Must be equal dimensions";
+	return _number <= right._number;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::less(const magnitude& right) const
+{
+	if (_unit != right._unit)
+		throw "Must be equal dimensions";
+	return _number < right._number;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::greater_equal(const magnitude& right) const
+{
+	if (_unit != right._unit)
+		throw "Must be equal dimensions";
+	return _number >= right._number;
+}
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline bool magnitude<_TYPE, _INT, _CHAR, _SZSTR>::greater(const magnitude& right) const
+{
+	if (_unit != right._unit)
+		throw "Must be equal dimensions";
+	return _number > right._number;
 }
 
 

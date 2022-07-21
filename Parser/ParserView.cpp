@@ -769,9 +769,9 @@ void CParserView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	default:
 		if ('0' <= nChar && nChar <= '9' || nChar == '.' || 'A' <= nChar && nChar <= 'Z' || 'a' <= nChar && nChar <= 'z'
 			|| nChar == '!' || nChar == '%' || nChar == '^' || nChar == '*' || nChar == '(' || nChar == ')' || nChar == '-' || nChar == VK_ADD || nChar == '='
-			|| nChar == '+' || nChar == '[' || nChar == '{' || nChar == ']' || nChar == '}' || nChar == '|'
+			|| nChar == '+' || nChar == '[' || nChar == '{' || nChar == ']' || nChar == '}' || nChar == '|' || nChar == '&'
 			|| nChar == '/' || nChar == '\\' || nChar == '<' || nChar == '>' || nChar == VK_SPACE
-			|| nChar == ',' || nChar == ':'  || nChar == ';')
+			|| nChar == ',' || nChar == ':'  || nChar == ';' || nChar == '?')
 		{
 			bModified = true;
 			std::string nexpr;

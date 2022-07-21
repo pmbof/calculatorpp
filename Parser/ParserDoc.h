@@ -15,6 +15,7 @@
 
 #include "pmb_calculate_number.h"
 #include "pmb_calculate_magnitude.h"
+#include "pmb_calculate_tvobject.h"
 #include "pmb_calculate_symbol.h"
 
 
@@ -25,8 +26,8 @@
 
 typedef pmb::calculate::number<double> number_double;
 typedef pmb::calculate::units::magnitude<number_double, short, char, unsigned short> magnitude;
-//typedef pmb::calculate::number<double> number_double;
-typedef pmb::parser::calc::transporter<magnitude, unsigned short> transporter;
+typedef pmb::calculate::tvobject<magnitude, void*, std::string> tvobject;
+typedef pmb::parser::calc::transporter<tvobject, unsigned short> transporter;
 typedef pmb::parser::calc::transporter_args<transporter, unsigned char> transporter_args;
 
 
@@ -49,6 +50,7 @@ typedef pmb::parser::calc::block<citerator, build_in_function_table, symbol> blo
 typedef symbol::prefix_base prefix_base;
 
 
+
 class CParserDoc : public CDocument
 {
 	typedef build_in_function::transporter_args transporter_args;
@@ -67,6 +69,17 @@ class CParserDoc : public CDocument
 	static void opr_modulo(transporter_args& args);
 	static void opr_addition(transporter_args& args);
 	static void opr_subtraction(transporter_args& args);
+
+	static void opr_equal(transporter_args& args);
+	static void opr_less_equal(transporter_args& args);
+	static void opr_less(transporter_args& args);
+	static void opr_greater_equal(transporter_args& args);
+	static void opr_greater(transporter_args& args);
+	static void opr_not(transporter_args& args);
+	static void opr_and(transporter_args& args);
+	static void opr_xor(transporter_args& args);
+	static void opr_or(transporter_args& args);
+
 	static void opr_assignation(transporter_args& args);
 	static void opr_result(transporter_args& args);
 	static void opr_result_modify(transporter_args& args);
