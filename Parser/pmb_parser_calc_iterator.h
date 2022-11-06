@@ -106,6 +106,7 @@ protected:
 	inode* _root;
 	inode* _cursor;
 	bool _stoped;
+	const tnode* _stopedCursorNodeLast;
 	inode* _rootCalc;
 	const tnode* _rootNode;
 

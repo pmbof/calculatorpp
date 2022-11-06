@@ -45,6 +45,8 @@ inline bool iterator<_TVARGS, _TREE>::begin()
 	if (!_root)
 	{
 		_begined = _stoped = false;
+		_stopedCursorNodeLast = nullptr;
+
 		_root = new inode;
 		_root->_prev = _root->_next = nullptr;
 		_root->_isVarDependent = _root->_isCalculated = false;
@@ -121,7 +123,10 @@ template<class _TVARGS, class _TREE>
 inline void iterator<_TVARGS, _TREE>::calculated(bool bCalculated)
 {
 	if (bCalculated)
+	{
 		_stoped = false;
+		_stopedCursorNodeLast = nullptr;
+	}
 	_cursor->_isCalculated = bCalculated;
 }
 
@@ -355,7 +360,7 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 			else if (_stoped)
 			{
 				_cursor->_node = _cursor->_nodeLast;
-				_cursor->_nodeLast = nullptr;
+				_cursor->_nodeLast = _stopedCursorNodeLast;
 			}
 		}
 		else if (parent->getType() == ndParentheses && _cursor->_node->getType() == ndParentheses)
@@ -444,7 +449,11 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 			}
 		}
 		else
+		{
+			if (_stoped)
+				_stopedCursorNodeLast = _cursor->_nodeLast;
 			_cursor->_nodeLast = _cursor->_node;
+		}
 	}
 
 	if (_cursor)
@@ -475,7 +484,7 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 
 
 
-// this function is a copy of nodes:calc::nextCalc()
+// this function is a copy of nodes:calc::nextCalc(bool& stopCalculation)
 template<class _TVARGS, class _TREE>
 inline typename const iterator<_TVARGS, _TREE>::tnode*
 	iterator<_TVARGS, _TREE>::next_calc(bool& stopCalculation)
