@@ -44,7 +44,7 @@ const operation* CParserDoc::_operation[] = {
 		 9- CCLvar      = can create left variable
 		10- CCRvar      = can create right variable
 	*/
-	///                                 Symb, prec,   L2R,   bin, name,					description,                                           *funcion,                         CCFunc, CCLvar, CCRvar
+	///                                 Symb, prec,   L2R,   bin, name,					description,                                              *funcion, [CCFunc,]               CCLvar, CCRvar
 	new CParserView::opr_plus(           "+",  250, false, false, "positive",              "positive",                                            &CParserDoc::opr_positive),
 	new CParserView::opr_minus(          "-",  250, false, false, "negative",              "negative",                                            &CParserDoc::opr_negative),
 	new CParserView::operation(          "!",  250, true,  false, "factorial",             "factorial",                                           &CParserDoc::opr_factorial),
@@ -58,7 +58,7 @@ const operation* CParserDoc::_operation[] = {
 	new CParserView::operation(          "",   100, true,   true, "product implicit",      "multiplication implicit or call function",            &CParserDoc::opr_multiplication,  true),
 	new CParserView::operation(          " ",  100, true,   true, "product space",         "multiplication space or call function",               &CParserDoc::opr_multiplication,  true),
 	new CParserView::operation(          " ",  100, false,  true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication,  true),
-	new CParserView::operation(          "&",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
+	new CParserView::operation(          "`",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
 	new CParserView::opr_minus(          "-",   50, true,   true, "substract",             "substraction",                                        &CParserDoc::opr_subtraction),
 	new CParserView::opr_plus(           "+",   50, true,   true, "add",                   "addition",                                            &CParserDoc::opr_addition),
 
@@ -67,10 +67,11 @@ const operation* CParserDoc::_operation[] = {
 	new CParserView::operation(          "<",   40, true,   true, "less to",               "less to",                                             &CParserDoc::opr_less_equal),
 	new CParserView::operation(         ">=",   40, true,   true, "greater equal to",      "greater equal to",                                    &CParserDoc::opr_greater_equal),
 	new CParserView::operation(          ">",   40, true,   true, "greater to",            "greater to",                                          &CParserDoc::opr_greater),
-	new CParserView::operation(          "!",   31, false, false, "not",                   "not",                                                 &CParserDoc::opr_not),
-	new CParserView::operation(         "&&",   30, true,   true, "and",                   "and",                                                 &CParserDoc::opr_and),
+	new CParserView::opr_not(            "~",   31, false, false, "not",                   "not",                                                 &CParserDoc::opr_not),
+	new CParserView::opr_and(            "&",   30, true,         "and",                   "and",                                                 &CParserDoc::opr_and, &CParserDoc::opr_and_check),
 	new CParserView::operation(         "&|",   29, true,   true, "xor",                   "xor",                                                 &CParserDoc::opr_xor),
-	new CParserView::operation(         "||",   28, true,   true, "or",	                   "or",                                                  &CParserDoc::opr_or),
+	new CParserView::opr_or(             "|",   28, true,         "or",	                   "or",                                                  &CParserDoc::opr_or, &CParserDoc::opr_or_check),
+	new CParserView::operation(         "!|",   28, true,         "nor",	               "nor",                                                 &CParserDoc::opr_nor, &CParserDoc::opr_nor_check),
 	new CParserView::operation(          "?",   20, true,   true, "if",	                   "if",                                                  &CParserDoc::opr_or),
 	new CParserView::operation(			 ":",   19, true,   true, "if cases",	           "if cases",                                            &CParserDoc::opr_or),
 
@@ -668,16 +669,17 @@ const tnode* CParserDoc::getNewNodeUnknow() const
 
 const tnode* CParserDoc::getNextUnknowNode(const tnode* nd) const
 {
+	bool stopCalculation = true;
 	if(!nd)
 	{
 		nd = m_calculator.getTree()->getRootNode();
 		if(nd && nd->getType() == pmb::parser::ndUnknown)
 			//nd = nd->getFirstUnknowNode();
-			nd = ((pmb::parser::nodes::unknown<item, ndtype>*)nd)->nextCalc();
+			nd = ((pmb::parser::nodes::unknown<item, ndtype>*)nd)->nextCalc(stopCalculation);
 	}
 	else if(nd->getType() == pmb::parser::ndUnknown)
 //		nd = nd->getNextUnknowNode();
-		nd = ((pmb::parser::nodes::unknown<item, ndtype>*)nd)->nextCalc();
+		nd = ((pmb::parser::nodes::unknown<item, ndtype>*)nd)->nextCalc(stopCalculation);
 ///	if(nd && nd->getType() == pmb::parser::ndUnknown)
 ///		((pmb::parser::nodes::unknown<item, ndtype>*)nd)->setCalculated();
 	return nd;
@@ -1279,6 +1281,11 @@ void CParserDoc::opr_not(transporter_args& args)
 	args.result()->not(**args.right());
 }
 
+bool CParserDoc::opr_and_check(transporter_args& args)
+{
+	return args.result()->and_check(**args.left());
+}
+
 void CParserDoc::opr_and(transporter_args& args)
 {
 	args.result()->and(**args.left(), **args.right());
@@ -1289,9 +1296,24 @@ void CParserDoc::opr_xor(transporter_args& args)
 	args.result()->xor(**args.left(), **args.right());
 }
 
+bool CParserDoc::opr_or_check(transporter_args& args)
+{
+	return args.result()->or_check(**args.left());
+}
+
 void CParserDoc::opr_or(transporter_args& args)
 {
 	args.result()->or(**args.left(), **args.right());
+}
+
+bool CParserDoc::opr_nor_check(transporter_args& args)
+{
+	return args.result()->nor_check(**args.left());
+}
+
+void CParserDoc::opr_nor(transporter_args& args)
+{
+	args.result()->nor(**args.left(), **args.right());
 }
 
 

@@ -15,6 +15,12 @@ CParserView::operation::operation(const char* symbol, int precedence, bool leftT
 }
 
 
+CParserView::operation::operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: ::operation(symbol, precedence, leftToRight, name, description, func, funcCheck, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
 CParserView::operation::~operation() 
 {
 }
@@ -199,4 +205,93 @@ CParserView::opr_root::opr_root(const char* symbol, int precedence, bool leftToR
 CParserView::line::node* CParserView::opr_root::new_instance(line::bnode* parent, const tnode* nd) const
 {
 	return new line::node_operator_root(nd, parent);
+}
+
+
+
+
+
+
+
+
+
+
+
+CParserView::opr_not::opr_not(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
+CParserView::line::node* CParserView::opr_not::new_instance(line::bnode* parent, const tnode* nd) const
+{
+	return new line::node_operator_not(nd, parent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CParserView::opr_and::opr_and(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: operation(symbol, precedence, leftToRight, name, description, func, funcCheck, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
+
+CParserView::line::node* CParserView::opr_and::new_instance(line::bnode* parent, const tnode* nd) const
+{
+	return new line::node_operator_and(nd, parent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CParserView::opr_or::opr_or(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: operation(symbol, precedence, leftToRight, name, description, func, funcCheck, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
+
+CParserView::line::node* CParserView::opr_or::new_instance(line::bnode* parent, const tnode* nd) const
+{
+	return new line::node_operator_or(nd, parent);
 }

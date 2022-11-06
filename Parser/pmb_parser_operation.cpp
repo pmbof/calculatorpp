@@ -17,7 +17,22 @@ namespace parser
 template<class _TVALUE>
 operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func,
 			bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
-	: _precedence(precedence), _leftToRight(leftToRight), _binary(binary), _fnc(func), _canCallFunction(canCallFunction),
+	: _precedence(precedence), _leftToRight(leftToRight), _binary(binary), _fnc(func), _checkFnc(nullptr), _canCallFunction(canCallFunction),
+	_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)
+{
+	_symbol = new char[(_len = strlen(symbol)) + 1];
+	strcpy(_symbol, symbol);
+	_name = new char[strlen(name) + 1];
+	strcpy(_name, name);
+	_description = new char[strlen(description) + 1];
+	strcpy(_description, description);
+}
+
+
+template<class _TVALUE>
+operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck checkFnc,
+			bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: _precedence(precedence), _leftToRight(leftToRight), _binary(true), _fnc(func), _checkFnc(checkFnc), _canCallFunction(canCallFunction),
 	_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)
 {
 	_symbol = new char[(_len = strlen(symbol)) + 1];
@@ -142,6 +157,13 @@ unsigned int operation<_TVALUE>::getFunctor2() const
 }
 
 template<class _TVALUE>
+bool operation<_TVALUE>::hasCheckFunction() const
+{
+	return _checkFnc;
+}
+
+
+template<class _TVALUE>
 void operation<_TVALUE>::operator()(_TVALUE& values) const
 {
 	typename transporter_args::nargs nvals = values.nArgs();
@@ -175,6 +197,41 @@ void operation<_TVALUE>::operator()(_TVALUE& values) const
 	{
 		throw exception(ex);
 	}
+}
+
+
+
+template<class _TVALUE>
+bool operation<_TVALUE>::operator()(bool, _TVALUE& values) const
+{
+	typename transporter_args::nargs nvals = values.nArgs();
+	if (!_binary || !_checkFnc)
+	{
+		throw exception("operator pre-calculate erro %item, this only work for binary operators");
+	}
+
+	if (values.capacity() != 2)
+		throw exception(2 < values.capacity() ? "too many arguments for operator %item" : values.haveLeft() ? "missing right value for operator %item" : "missing left value for operator %item");
+	else if (nvals != 2)
+	{
+		if (!_canCreateLVariable && !values.haveLeft())
+			throw exception("missing left value for operator %item");
+		else if (!_canCreateRVariable && !values.haveRight())
+			throw exception("missing right value for operator %item");
+	}
+
+	if (!_canCreateLVariable && !_canCreateRVariable)
+		values.placeForResult();
+
+	try
+	{
+		return (*_checkFnc)(values);
+	}
+	catch (const char* ex)
+	{
+		throw exception(ex);
+	}
+	return false;
 }
 
 

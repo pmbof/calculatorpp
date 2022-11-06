@@ -69,32 +69,44 @@ const calc<_ITEM, _NDTYPE>* calc<_ITEM, _NDTYPE>::firstCalc() const
 
 
 template<class _ITEM, class _NDTYPE>
-const calc<_ITEM, _NDTYPE>* calc<_ITEM, _NDTYPE>::nextCalc() const
+const calc<_ITEM, _NDTYPE>* calc<_ITEM, _NDTYPE>::nextCalc(bool& stopedIteration) const
 {
-	const calc<_ITEM, _NDTYPE>* nc;
+	typedef const calc<_ITEM, _NDTYPE>* const_calc;
+
+	const_calc nc;
+
+	const_calc parent = static_cast<const_calc>(_parent);
 
 	if (_parent && _parent->isCalcType())
 	{
-		const calc<_ITEM, _NDTYPE>* parent = static_cast<const calc<_ITEM, _NDTYPE>*>(_parent);
 		if (parent->getType() == ndUnknown)
 		{
-			const unknown<_ITEM, _NDTYPE>* parent_uk = static_cast<const unknown<_ITEM, _NDTYPE>*>(parent);
+			typedef const unknown<_ITEM, _NDTYPE>* const_unknown;
+
+			bool bStopedItr = false;
+			const_unknown parent_uk = static_cast<const_unknown>(parent);
 			if (parent_uk->isValid())
 			{
-				if (parent_uk->isFirstLeft() && parent_uk->_left == this)
-					nc = static_cast<const calc<_ITEM, _NDTYPE>*>(parent->_right && parent->_right->isCalcType() ? parent->_right : parent);
-				else if (parent_uk->isFirstRight() && parent_uk->_right == this)
-					nc = static_cast<const calc<_ITEM, _NDTYPE>*>(parent->_left && parent->_left->isCalcType() ? parent->_left : parent);
+				bool chkOpr = parent_uk->checkOperator();
+				if (parent_uk->isFirstLeft() && (parent_uk->_left == this && !chkOpr || stopedIteration))
+					nc = static_cast<const_calc>(parent->_right && parent->_right->isCalcType() ? parent->_right : parent);
+				else if (parent_uk->isFirstRight() && (parent_uk->_right == this && !chkOpr || stopedIteration))
+					nc = static_cast<const_calc>(parent->_left && parent->_left->isCalcType() ? parent->_left : parent);
 				else
+				{
 					nc = parent;
+					bStopedItr = chkOpr && (parent_uk->isFirstLeft() && parent_uk->_left == this || parent_uk->isFirstRight() && parent_uk->_right == this);
+				}
 			}
 			else
 				nc = parent;
+
+			stopedIteration = bStopedItr;
 		}
 		else if (parent->getType() == ndList)
 		{
 			if (parent->_left == this)
-				nc = static_cast<const calc<_ITEM, _NDTYPE>*>(parent->_right && parent->_right->isCalcType() ? parent->_right : parent);
+				nc = static_cast<const_calc>(parent->_right && parent->_right->isCalcType() ? parent->_right : parent);
 			else
 				nc = parent;
 		}

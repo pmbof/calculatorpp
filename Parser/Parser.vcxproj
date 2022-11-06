@@ -286,10 +286,13 @@
     <ClCompile Include="prsrvw_line_node_buildin_function.cpp" />
     <ClCompile Include="prsrvw_line_node_function.cpp" />
     <ClCompile Include="prsrvw_line_node_number.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_and.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_division.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_division_inline.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_equal.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_minus.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_not.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_or.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_plus.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_result.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_root.cpp" />

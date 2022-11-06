@@ -475,6 +475,23 @@ inline void tvobject<_NUMBER, _COBJECT, _STRING>::not(const _MyT& right)
 
 
 template<class _NUMBER, class _COBJECT, class _STRING>
+inline bool tvobject<_NUMBER, _COBJECT, _STRING>::and_check(const _MyT& left)
+{
+	if (left._type != tvt_boolean)
+		throw operation::exception("Must be boolean type");
+
+	if (!left._vbool)
+	{
+		clear();
+		_type = tvt_boolean;
+		_vbool = false;
+		return true;
+	}
+	return false;
+}
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
 inline void tvobject<_NUMBER, _COBJECT, _STRING>::and(const _MyT& left, const _MyT& right)
 {
 	clear();
@@ -501,7 +518,52 @@ inline void tvobject<_NUMBER, _COBJECT, _STRING>::xor(const _MyT& left, const _M
 
 
 template<class _NUMBER, class _COBJECT, class _STRING>
+inline bool tvobject<_NUMBER, _COBJECT, _STRING>::or_check(const _MyT& left)
+{
+	if (left._type != tvt_boolean)
+		throw operation::exception("Must be boolean type");
+	if (left._vbool)
+	{
+		clear();
+		_type = tvt_boolean;
+		_vbool = true;
+		return true;
+	}
+	return false;
+}
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
 inline void tvobject<_NUMBER, _COBJECT, _STRING>::or(const _MyT& left, const _MyT& right)
+{
+	clear();
+	_type = tvt_boolean;
+
+	if (_type != left._type || _type != right._type)
+		throw operation::exception("Must be boolean type");
+	_vbool = left._vbool || right._vbool;
+}
+
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
+inline bool tvobject<_NUMBER, _COBJECT, _STRING>::nor_check(const _MyT& left)
+{
+	if (left._type != tvt_boolean)
+		throw operation::exception("Must be boolean type");
+	if (left._vbool)
+	{
+		clear();
+		_type = tvt_boolean;
+		_vbool = false;
+		return true;
+	}
+	return false;
+}
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
+inline void tvobject<_NUMBER, _COBJECT, _STRING>::nor(const _MyT & left, const _MyT & right)
 {
 	clear();
 	_type = tvt_boolean;

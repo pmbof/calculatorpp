@@ -581,6 +581,9 @@ inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter_args&
 				}
 				else if (!bCloseParentheses)
 				{
+					if (uk->getType() == ndUnknown && st->_it_calc->stoped())
+						continue;
+
 					TRACE_NODE(logError, "Error in node: ", st->_expr, uk, false, false);
 					if (uk->getType() == ndUnknown || uk->getType() == ndList)
 					{

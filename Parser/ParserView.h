@@ -55,6 +55,9 @@ public:
 	struct opr_division;
 	struct opr_power;
 	struct opr_root;
+	struct opr_not;
+	struct opr_and;
+	struct opr_or;
 #pragma endregion nodes declare
 private:
 
@@ -85,7 +88,10 @@ private:
 			bndOprDivisionIl,
 			bndOprDivision,
 			bndOprPlus,
-			bndOprMinus
+			bndOprMinus,
+			bndOprNot,
+			bndOprAnd,
+			bndOprOr
 		};
 
 		struct bnode;
@@ -440,6 +446,39 @@ private:
 
 			bnodetypes type() const override;
 		};
+
+
+		struct node_operator_not : node
+		{
+			node_operator_not(const tnode* nd, bnode* parent);
+
+			void draw(sdraw* sd) const override;
+
+			bnodetypes type() const override;
+		};
+
+
+		struct node_operator_and : node
+		{
+			node_operator_and(const tnode* nd, bnode* parent);
+
+			void set(sset* ss) override;
+			void draw(sdraw* sd) const override;
+
+			bnodetypes type() const override;
+		};
+
+
+		struct node_operator_or : node
+		{
+			node_operator_or(const tnode* nd, bnode* parent);
+
+			void set(sset* ss) override;
+			void draw(sdraw* sd) const override;
+
+			bnodetypes type() const override;
+		};
+
 	private:
 #pragma endregion nodes
 
@@ -486,6 +525,9 @@ private:
 		friend opr_division;
 		friend opr_power;
 		friend opr_root;
+		friend opr_not;
+		friend opr_and;
+		friend opr_or;
 	};
 
 public:
@@ -493,6 +535,7 @@ public:
 	struct operation : ::operation
 	{
 		operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+		operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
 		virtual ~operation();
 
@@ -570,6 +613,31 @@ public:
 
 		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
+
+
+	struct opr_not : operation
+	{
+		opr_not(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
+	};
+
+
+	struct opr_and : operation
+	{
+		opr_and(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
+	};
+
+
+	struct opr_or : operation
+	{
+		opr_or(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
+	};
+
 #pragma endregion operations view
 
 private:

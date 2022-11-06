@@ -464,6 +464,15 @@
     <ClCompile Include="prsrvw_operation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="prsrvw_line_node_operator_not.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prsrvw_line_node_operator_and.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prsrvw_line_node_operator_or.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Parser.rc">

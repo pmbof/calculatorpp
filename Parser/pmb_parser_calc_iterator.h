@@ -91,10 +91,12 @@ struct iterator
 	bool function_definition() const;
 	void function(const tnode* breakNode);
 
+	bool stoped() const;
+
 protected:
 //	tnode* _nextCalc();
 	void clear(inode* root);
-	const tnode* next_calc();
+	const tnode* next_calc(bool& stopCalculation);
 
 protected:
 	bool _begined;
@@ -103,6 +105,7 @@ protected:
 	tptree* _tree;
 	inode* _root;
 	inode* _cursor;
+	bool _stoped;
 	inode* _rootCalc;
 	const tnode* _rootNode;
 

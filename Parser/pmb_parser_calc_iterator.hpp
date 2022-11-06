@@ -44,7 +44,7 @@ inline bool iterator<_TVARGS, _TREE>::begin()
 {
 	if (!_root)
 	{
-		_begined = false;
+		_begined = _stoped = false;
 		_root = new inode;
 		_root->_prev = _root->_next = nullptr;
 		_root->_isVarDependent = _root->_isCalculated = false;
@@ -120,6 +120,8 @@ inline iterator<_TVARGS, _TREE>::operator bool() const
 template<class _TVARGS, class _TREE>
 inline void iterator<_TVARGS, _TREE>::calculated(bool bCalculated)
 {
+	if (bCalculated)
+		_stoped = false;
 	_cursor->_isCalculated = bCalculated;
 }
 
@@ -275,6 +277,15 @@ inline void iterator<_TVARGS, _TREE>::function(const tnode* breakNode)
 }
 
 
+
+template<class _TVARGS, class _TREE>
+inline bool iterator<_TVARGS, _TREE>::stoped() const
+{
+	return _stoped;
+}
+
+
+
 template<class _TVARGS, class _TREE>
 inline typename const iterator<_TVARGS, _TREE>::tnode*
 	iterator<_TVARGS, _TREE>::node() const
@@ -309,21 +320,24 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 		return _cursor;
 	}
 
-	const tnode* parent = _cursor->_node->getParent();
+	const tnode* parent = _stoped ? _cursor->_node : _cursor->_node->getParent();
 	if (parent)
 	{
+		typedef const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>* const_node_unknow;
+
 		if (_cursor->_node->getType() == ndUnknown)
 		{
-			if (parent->getType() == ndUnknown && static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent)->isBinary())
+			if (parent->getType() == ndUnknown && static_cast<const_node_unknow>(parent)->isBinary())
 			{
-				if (!static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent)->isCallFunction() && _cursor->_transporter.capacity() < 2)
+				nargs capacity = _cursor->_transporter.capacity();
+				if (!static_cast<const_node_unknow>(parent)->isCallFunction() && capacity < 2)
 				{
 					if (parent->getLeft() == _cursor->_node)
 						_cursor->_transporter.add_back();
 					else if (parent->getRight() == _cursor->_node)
 						_cursor->_transporter.add_front();
 				}
-				else if (static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent)->isCallFunction() && 1 < _cursor->_transporter.capacity())
+				else if (static_cast<const_node_unknow>(parent)->isCallFunction() && 1 < capacity)
 				{
 					if (parent->getLeft() == _cursor->_node)
 						_cursor->_transporter.removeRights();
@@ -338,18 +352,25 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 				else if (parent->getRight() == _cursor->_node)
 					_cursor->_transporter.moveToRight();
 			}
+			else if (_stoped)
+			{
+				_cursor->_node = _cursor->_nodeLast;
+				_cursor->_nodeLast = nullptr;
+			}
 		}
 		else if (parent->getType() == ndParentheses && _cursor->_node->getType() == ndParentheses)
 		{
-			if (static_cast<const nodes::parentheses<_TREE::cItem, typename _TREE::cNdType>*>(parent)->getOpened() < 0
-				&& 0 <= static_cast<const nodes::parentheses<_TREE::cItem, typename _TREE::cNdType>*>(_cursor->_node)->getOpened())
+			typedef const nodes::parentheses<_TREE::cItem, typename _TREE::cNdType>* const_node_parentheses;
+
+			if (static_cast<const_node_parentheses>(parent)->getOpened() < 0
+				&& 0 <= static_cast<const_node_parentheses>(_cursor->_node)->getOpened())
 			{
 				const tnode* parent2 = parent->getParent();
 				if (parent2)
 				{
 					if (parent2->getType() == ndList
-						|| parent2->getType() == ndUnknown && !static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent2)->isCallFunction()
-						&& (!_cursor->_nodeLast || _cursor->_nodeLast->getType() != ndList) && static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent2)->isBinary())
+						|| parent2->getType() == ndUnknown && !static_cast<const_node_unknow>(parent2)->isCallFunction()
+						&& (!_cursor->_nodeLast || _cursor->_nodeLast->getType() != ndList) && static_cast<const_node_unknow>(parent2)->isBinary())
 					{
 						if (false && parent2->getLeft() == _cursor->_node->getParent())
 							_cursor->_transporter.add_back();
@@ -362,8 +383,8 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 		else if (parent->getType() != ndParentheses && _cursor->_node->getType() == ndParentheses)
 		{
 			if (parent->getType() == ndList
-				|| parent->getType() == ndUnknown && !static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent)->isCallFunction() 
-					&& (!_cursor->_nodeLast || _cursor->_nodeLast->getType() != ndList) && static_cast<const nodes::unknown<_TREE::cItem, typename _TREE::cNdType>*>(parent)->isBinary())
+				|| parent->getType() == ndUnknown && !static_cast<const_node_unknow>(parent)->isCallFunction()
+					&& (!_cursor->_nodeLast || _cursor->_nodeLast->getType() != ndList) && static_cast<const_node_unknow>(parent)->isBinary())
 			{
 				if (parent->getLeft() == _cursor->_node)
 					_cursor->_transporter.add_back();
@@ -380,15 +401,17 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 		}
 	}
 
-	const nodes::calc<_TREE::cItem, typename _TREE::cNdType>* uc = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(_cursor->_node);
+	typedef const nodes::calc<_TREE::cItem, typename _TREE::cNdType>* const_node_calc;
+
+	const_node_calc uc = static_cast<const_node_calc>(_cursor->_node);
 	if (_rootCalc)
 	{
-		uc = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(next_calc());
+		uc = static_cast<const_node_calc>(next_calc(_stoped));
 		if (!uc)
 			return _cursor;
 	}
 	else
-		uc = uc->nextCalc();
+		uc = uc->nextCalc(_stoped);
 
 	if (!uc || uc == _function && _rootCalc)
 		_cursor = nullptr;
@@ -455,23 +478,24 @@ inline typename iterator<_TVARGS, _TREE>::inode*
 // this function is a copy of nodes:calc::nextCalc()
 template<class _TVARGS, class _TREE>
 inline typename const iterator<_TVARGS, _TREE>::tnode*
-	iterator<_TVARGS, _TREE>::next_calc()
+	iterator<_TVARGS, _TREE>::next_calc(bool& stopCalculation)
 {
-	const nodes::calc<_TREE::cItem, _TREE::cNdType>* nc,
-		* nd = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(_cursor->_node);
+	typedef const nodes::calc<_TREE::cItem, _TREE::cNdType>* const_node_calc;
+
+	const_node_calc nc, nd = static_cast<const_node_calc>(_cursor->_node);
 
 	if (nd->getParent() && nd->getParent()->isCalcType())
 	{
-		const nodes::calc<_TREE::cItem, _TREE::cNdType>* parent = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(nd->getParent());
+		const_node_calc parent = static_cast<const_node_calc>(nd->getParent());
 		if (parent->getType() == ndUnknown)
 		{
 			const nodes::unknown<_TREE::cItem, _TREE::cNdType>* parent_uk = static_cast<const nodes::unknown<_TREE::cItem, _TREE::cNdType>*>(parent);
 			if (parent_uk->isValid())
 			{
 				if (parent_uk->isFirstLeft() && parent_uk->getLeft() == nd)
-					nc = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(parent->getRight() && parent->getRight()->isCalcType() ? parent->getRight() : parent);
+					nc = static_cast<const_node_calc>(parent->getRight() && parent->getRight()->isCalcType() ? parent->getRight() : parent);
 				else if (parent_uk->isFirstRight() && parent_uk->getRight() == nd)
-					nc = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(parent->getLeft() && parent->getLeft()->isCalcType() ? parent->getLeft() : parent);
+					nc = static_cast<const_node_calc>(parent->getLeft() && parent->getLeft()->isCalcType() ? parent->getLeft() : parent);
 				else
 					nc = parent;
 			}
@@ -481,7 +505,7 @@ inline typename const iterator<_TVARGS, _TREE>::tnode*
 		else if (parent->getType() == ndList)
 		{
 			if (parent->getLeft() == nd)
-				nc = static_cast<const nodes::calc<_TREE::cItem, _TREE::cNdType>*>(parent->getRight() && parent->getRight()->isCalcType() ? parent->getRight() : parent);
+				nc = static_cast<const_node_calc>(parent->getRight() && parent->getRight()->isCalcType() ? parent->getRight() : parent);
 			else
 				nc = parent;
 		}

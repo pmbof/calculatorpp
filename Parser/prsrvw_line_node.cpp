@@ -191,7 +191,7 @@ void CParserView::line::node::draw(sdraw* sd) const
 		CFont* oldFont = sd->pDC->SelectObject(sd->pline->font(type(), sd->index));
 		CString sn(sd->pstr + get_ini(), get_length());
 
-		sd->pDC->DrawText(sn, const_cast<CRect*>(static_cast<const CRect*>(this)), DT_LEFT | DT_TOP | DT_SINGLELINE);
+		sd->pDC->DrawText(sn, const_cast<CRect*>(static_cast<const CRect*>(this)), DT_LEFT | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
 		sd->pDC->SetTextColor(oldColor);
 		sd->pDC->SelectObject(oldFont);
 	}

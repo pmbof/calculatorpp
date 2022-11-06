@@ -24,7 +24,7 @@ public:
 	~calc();
 
 	const calc* firstCalc() const;
-	const calc* nextCalc() const;
+	const calc* nextCalc(bool& canStopCalculation) const;
 };
 
 

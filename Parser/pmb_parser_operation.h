@@ -17,6 +17,7 @@ struct operation
 	typename typedef _TVALUE transporter_args;
 	typedef typename _TVALUE::tpValue VALUE;
 	typedef void(*tpFunc)(transporter_args& args);
+	typedef bool(*tpFuncCheck)(transporter_args& args);
 
 
 	class exception
@@ -30,6 +31,7 @@ struct operation
 	};
 public:
 	operation(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+	operation(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck checkFnc, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
 	~operation();
 
@@ -59,13 +61,17 @@ public:
 	unsigned int getFunctor1() const;
 	unsigned int getFunctor2() const;
 
+	bool hasCheckFunction() const;
+
 	void operator()(_TVALUE& values) const;
+	bool operator()(bool, _TVALUE& values) const;
 
 	void print(pmb::log_type lgtype) const;
 	bool check() const;
 
 private:
 	tpFunc _fnc;
+	tpFuncCheck _checkFnc;
 	char*	_symbol;
 	int		_len;
 	int		_precedence;

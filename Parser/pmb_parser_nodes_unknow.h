@@ -24,6 +24,7 @@ public:
 	const void* pointer() const;
 
 	void set(const void* opr, bool binary, bool isLeftToRight, int precedence, bool canCreateLVariable, bool canCreateRVariable, const void* buildInFnc, const void* userFnc);
+	void set(const void* opr, bool isLeftToRight, int precedence, bool canCreateLVariable, bool canCreateRVariable);
 
 	unknown* add(ISIZE ini);
 
@@ -43,6 +44,10 @@ public:
 	bool canCreateVariable() const;
 	bool canCreateLVariable() const;
 	bool canCreateRVariable() const;
+	bool checkOperator()const;
+
+protected:
+	void switch2UpNode();
 
 protected:
 	const void* _pointer;

@@ -161,10 +161,14 @@ void algorithm<_BLOCK, _OPRTABLE, _IT>::mapUnknown()
 				if (fnc._buildin)
 					plg->trace(logDebug, "\t\t\t+ Function found: %s, nArgs = %d (%s). _findFirstInFunction = %s\n", fnc._buildin->getName(), fnc._buildin->getNArgs(), fnc._buildin->getDescription(), _findFirstInFunction ? "true" : "false");
 
-				static_cast<node_unknown*>(nd)->set(
-					reinterpret_cast<const void*>(opr[o].opr), opr[o].opr->isBinary(), opr[o].opr->isLeftToRight(), opr[o].opr->getPrecedence(), opr[o].opr->canCreateLVariable(), opr[o].opr->canCreateRVariable(),
-					reinterpret_cast<const void*>(fnc._buildin),
-					reinterpret_cast<void*>(fnc._userDef));
+				if (!opr[o].opr->hasCheckFunction())
+					static_cast<node_unknown*>(nd)->set(
+						reinterpret_cast<const void*>(opr[o].opr), opr[o].opr->isBinary(), opr[o].opr->isLeftToRight(), opr[o].opr->getPrecedence(), opr[o].opr->canCreateLVariable(), opr[o].opr->canCreateRVariable(),
+						reinterpret_cast<const void*>(fnc._buildin),
+						reinterpret_cast<void*>(fnc._userDef));
+				else
+					static_cast<node_unknown*>(nd)->set(
+						reinterpret_cast<const void*>(opr[o].opr), opr[o].opr->isLeftToRight(), opr[o].opr->getPrecedence(), opr[o].opr->canCreateLVariable(), opr[o].opr->canCreateRVariable());
 				plg->trace(logDebug, "\t- Mapping operation: ");
 				if (fnc._userDef)
 					*plg << "(call user function) ";
@@ -258,8 +262,17 @@ inline bool algorithm<_BLOCK, _IT, _OPRTABLE>::calculate()
 								try
 								{
 									const operation* opr = reinterpret_cast<const operation*>(uk->pointer());
-									(*opr)(args);
-									it_calc->calculated(true);
+
+									if (opr->hasCheckFunction() && it_calc->stoped())
+									{
+										if ((*opr)(false, args))
+											it_calc->calculated(true);
+									}
+									else
+									{
+										(*opr)(args);
+										it_calc->calculated(true);
+									}
 								}
 								catch (operation::exception& ex)
 								{
