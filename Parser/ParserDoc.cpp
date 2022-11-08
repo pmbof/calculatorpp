@@ -1515,6 +1515,7 @@ void CParserDoc::binf_acotg(transporter_args& args)
 
 void CParserDoc::binf_if(transporter_args& args)
 {
+	args.result()->fnc_if(**args[0], **args[1], **args[2]);
 }
 
 

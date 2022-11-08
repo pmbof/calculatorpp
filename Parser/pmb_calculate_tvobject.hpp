@@ -699,6 +699,37 @@ inline void tvobject<_NUMBER, _COBJECT, _STRING>::implication_double(const _MyT&
 
 
 template<class _NUMBER, class _COBJECT, class _STRING>
+inline void tvobject<_NUMBER, _COBJECT, _STRING>::fnc_if(const _MyT& bValue, _MyT& trueReturn, _MyT& falseReturn)
+{
+	clear();
+	if (bValue._type != tvt_boolean)
+		throw operation::exception("The first argument must be boolean type");
+
+	_MyT* src = bValue._vbool ? &trueReturn : &falseReturn;
+	_type = src->_type;
+	switch (_type)
+	{
+	case tvt_null:
+		break;
+	case tvt_boolean:
+		_vbool = src->_vbool;
+		break;
+	case tvt_numeric:
+		_vnumeric = src->_vnumeric;
+		break;
+	case tvt_string:
+		_vstring = src->_vstring;
+		break;
+	case tvt_object:
+		_vobject = src->_vobject;
+	}
+
+	src->_type = tvt_null;
+}
+
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
 inline void tvobject<_NUMBER, _COBJECT, _STRING>::pow(const _MyT& left, const _MyT& right)
 {
 	const _Number& l = *left.numeric();

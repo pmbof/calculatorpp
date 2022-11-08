@@ -127,6 +127,7 @@ public:
 	void atg(const _MyT& arg);
 	void atg2(const _MyT& opposite, const _MyT& adjacent);
 
+	void fnc_if(const _MyT& bValue, _MyT& trueReturn, _MyT& falseReturn);
 
 	_MyT pow(_TypeInt p) const;
 	_MyT operator/(const _MyT& right) const;
