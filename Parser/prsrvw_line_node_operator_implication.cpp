@@ -8,14 +8,14 @@
 
 
 
-CParserView::line::node_operator_and::node_operator_and(const tnode* nd, bnode* parent)
+CParserView::line::node_operator_implication::node_operator_implication(const tnode* nd, bnode* parent)
 	: node_operator_not(nd, parent)
 {
 }
 
 
 
-void CParserView::line::node_operator_and::in_set(sset* ss)
+void CParserView::line::node_operator_implication::in_set(sset* ss)
 {
 	const tnode* lnd = _ptnd->getLeft();
 	const tnode* rnd = _ptnd->getRight();
@@ -47,22 +47,22 @@ void CParserView::line::node_operator_and::in_set(sset* ss)
 
 
 
-void CParserView::line::node_operator_and::in_draw(sdraw* sd) const
+void CParserView::line::node_operator_implication::in_draw(sdraw* sd) const
 {
-	const short w2 = Width() / 2;
-	const short w4 = Width() / 4;
-	const short mx = left + w2;
-	const bool bw = Height() < Width() - 2;
-	const short hw = bw ? Height() / 2 : w2 - 1;
-	const short mh = Height() / 5;
+	const short wf = 3 * Width() / 8;
+	const short hf = Height() / 5;
+
+	const short mrx = 4 < wf ? 2: 2 < wf ? 1 : 0;
 
 	CPen pen;
 	pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
 	CPen* oldPen = sd->pDC->SelectObject(&pen);
 
-	sd->pDC->MoveTo(left + w4, _middle + mh);
-	sd->pDC->LineTo(mx, _middle - hw);
-	sd->pDC->LineTo(right - w4, _middle + mh);
+	sd->pDC->MoveTo(left + mrx, _middle);
+	sd->pDC->LineTo(right - mrx, _middle);
+	sd->pDC->LineTo(right - mrx - wf, _middle - hf);
+	sd->pDC->MoveTo(right - mrx, _middle);
+	sd->pDC->LineTo(right - mrx - wf, _middle + hf);
 
 	sd->pDC->SelectObject(oldPen);
 }

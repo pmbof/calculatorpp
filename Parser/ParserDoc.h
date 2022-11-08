@@ -71,6 +71,7 @@ class CParserDoc : public CDocument
 	static void opr_subtraction(transporter_args& args);
 
 	static void opr_equal(transporter_args& args);
+	static void opr_not_equal(transporter_args& args);
 	static void opr_less_equal(transporter_args& args);
 	static void opr_less(transporter_args& args);
 	static void opr_greater_equal(transporter_args& args);
@@ -78,11 +79,18 @@ class CParserDoc : public CDocument
 	static void opr_not(transporter_args& args);
 	static bool opr_and_check(transporter_args& args);
 	static void opr_and(transporter_args& args);
+	static bool opr_nand_check(transporter_args& args);
+	static void opr_nand(transporter_args& args);
 	static void opr_xor(transporter_args& args);
 	static bool opr_or_check(transporter_args& args);
 	static void opr_or(transporter_args& args);
 	static bool opr_nor_check(transporter_args& args);
 	static void opr_nor(transporter_args& args);
+	static bool opr_implication_check(transporter_args& args);
+	static void opr_implication(transporter_args& args);
+	static bool opr_implication_reverse_check(transporter_args& args);
+	static void opr_implication_reverse(transporter_args& args);
+	static void opr_implication_double(transporter_args& args);
 
 	static void opr_assignation(transporter_args& args);
 	static void opr_result(transporter_args& args);

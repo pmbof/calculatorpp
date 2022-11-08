@@ -63,15 +63,20 @@ const operation* CParserDoc::_operation[] = {
 	new CParserView::opr_plus(           "+",   50, true,   true, "add",                   "addition",                                            &CParserDoc::opr_addition),
 
 	new CParserView::operation(         "==",   40, true,   true, "equal to",              "equal to",                                            &CParserDoc::opr_equal),
+	new CParserView::operation(         "!=",   40, true,   true, "not equal to",          "not equal to",                                        &CParserDoc::opr_not_equal),
 	new CParserView::operation(         "<=",   40, true,   true, "less equal to",         "less equal to",                                       &CParserDoc::opr_less_equal),
 	new CParserView::operation(          "<",   40, true,   true, "less to",               "less to",                                             &CParserDoc::opr_less_equal),
 	new CParserView::operation(         ">=",   40, true,   true, "greater equal to",      "greater equal to",                                    &CParserDoc::opr_greater_equal),
 	new CParserView::operation(          ">",   40, true,   true, "greater to",            "greater to",                                          &CParserDoc::opr_greater),
-	new CParserView::opr_not(            "~",   31, false, false, "not",                   "not",                                                 &CParserDoc::opr_not),
-	new CParserView::opr_and(            "&",   30, true,         "and",                   "and",                                                 &CParserDoc::opr_and, &CParserDoc::opr_and_check),
-	new CParserView::operation(         "&|",   29, true,   true, "xor",                   "xor",                                                 &CParserDoc::opr_xor),
-	new CParserView::opr_or(             "|",   28, true,         "or",	                   "or",                                                  &CParserDoc::opr_or, &CParserDoc::opr_or_check),
-	new CParserView::operation(         "!|",   28, true,         "nor",	               "nor",                                                 &CParserDoc::opr_nor, &CParserDoc::opr_nor_check),
+	new CParserView::opr_not(            "~",   31, false, false, "not",                   "logical operator not",                                &CParserDoc::opr_not),
+	new CParserView::opr_and(            "&",   30, true,         "and",                   "logical operator and",                                &CParserDoc::opr_and, &CParserDoc::opr_and_check),
+	new CParserView::operation(         "!&",   30, true,         "nand",                  "logical operator nand: not and",                      &CParserDoc::opr_nand, &CParserDoc::opr_nand_check),
+	new CParserView::operation(         "&|",   29, true,   true, "xor",                   "logical operator xor: exclusive or",                  &CParserDoc::opr_xor),
+	new CParserView::opr_or(             "|",   28, true,         "or",	                   "logical operator or",                                 &CParserDoc::opr_or, &CParserDoc::opr_or_check),
+	new CParserView::operation(         "!|",   28, true,         "nor",	               "logical operator nor: not or",                        &CParserDoc::opr_nor, &CParserDoc::opr_nor_check),
+	new CParserView::opr_implication(   "->",   27, true,         "implication",	       "logical operator implication",                        &CParserDoc::opr_implication, &CParserDoc::opr_implication_check),
+	new CParserView::opr_rimplication(  "<-",   27, false,        "reverse implication",   "logical operator reverse implication: right to left", &CParserDoc::opr_implication_reverse, &CParserDoc::opr_implication_reverse_check),
+	new CParserView::opr_dimplication( "<->",   27, true,   true, "double implication",	   "logical operator double implication",                 &CParserDoc::opr_implication_double),
 	new CParserView::operation(          "?",   20, true,   true, "if",	                   "if",                                                  &CParserDoc::opr_or),
 	new CParserView::operation(			 ":",   19, true,   true, "if cases",	           "if cases",                                            &CParserDoc::opr_or),
 
@@ -1256,6 +1261,11 @@ void CParserDoc::opr_equal(transporter_args& args)
 	args.result()->equal(**args.left(), **args.right());
 }
 
+void CParserDoc::opr_not_equal(transporter_args& args)
+{
+	args.result()->not_equal(**args.left(), **args.right());
+}
+
 void CParserDoc::opr_less_equal(transporter_args& args)
 {
 	args.result()->less_equal(**args.left(), **args.right());
@@ -1291,6 +1301,16 @@ void CParserDoc::opr_and(transporter_args& args)
 	args.result()->and(**args.left(), **args.right());
 }
 
+bool CParserDoc::opr_nand_check(transporter_args& args)
+{
+	return args.result()->nand_check(**args.left());
+}
+
+void CParserDoc::opr_nand(transporter_args& args)
+{
+	args.result()->nand(**args.left(), **args.right());
+}
+
 void CParserDoc::opr_xor(transporter_args& args)
 {
 	args.result()->xor(**args.left(), **args.right());
@@ -1315,6 +1335,34 @@ void CParserDoc::opr_nor(transporter_args& args)
 {
 	args.result()->nor(**args.left(), **args.right());
 }
+
+
+bool CParserDoc::opr_implication_check(transporter_args& args)
+{
+	return args.result()->implication_check(**args.left());
+}
+
+void CParserDoc::opr_implication(transporter_args& args)
+{
+	args.result()->implication(**args.left(), **args.right());
+}
+
+bool CParserDoc::opr_implication_reverse_check(transporter_args& args)
+{
+	return args.result()->implication_reverse_check(**args.right());
+}
+
+void CParserDoc::opr_implication_reverse(transporter_args& args)
+{
+	args.result()->implication_reverse(**args.left(), **args.right());
+}
+
+
+void CParserDoc::opr_implication_double(transporter_args& args)
+{
+	args.result()->implication_double(**args.left(), **args.right());
+}
+
 
 
 void CParserDoc::opr_subtraction(transporter_args & args)

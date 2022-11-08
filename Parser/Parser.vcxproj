@@ -303,6 +303,9 @@
     <ClCompile Include="prsrvw_line_node_unknown.cpp" />
     <ClCompile Include="prsrvw_line_sdraw.cpp" />
     <ClCompile Include="prsrvw_operation.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_implication.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_implication_double.cpp" />
+    <ClCompile Include="prsrvw_line_node_operator_implication_reverse.cpp" />
     <ClCompile Include="prsrvw_resource.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_power.cpp" />
     <ClCompile Include="prsrvw_line_node_operator_product.cpp" />

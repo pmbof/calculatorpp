@@ -295,3 +295,94 @@ CParserView::line::node* CParserView::opr_or::new_instance(line::bnode* parent, 
 {
 	return new line::node_operator_or(nd, parent);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CParserView::opr_implication::opr_implication(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: operation(symbol, precedence, leftToRight, name, description, func, funcCheck, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
+
+CParserView::line::node* CParserView::opr_implication::new_instance(line::bnode* parent, const tnode* nd) const
+{
+	return new line::node_operator_implication(nd, parent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+CParserView::opr_rimplication::opr_rimplication(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: operation(symbol, precedence, leftToRight, name, description, func, funcCheck, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
+
+CParserView::line::node* CParserView::opr_rimplication::new_instance(line::bnode* parent, const tnode* nd) const
+{
+	return new line::node_operator_implication_reverse(nd, parent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+CParserView::opr_dimplication::opr_dimplication(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction, bool canCreateLVariable, bool canCreateRVariable)
+	: operation(symbol, precedence, leftToRight, binary, name, description, func, canCallFunction, canCreateLVariable, canCreateRVariable)
+{
+}
+
+
+CParserView::line::node* CParserView::opr_dimplication::new_instance(line::bnode* parent, const tnode* nd) const
+{
+	return new line::node_operator_implication_double(nd, parent);
+}

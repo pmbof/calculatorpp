@@ -473,6 +473,15 @@
     <ClCompile Include="prsrvw_line_node_operator_or.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="prsrvw_line_node_operator_implication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prsrvw_line_node_operator_implication_reverse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prsrvw_line_node_operator_implication_double.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Parser.rc">

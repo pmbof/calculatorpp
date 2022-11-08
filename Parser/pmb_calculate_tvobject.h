@@ -83,6 +83,7 @@ public:
 	void root(const _MyT& left, const _MyT& right);
 
 	void equal(const _MyT& left, const _MyT& right);
+	void not_equal(const _MyT& left, const _MyT& right);
 	void less_equal(const _MyT& left, const _MyT& right);
 	void less(const _MyT& left, const _MyT& right);
 	void greater_equal(const _MyT& left, const _MyT& right);
@@ -90,11 +91,18 @@ public:
 	void not(const _MyT& right);
 	bool and_check(const _MyT& left);
 	void and(const _MyT& left, const _MyT& right);
+	bool nand_check(const _MyT& left);
+	void nand(const _MyT& left, const _MyT& right);
 	void xor(const _MyT& left, const _MyT& right);
 	bool or_check(const _MyT & left);
 	void or(const _MyT& left, const _MyT& right);
 	bool nor_check(const _MyT& left);
 	void nor(const _MyT & left, const _MyT & right);
+	bool implication_check(const _MyT& left);
+	void implication(const _MyT& left, const _MyT& right);
+	bool implication_reverse_check(const _MyT& left);
+	void implication_reverse(const _MyT& left, const _MyT& right);
+	void implication_double(const _MyT& left, const _MyT& right);
 
 	void assignation(const _MyT& left, const _MyT& right);
 

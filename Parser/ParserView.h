@@ -58,6 +58,9 @@ public:
 	struct opr_not;
 	struct opr_and;
 	struct opr_or;
+	struct opr_implication;
+	struct opr_rimplication;
+	struct opr_dimplication;
 #pragma endregion nodes declare
 private:
 
@@ -89,9 +92,7 @@ private:
 			bndOprDivision,
 			bndOprPlus,
 			bndOprMinus,
-			bndOprNot,
-			bndOprAnd,
-			bndOprOr
+			bndOprLogical
 		};
 
 		struct bnode;
@@ -452,31 +453,62 @@ private:
 		{
 			node_operator_not(const tnode* nd, bnode* parent);
 
+			void set(sset* ss) override;
 			void draw(sdraw* sd) const override;
 
 			bnodetypes type() const override;
+
+		protected:
+			virtual void in_set(sset* ss);
+			virtual void in_draw(sdraw* sd) const;
 		};
 
 
-		struct node_operator_and : node
+		struct node_operator_and : node_operator_not
 		{
 			node_operator_and(const tnode* nd, bnode* parent);
 
-			void set(sset* ss) override;
-			void draw(sdraw* sd) const override;
-
-			bnodetypes type() const override;
+		protected:
+			void in_set(sset* ss) override;
+			void in_draw(sdraw* sd) const override;
 		};
 
 
-		struct node_operator_or : node
+		struct node_operator_or : node_operator_and
 		{
 			node_operator_or(const tnode* nd, bnode* parent);
 
-			void set(sset* ss) override;
-			void draw(sdraw* sd) const override;
+		protected:
+			void in_draw(sdraw* sd) const override;
+		};
 
-			bnodetypes type() const override;
+
+		struct node_operator_implication : node_operator_not
+		{
+			node_operator_implication(const tnode* nd, bnode* parent);
+
+		protected:
+			void in_set(sset* ss) override;
+			void in_draw(sdraw* sd) const override;
+		};
+
+
+		struct node_operator_implication_reverse : node_operator_implication
+		{
+			node_operator_implication_reverse(const tnode* nd, bnode* parent);
+
+		protected:
+			void in_draw(sdraw* sd) const override;
+		};
+
+
+		struct node_operator_implication_double : node_operator_implication
+		{
+			node_operator_implication_double(const tnode* nd, bnode* parent);
+
+		protected:
+			void in_set(sset* ss) override;
+			void in_draw(sdraw* sd) const override;
 		};
 
 	private:
@@ -528,6 +560,9 @@ private:
 		friend opr_not;
 		friend opr_and;
 		friend opr_or;
+		friend opr_implication;
+		friend opr_rimplication;
+		friend opr_dimplication;
 	};
 
 public:
@@ -634,6 +669,28 @@ public:
 	struct opr_or : operation
 	{
 		opr_or(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
+	};
+
+
+	struct opr_implication : operation
+	{
+		opr_implication(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
+	};
+
+	struct opr_rimplication : operation
+	{
+		opr_rimplication(const char* symbol, int precedence, bool leftToRight, const char* name, const char* description, tpFunc func, tpFuncCheck funcCheck, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
+
+		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
+	};
+
+	struct opr_dimplication : operation
+	{
+		opr_dimplication(const char* symbol, int precedence, bool leftToRight, bool binary, const char* name, const char* description, tpFunc func, bool canCallFunction = false, bool canCreateLVariable = false, bool canCreateRVariable = false);
 
 		line::node* new_instance(line::bnode* parent, const tnode* nd) const override;
 	};
