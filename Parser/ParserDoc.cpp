@@ -1248,6 +1248,8 @@ void CParserDoc::opr_division(transporter_args& args)
 
 void CParserDoc::opr_modulo(transporter_args& args)
 {
+	if (args.right()->zero())
+		throw operation::exception("divided by zero");
 	args.result()->modulo(**args.left(), **args.right());
 }
 
