@@ -15,6 +15,7 @@
 *.pot
 *.sdf
 *.suo
+*.aps
 
 objfiles.txt
 .deps/
