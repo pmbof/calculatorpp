@@ -98,6 +98,17 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\etc\astronomical-constants.ini" />
+    <None Include="..\etc\calc.ini" />
+    <None Include="..\etc\cgs.ini" />
+    <None Include="..\etc\currency.ini" />
+    <None Include="..\etc\mathematical-constants.ini" />
+    <None Include="..\etc\memory.ini" />
+    <None Include="..\etc\physical-constants.ini" />
+    <None Include="..\etc\si-dimensions.ini" />
+    <None Include="..\etc\si-prefixes.ini" />
+    <None Include="..\etc\si.ini" />
+    <None Include="..\etc\uscs.ini" />
     <None Include="ReadMe.txt" />
     <None Include="res\classview.bmp" />
     <None Include="res\classview_hc.bmp" />

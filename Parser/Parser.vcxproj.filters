@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="etc">
+      <UniqueIdentifier>{048604a8-a73f-4310-bcaa-d226c670e682}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -102,6 +105,39 @@
     </None>
     <None Include="res\parsertype256.bmp">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\etc\astronomical-constants.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\calc.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\cgs.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\currency.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\mathematical-constants.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\memory.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\physical-constants.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\si.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\si-dimensions.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\si-prefixes.ini">
+      <Filter>etc</Filter>
+    </None>
+    <None Include="..\etc\uscs.ini">
+      <Filter>etc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
