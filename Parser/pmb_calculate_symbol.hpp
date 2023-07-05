@@ -410,7 +410,11 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 			prefix::const_iterator pf = _prefix->find(sprefix);
 			if (pf == _prefix->end())
 				continue;
-			value = _TVALUE(new _TVALUE::tpValue(ui->second.first->get_number() * pf->first->getFactor(_prefix->base()), ui->second.first->get_unit()));
+
+			const typename _TVALUE::_TypeValue& number = ui->second.first->get_number();
+			_TVALUE::_TypeValue::_TypeValue factor = pf->first->getFactor(_prefix->base());
+			const typename _TVALUE::_TypeUnit& unit = ui->second.first->get_unit();
+			value = _TVALUE(new _TVALUE::tpValue(number * factor, unit));
 			return true;
 		}
 
@@ -429,7 +433,11 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::find(const _ITSTRIN
 				typename prefix::mapName::const_iterator pf = _prefix->find_by_name(sprefix);
 				if (pf == _prefix->end_by_name())
 					continue;
-				value = _TVALUE(new _TVALUE::tpValue(ui->second.first->get_number() * pf->first->getFactor(_prefix->base()), ui->second.first->get_unit()));
+
+				const typename _TVALUE::_TypeValue& number = ui->second.first->get_number();
+				_TVALUE::_TypeValue::_TypeValue factor = pf->first->getFactor(_prefix->base());
+				const typename _TVALUE::_TypeUnit& unit = ui->second.first->get_unit();
+				value = _TVALUE(new _TVALUE::tpValue(number * factor, unit));
 				return true;
 			}
 		}

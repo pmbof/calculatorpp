@@ -22,6 +22,7 @@ public:
 	typedef _VALUE* ptr_value;
 	typedef _NREF nref;
 	typedef typename _VALUE::_TypeValue _TypeValue;
+	typedef typename _VALUE::unit _TypeUnit;
 
 public:
 	transporter();
