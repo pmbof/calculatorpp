@@ -903,6 +903,15 @@ inline unit<_INT, _CHAR, _SZSTR>& unit<_INT, _CHAR, _SZSTR>::operator=(const dim
 
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
+inline void unit<_INT, _CHAR, _SZSTR>::release()
+{
+	if (_dim)
+		_dim = nullptr;
+	_capacity = _nDims = ndim(0);
+}
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
 inline void unit<_INT, _CHAR, _SZSTR>::clear()
 {
 	if (_dim)
@@ -912,6 +921,7 @@ inline void unit<_INT, _CHAR, _SZSTR>::clear()
 	}
 	_capacity = _nDims = ndim(0);
 }
+
 
 template<typename _INT, typename _CHAR, typename _SZSTR>
 inline _INT unit<_INT, _CHAR, _SZSTR>::compare(const unit& right) const
@@ -1627,6 +1637,12 @@ template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline const typename magnitude<_TYPE, _INT, _CHAR, _SZSTR>::unit& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_unit() const
 {
 	return _unit;
+}
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::release_unit()
+{
+	_unit.release();
 }
 
 

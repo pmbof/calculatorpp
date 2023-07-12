@@ -518,10 +518,10 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 					vunit.insert(i, s_powunit(symbol, unit.get_unit(), pow));
 				}
 
-				void set(const std::string& s, tpValue u, tpUnit::_tpInt p) {
+				void set(const std::string& s, tpValue& u, tpUnit::_tpInt p) {
 					insert();
 					symbol = s;
-					unit = u;
+					unit.copy_release(u);
 					pow = p;
 					ppow *= p;
 				}
@@ -580,7 +580,10 @@ inline bool system<_POWER, _BASE, _TVALUE, _ITSTRING, _MAP>::value(const tpValue
 					{
 						tpUnit::_tpInt pow2 = vunit[i].unit.get_unit().compare(iu->second.first->get_unit());
 						if (pow2)
-							vunit[i].set(iu->first, vunit[i].unit / iu->second.first->pow(pow2), pow2);
+						{
+							tpValue nunit = vunit[i].unit / iu->second.first->pow(pow2);
+							vunit[i].set(iu->first, nunit, pow2);
+						}
 					}
 					vunit.push_back(s_unit(iu->first, refVal / iu->second.first->pow(pow), pow));
 					if (pow == 1 && vunit.back().unit.dimensionless())

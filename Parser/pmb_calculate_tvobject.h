@@ -44,7 +44,8 @@ struct tvobject
 private:
 	void _destructor();
 public:
-
+	void release_unit();
+	void copy_release(_MyT& cpy);
 	void clear();
 
 	bool is_null() const;

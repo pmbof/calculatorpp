@@ -55,10 +55,10 @@ tvobject<_NUMBER, _COBJECT, _STRING>::tvobject(const _MyT* src)
 		_vnumeric = new _Number(src->_vnumeric);
 		break;
 	case tvt_string:
-		_vstring = new std::string(src->_vstring);
+		_vstring = new std::string(*src->_vstring);
 		break;
 	case tvt_object:
-		_vobject = new _Cobject(src->_vobject);
+		_vobject = new _CObject(src->_vobject);
 	}
 }
 
@@ -116,6 +116,49 @@ inline void tvobject<_NUMBER, _COBJECT, _STRING>::_destructor()
 	default:
 		break;
 	}
+}
+
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
+inline void tvobject<_NUMBER, _COBJECT, _STRING>::release_unit()
+{
+	switch (_type)
+	{
+	case tvt_numeric:
+		_vnumeric->release_unit();
+		break;
+	case tvt_string:
+		break;
+	case tvt_object:
+		break;
+	default:
+		break;
+	}
+}
+
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
+inline void tvobject<_NUMBER, _COBJECT, _STRING>::copy_release(_MyT& cpy)
+{
+	_destructor();
+
+	switch (_type = cpy._type)
+	{
+	case tvt_numeric:
+		_vnumeric = cpy._vnumeric;
+		break;
+	case tvt_string:
+		_vstring = cpy._vstring;
+		break;
+	case tvt_object:
+		_vobject = cpy._vobject;
+		break;
+	default:
+		break;
+	}
+	cpy._type = tvt_null;
 }
 
 

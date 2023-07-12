@@ -244,6 +244,7 @@ struct unit
 
 	void clean();
 
+	void release();
 	void clear();
 
 	_INT compare(const unit& right) const;
@@ -383,6 +384,7 @@ public:
 
 	const _TYPE& get_number() const;
 	const unit& get_unit() const;
+	void release_unit();
 
 protected:
 	_TYPE _number;
