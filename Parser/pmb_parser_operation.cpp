@@ -21,11 +21,13 @@ operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRig
 	_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)
 {
 	_symbol = new char[(_len = strlen(symbol)) + 1];
-	strcpy(_symbol, symbol);
-	_name = new char[strlen(name) + 1];
-	strcpy(_name, name);
-	_description = new char[strlen(description) + 1];
-	strcpy(_description, description);
+	strcpy_s(_symbol, _len + 1, symbol);
+	int len = strlen(name) + 1;
+	_name = new char[len];
+	strcpy_s(_name, len, name);
+	len = strlen(description) + 1;
+	_description = new char[len];
+	strcpy_s(_description, len, description);
 }
 
 
@@ -36,11 +38,13 @@ operation<_TVALUE>::operation(const char* symbol, int precedence, bool leftToRig
 	_canCreateLVariable(canCreateLVariable), _canCreateRVariable(canCreateRVariable)
 {
 	_symbol = new char[(_len = strlen(symbol)) + 1];
-	strcpy(_symbol, symbol);
-	_name = new char[strlen(name) + 1];
-	strcpy(_name, name);
-	_description = new char[strlen(description) + 1];
-	strcpy(_description, description);
+	strcpy_s(_symbol, _len + 1, symbol);
+	int len = strlen(name) + 1;
+	_name = new char[len];
+	strcpy_s(_name, len, name);
+	len = strlen(description) + 1;
+	_description = new char[len];
+	strcpy_s(_description, len, description);
 }
 
 
