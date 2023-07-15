@@ -15,6 +15,15 @@ namespace units
 
 
 
+#ifdef _WINDOWS
+	template<typename _CHAR>
+	void strcpy(_CHAR* target, const _CHAR* source)
+	{
+		for (; *source; ++source)
+			*target++ = *source;
+		*target = '\0';
+	}
+#endif
 
 
 

@@ -12,6 +12,18 @@ namespace units
 
 
 
+#ifdef _WINDOWS
+	template<typename _CHAR, typename _SIZE>
+	void strncpy(_CHAR* target, const _CHAR* source, _SIZE size)
+	{
+		for (_SIZE i = 0; i < size; ++i)
+			target[i] = source[i];
+	}
+#endif
+
+
+
+
 template<typename _CHAR, typename _SIZE>
 inline dimension<_CHAR, _SIZE>::dimension()
 	: _symbol(nullptr), _name(nullptr)
