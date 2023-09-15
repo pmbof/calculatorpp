@@ -1,6 +1,8 @@
 #pragma once
 
 #include "pmb_parser_algorithm.h"
+#include "pmb_calculate_sunitType.h"
+
 
 
 namespace pmb
@@ -24,8 +26,8 @@ public:
 
 	void clear();
 
-	bool add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group = nullptr, bool automatic = true);
-	bool add_unit(const typename tpChar* expression, bool automatic = true);
+	bool add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group = nullptr, pmb::calculate::units::sunitType automatic = pmb::calculate::units::sutAutomaticPostfix);
+	bool add_unit(const typename tpChar* expression, pmb::calculate::units::sunitType automatic = pmb::calculate::units::sutAutomaticPostfix);
 
 	bool add_constant(const typename tpChar* name, const typename tpChar* expression);
 

@@ -933,10 +933,22 @@ tvobject<_NUMBER, _COBJECT, _STRING>::pow(_TypeInt p) const
 
 template<class _NUMBER, class _COBJECT, class _STRING>
 inline tvobject<_NUMBER, _COBJECT, _STRING>
+tvobject<_NUMBER, _COBJECT, _STRING>::operator*(const _MyT& right) const
+{
+	const _Number& r = *right.numeric();
+	_Number result = numeric()->operator*(r);
+	return tvobject(result);
+}
+
+
+
+template<class _NUMBER, class _COBJECT, class _STRING>
+inline tvobject<_NUMBER, _COBJECT, _STRING>
 tvobject<_NUMBER, _COBJECT, _STRING>::operator/(const _MyT& right) const
 {
 	const _Number& r = *right.numeric();
-	return tvobject(numeric()->operator/(r));
+	_Number result = numeric()->operator/(r);
+	return tvobject(result);
 }
 
 

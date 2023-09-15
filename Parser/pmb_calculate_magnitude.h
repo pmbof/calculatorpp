@@ -39,7 +39,9 @@ public:
 	bool greater_name(const _CHAR* right, const _SIZE& len);
 
 	void set(const _CHAR* symbol, const _SIZE& slen, const _CHAR* name = nullptr, const _SIZE& nlen = 0);
+	void set(unsigned char index);
 
+	unsigned char index() const;
 	const _CHAR* symbol() const;
 	const _CHAR* name() const;
 	const _SIZE symbol_size() const;
@@ -49,6 +51,7 @@ private:
 	void clear();
 
 private:
+	unsigned char _index;
 	_SIZE _slen;
 	_CHAR* _symbol;
 	_SIZE _nlen;
@@ -71,10 +74,15 @@ private:
 template <typename _INT>
 struct rational
 {
+	typename typedef rational<_INT> _MyT;
+	typename typedef _INT _TypeNum;
+
+
 	_INT numerator;
 	_INT denominator;
 
 	rational();
+	explicit rational(const _INT& _numerator);
 	rational(const _INT& _numerator, const _INT& _denominator);
 	template <typename _N>
 	explicit rational(const _N& number);
@@ -82,21 +90,30 @@ struct rational
 	static void normalize(_INT& _numerator, _INT& _denominator);
 	void normalize();
 
+
+	std::string serialize() const;
+	bool deserialize(const char* bytes, unsigned short size);
+
 	operator bool() const;
 	bool operator!() const;
+	explicit operator long() const;
 
-	bool operator==(const rational<_INT>& right) const;
+	bool operator==(const _MyT& right) const;
 
-	rational& operator=(const rational<_INT>& right);
+	rational& operator=(const _MyT& right);
 	rational& operator=(const _INT& right);
-	rational& operator+=(const rational<_INT>& right);
+	rational& operator+=(const _MyT& right);
 
-	rational operator+(const rational<_INT>& right) const;
-	rational operator-(const rational<_INT>& right) const;
-	rational operator*(const rational<_INT>& right) const;
-	rational operator/(const rational<_INT>& right) const;
+	rational operator-() const;
+	rational operator+() const;
+	rational operator+(const _MyT& right) const;
+	rational operator-(const _MyT& right) const;
+	rational operator*(const _MyT& right) const;
+	rational operator/(const _MyT& right) const;
 	rational operator*(const _INT& right) const;
 	rational operator/(const _INT& right) const;
+
+	rational operator*=(const _INT& right);
 
 	template <typename _N>
 	rational operator*(const _N& right) const;
@@ -104,10 +121,23 @@ struct rational
 	template <typename _N>
 	rational operator/(const _N& right) const;
 
+
+	bool operator<(const rational<_INT>& right) const;
+	bool operator<(const _INT& right) const;
+	bool operator<=(const rational<_INT>& right) const;
+	bool operator<=(const _INT& right) const;
+	bool operator>(const rational<_INT>& right) const;
+	bool operator>(const _INT& right) const;
+	bool operator>=(const rational<_INT>& right) const;
+	bool operator>=(const _INT& right) const;
+
 	bool zero() const;
 	bool unit() const;
 	bool natural() const;
 	bool integer() const;
+
+	rational pow(const _INT& exp) const;
+	rational pow(const _MyT& exp) const;
 
 	_INT proportionality(const rational<_INT>& right) const;
 
@@ -119,6 +149,9 @@ struct rational
 	friend rational<_INT> operator*(const _INT& left, const rational<_INT>& right);
 	template<typename _INT>
 	friend rational<_INT> operator/(const _INT& left, const rational<_INT>& right);
+
+	template<typename _INT>
+	friend std::stringstream& operator<<(std::stringstream& left, const rational<_INT>& right);
 };
 
 
@@ -139,9 +172,13 @@ struct power_dimension: rational<_INT>
 {
 	typedef typename _SZSTR tpSzStr;
 	typedef typename dimension<_CHAR, _SZSTR> dimension;
+	typedef typename rational<_INT> rational_base;
 
 	power_dimension();
 	power_dimension(const rational<_INT>& q, const dimension* pDim);
+
+	std::string serialize() const;
+	unsigned char deserialize(const char* bytes, unsigned short size);
 
 	power_dimension& operator =(const power_dimension& right);
 	power_dimension& operator +=(const power_dimension& right);
@@ -219,6 +256,9 @@ struct unit
 	unit(const unit& u);
 	unit();
 	~unit();
+
+	std::string serialize() const;
+	bool deserialize(dimension**const vdimensions, unsigned char vdimsz, const char* bytes, unsigned short size);
 
 	ndim nDims() const;
 	bool operator==(const unit& right) const;
@@ -357,6 +397,7 @@ public:
 
 
 	magnitude pow(_TypeInt p) const;
+	magnitude operator*(const magnitude& right) const;
 	magnitude operator/(const magnitude& right) const;
 
 	bool equal(const magnitude& right) const;
@@ -383,7 +424,9 @@ public:
 	bool equal_unit(const magnitude& right) const;
 
 	const _TYPE& get_number() const;
+	_TYPE& get_number();
 	const unit& get_unit() const;
+	unit& get_unit();
 	void release_unit();
 
 protected:

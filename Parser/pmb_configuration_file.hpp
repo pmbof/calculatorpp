@@ -522,8 +522,8 @@ inline bool configuration_file<SYMBOL, CALC>::calculate(SYMBOL& symbols, CALC& c
 					if (_bUnit)
 					{
 						bOk = true;
-						bool bUnit = _dstr[0][0] != '-';
-						if (!bUnit)
+						pmb::calculate::units::sunitType bUnit = _dstr[0][0] != '-' ? pmb::calculate::units::sutAutomaticPostfix  : pmb::calculate::units::sutNoAutomaticPostfix;
+						if (bUnit == pmb::calculate::units::sutNoAutomaticPostfix)
 							_dstr[0] = _dstr[0].Mid(1);
 						char c1 = _dstr[2].IsEmpty() ? '<' : '"';
 						char c2 = _dstr[2].IsEmpty() ? '>' : '"';

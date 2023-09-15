@@ -118,6 +118,7 @@ public:
 	void setValue();
 	void next();
 	typename const transporter& tresult() const;
+	typename transporter& tresult();
 	typename const tpValue& result() const;
 	typename const tpValue::_TypeValue& nresult() const;
 	const tnode* rootNode() const;

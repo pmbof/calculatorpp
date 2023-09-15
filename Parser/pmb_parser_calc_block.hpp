@@ -381,9 +381,22 @@ inline void block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::next()
 	}
 }
 
+
+
 template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
 inline typename const block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter&
 	block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tresult() const
+{
+	if (!_lastResult || _lastResult->getValues().result().isNull())
+		throw exception<cItem>("No result found");
+	return _lastResult->getValues().result();
+}
+
+
+
+template<class _CITERATOR, class _BIN_FNCTABLE, class _SYMBOL>
+inline typename block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::transporter&
+block<_CITERATOR, _BIN_FNCTABLE, _SYMBOL>::tresult()
 {
 	if (!_lastResult || _lastResult->getValues().result().isNull())
 		throw exception<cItem>("No result found");

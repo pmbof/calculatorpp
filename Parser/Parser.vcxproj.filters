@@ -318,6 +318,9 @@
     <ClInclude Include="pmb_calculate_tvobject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pmb_calculate_sunitType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser.cpp">

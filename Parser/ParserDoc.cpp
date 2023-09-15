@@ -369,13 +369,14 @@ BOOL CParserDoc::OnNewDocument()
 	const char* symb[] = { "c", "g", "G", "h", "e" };
 	number_double val;
 	std::string sunit;
+	std::string suprefix;
 	for (int i = 0; i < sizeof(symb) / sizeof(*symb); ++i)
 	{
-		bool bFound = m_symbols.value(nullptr, symb[i], val, sunit);
+		bool bFound = m_symbols.value(nullptr, symb[i], val, suprefix, sunit);
 		if (!bFound)
 			log->trace(pmb::logError, "%d. symbol %s not found!\n", i, symb[i]);
 		else
-			log->trace(pmb::logDebug, "%d. %s = %f%s\n", i, symb[i], val, sunit.c_str());
+			log->trace(pmb::logDebug, "%d. %s = %s%f%s\n", i, symb[i], suprefix.c_str(), val, sunit.c_str());
 	}
 
 	m_countIterators = 1;
@@ -953,7 +954,7 @@ bool CParserDoc::load_configuration()
 
 
 			m_symbols.set_system("SI");
-			m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency", false);
+			m_calculator.add_unit("hertz", "Hz = 1/s", "frecuency", pmb::calculate::units::sutNoAutomaticPostfix);
 			check_operation_table();
 			m_calculator.add_unit("newton", "N = kg m/s^2", "force");
 			check_operation_table();
@@ -984,7 +985,7 @@ bool CParserDoc::load_configuration()
 			check_operation_table();
 			m_calculator.add_unit("lux", "lx = lm/m^2", "illuminance");
 			check_operation_table();
-			m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)", false);
+			m_calculator.add_unit("becquerel", "Bq = 1/s", "activity (of a radionuclide)", pmb::calculate::units::sutNoAutomaticPostfix);
 			check_operation_table();
 			m_calculator.add_unit("gray", "Gy = J/kg", "absorbed dose, specific energy (imparted), kerma");
 			check_operation_table();
@@ -993,7 +994,7 @@ bool CParserDoc::load_configuration()
 			m_calculator.add_unit("katal", "kat = mol/s", "catalytic activity");
 			check_operation_table();
 
-			m_calculator.add_unit("litre", "L = 1dm^3", "volume", false);
+			m_calculator.add_unit("litre", "L = 1dm^3", "volume", pmb::calculate::units::sutNoAutomaticPostfix);
 			check_operation_table();
 
 			m_symbols.set_system("cgs");
@@ -1081,7 +1082,7 @@ bool CParserDoc::load_configuration()
 			check_operation_table();
 			m_calculator.add_unit("large_calorie", "Cal = kcal = 1000 cal");
 			check_operation_table();
-			m_symbols.add_by_name("food_calorie", _block.tresult(), false);
+			m_symbols.add_by_name("food_calorie", _block.tresult(), pmb::calculate::units::sutNoAutomaticSuffix);
 			check_operation_table();
 			m_calculator.add_unit("horse_power", "hp = 745.7 W");
 			check_operation_table();
@@ -1164,7 +1165,8 @@ void CParserDoc::result()
 		const tvobject& val = _block.result();
 		number_double number;
 		std::string sunit;
-		m_symbols.value(val, number, sunit, true);
+		std::string sprefixunit;
+		m_symbols.value(val, number, sprefixunit, sunit, true);
 		std::stringstream sres;
 		sres << number;
 		CStringA sn(sres.str().c_str());

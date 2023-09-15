@@ -37,7 +37,7 @@ void calculator<_BLOCK, _OPRTABLE>::clear()
 
 
 template<class _BLOCK, class _OPRTABLE>
-inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group, bool automatic)
+inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name, const typename tpChar* expression, const typename tpChar* group, calculate::units::sunitType automatic)
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;
@@ -48,7 +48,7 @@ inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* name,
 
 
 template<class _BLOCK, class _OPRTABLE>
-inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expression, bool automatic)
+inline bool calculator<_BLOCK, _OPRTABLE>::add_unit(const typename tpChar* expression, calculate::units::sunitType automatic)
 {
 	if (!_pBlock->variables()->defining_unit())
 		return false;

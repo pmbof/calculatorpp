@@ -150,6 +150,7 @@
     <ClInclude Include="pmb_calculate_magnitude.hpp" />
     <ClInclude Include="pmb_calculate_number.hpp" />
     <ClInclude Include="pmb_calculate_number.h" />
+    <ClInclude Include="pmb_calculate_sunitType.h" />
     <ClInclude Include="pmb_calculate_symbol.h" />
     <ClInclude Include="pmb_calculate_symbol.hpp" />
     <ClInclude Include="pmb_calculate_tvobject.h" />

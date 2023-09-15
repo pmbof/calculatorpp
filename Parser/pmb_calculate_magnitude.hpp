@@ -159,6 +159,23 @@ inline void dimension<_CHAR, _SIZE>::set(const _CHAR* symbol, const _SIZE& slen,
 }
 
 
+
+template<typename _CHAR, typename _SIZE>
+inline void dimension<_CHAR, _SIZE>::set(unsigned char index)
+{
+	_index = index;
+}
+
+
+
+template<typename _CHAR, typename _SIZE>
+inline unsigned char dimension<_CHAR, _SIZE>::index() const
+{
+	return _index;
+}
+
+
+
 template<typename _CHAR, typename _SIZE>
 inline const _CHAR* dimension<_CHAR, _SIZE>::symbol() const
 {
@@ -240,6 +257,13 @@ inline rational<_INT>::rational()
 
 
 template<typename _INT>
+inline rational<_INT>::rational(const _INT& _numerator)
+	: numerator(_numerator), denominator(1)
+{
+}
+
+
+template<typename _INT>
 inline rational<_INT>::rational(const _INT & _numerator, const _INT & _denominator)
 	: numerator(_numerator), denominator(_denominator)
 {
@@ -250,9 +274,40 @@ template<typename _INT>
 template<typename _N>
 inline rational<_INT>::rational(const _N& number)
 {
-	for (denominator = 1; number * denominator != (numerator = (_N)(number)* denominator); denominator *= 10)
-		;
-	normalize();
+	if (!number)
+	{
+		numerator = 0;
+		denominator = 1;
+	}
+	else
+	{
+		int expmx = ::log10(::pow(2, 8 * sizeof(_INT)));
+		double exp = ::log10((double)number);
+		if (exp < 0)
+		{
+			if (-expmx  < exp)
+			{
+				for (numerator = 1; numerator / number != (denominator = numerator / (_N)(number)); numerator *= 10)
+					;
+			}
+			else
+			{
+				numerator = 0;
+				denominator = 1;
+			}
+		}
+		if (exp < expmx)
+		{
+			for (denominator = 1; number * denominator != (numerator = (_N)(number) * denominator); denominator *= 10)
+				;
+		}
+		else
+		{
+			numerator = 0;
+			denominator = 0;
+		}
+		normalize();
+	}
 }
 
 
@@ -322,6 +377,26 @@ inline void rational<_INT>::normalize()
 
 
 template<typename _INT>
+inline std::string rational<_INT>::serialize() const
+{
+	return std::string(reinterpret_cast<const char*>(&numerator), sizeof(_INT)) + std::string(reinterpret_cast<const char*>(&denominator), sizeof(_INT));
+}
+
+
+
+template<typename _INT>
+inline bool rational<_INT>::deserialize(const char* bytes, unsigned short size)
+{
+	if (size != 2 * sizeof(_INT))
+		return false;
+	numerator = reinterpret_cast<const _INT*>(bytes)[0];
+	denominator = reinterpret_cast<const _INT*>(bytes)[1];
+	return true;
+}
+
+
+
+template<typename _INT>
 inline rational<_INT>::operator bool() const
 {
 	return numerator;
@@ -331,6 +406,15 @@ template<typename _INT>
 inline bool rational<_INT>::operator!() const
 {
 	return numerator == 0;
+}
+
+
+template<typename _INT>
+inline rational<_INT>::operator long() const
+{
+	if (!denominator)
+		throw "divide by zero";
+	return numerator / denominator;
 }
 
 
@@ -364,6 +448,22 @@ inline rational<_INT>& rational<_INT>::operator+=(const rational<_INT>& right)
 	numerator = numerator * right.denominator + right.numerator * denominator;
 	denominator = denominator * right.denominator;
 	normalize();
+	return *this;
+}
+
+
+template<typename _INT>
+inline rational<_INT> rational<_INT>::operator-() const
+{
+	if (denominator < 0)
+		return rational<_INT>(numerator, -denominator);
+	return rational<_INT>(-numerator, denominator);
+}
+
+
+template<typename _INT>
+inline rational<_INT> rational<_INT>::operator+() const
+{
 	return *this;
 }
 
@@ -435,6 +535,16 @@ inline rational<_INT> rational<_INT>::operator/(const _INT& right) const
 
 
 template<typename _INT>
+inline rational<_INT> rational<_INT>::operator*=(const _INT& right)
+{
+	numerator *= right;
+	normalize(numerator, denominator);
+	return *this;
+}
+
+
+
+template<typename _INT>
 template<typename _N>
 inline rational<_INT> rational<_INT>::operator*(const _N& right) const
 {
@@ -455,6 +565,75 @@ inline rational<_INT> rational<_INT>::operator/(const _N& right) const
 }
 
 
+
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator<(const rational<_INT>& right) const
+{
+	return 0 < denominator && 0 < right.denominator || denominator < 0 && right.denominator < 0 
+			? numerator * right.denominator < right.numerator * denominator
+			: right.numerator * denominator < numerator * right.denominator;
+}
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator<(const _INT& right) const
+{
+	return 0 < denominator ? numerator < right * denominator : right * denominator < numerator;
+}
+
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator<=(const rational<_INT>& right) const
+{
+	return 0 < denominator && 0 < right.denominator || denominator < 0 && right.denominator < 0
+		? numerator * right.denominator <= right.numerator* denominator
+		: right.numerator* denominator <= numerator* right.denominator;
+}
+
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator<=(const _INT& right) const
+{
+	return 0 < denominator ? numerator <= right* denominator : right * denominator <= numerator;
+}
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator>(const rational<_INT>& right) const
+{
+	return 0 < denominator && 0 < right.denominator || denominator < 0 && right.denominator < 0
+		? right.numerator * denominator < numerator * right.denominator
+		: numerator * right.denominator < right.numerator * denominator;
+}
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator>(const _INT& right) const
+{
+	return 0 < denominator ? right * denominator < numerator : numerator < right * denominator;
+}
+
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator>=(const rational<_INT>& right) const
+{
+	return 0 < denominator && 0 < right.denominator || denominator < 0 && right.denominator < 0
+		? right.numerator * denominator <= numerator* right.denominator
+		: numerator * right.denominator <= right.numerator* denominator;
+}
+
+
+
+template<typename _INT>
+inline bool rational<_INT>::operator>=(const _INT& right) const
+{
+	return 0 < denominator ? right * denominator <= numerator : numerator <= right * denominator;
+}
 
 
 
@@ -481,6 +660,96 @@ inline bool rational<_INT>::integer() const
 {
 	return denominator == 1 || denominator == -1;
 }
+
+
+
+template<typename _INT>
+inline rational<_INT> rational<_INT>::pow(const _INT& exp) const
+{
+	_MyT result;
+	if (!numerator)
+		result = _MyT(0);
+	else if (!exp)
+		result = _MyT(1);
+	else
+	{
+		if (exp == 1)
+			result = *this;
+		else if (exp == -1)
+		{
+			result.numerator = denominator;
+			result.denominator = numerator;
+		}
+		else
+		{
+			if (exp < 0)
+			{
+				result.numerator = ::pow(denominator, -exp);
+				if (numerator == 1)
+					result.denominator = 1;
+				else
+				{
+					result.denominator = ::pow(numerator, -exp);
+					result.normalize();
+				}
+			}
+			else
+			{
+				result.numerator = ::pow(numerator, exp);
+				if (denominator == 1)
+					result.denominator = 1;
+				else
+				{
+					result.denominator = ::pow(denominator, exp);
+					result.normalize();
+				}
+			}
+		}
+	}
+	return result;
+}
+
+
+
+template<typename _INT>
+inline rational<_INT> rational<_INT>::pow(const _MyT& exp) const
+{
+	_MyT result;
+	if (!numerator)
+		result = _MyT(0);
+	else if (!exp.numerator)
+		result = _MyT(1);
+	else if (exp.denominator == 1)
+	{
+		if (exp.numerator == 1)
+			result = *this;
+		else
+		{
+			result.numerator = ::pow(numerator, exp.numerator);
+			if (denominator == 1)
+				result.denominator = 1;
+			else
+			{
+				result.denominator = ::pow(denominator, exp.numerator);
+				result.normalize();
+			}
+		}
+	}
+	else
+	{
+		result.numerator = ::pow(numerator, (double)exp.numerator / exp.denominator);
+		if (denominator == 1)
+			result.denominator = 1;
+		else
+		{
+			result.denominator = ::pow(denominator, (double)exp.numerator / exp.denominator);
+			result.normalize();
+		}
+	}
+	return result;
+}
+
+
 
 template<typename _INT>
 inline _INT rational<_INT>::proportionality(const rational<_INT>& right) const
@@ -546,6 +815,22 @@ inline rational<_INT> operator/(const _INT &left, const rational<_INT>& right)
 
 
 
+template<typename _INT>
+std::stringstream& operator<<(std::stringstream& left, const rational<_INT>& right)
+{
+	if (!right.denominator)
+		throw "divide by zero";
+
+	left << right.numerator;
+	if (right.denominator != 1)
+		left << "/" << right.denominator;
+
+	return left;
+}
+
+
+
+
 
 
 
@@ -594,6 +879,26 @@ template<typename _INT, typename _CHAR, typename _SZSTR>
 inline power_dimension<_INT, _CHAR, _SZSTR>::power_dimension(const rational<_INT>& q, const dimension* pDim)
 	: rational(q), dim(pDim)
 {
+}
+
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline std::string power_dimension<_INT, _CHAR, _SZSTR>::serialize() const
+{
+	std::string bytes;
+	bytes = rational<_INT>::serialize();
+	bytes = (char)dim->index() + bytes;
+	return bytes;
+}
+
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline unsigned char power_dimension<_INT, _CHAR, _SZSTR>::deserialize(const char* bytes, unsigned short size)
+{
+	rational_base::deserialize(bytes + 1, size - 1);
+	return static_cast<const unsigned char>(bytes[0]);
 }
 
 
@@ -740,6 +1045,56 @@ inline unit<_INT, _CHAR, _SZSTR>::~unit()
 {
 	if (_dim)
 		delete[] _dim;
+}
+
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline std::string unit<_INT, _CHAR, _SZSTR>::serialize() const
+{
+	std::string bytes;
+	if (_dim)
+	{
+		for (ndim i = 0; i < _nDims; ++i)
+			bytes += _dim[i].serialize();
+	}
+	return bytes;
+}
+
+
+
+template<typename _INT, typename _CHAR, typename _SZSTR>
+inline bool unit<_INT, _CHAR, _SZSTR>::deserialize(dimension** const vdimension, unsigned char vdimsz, const char* bytes, unsigned short size)
+{
+	if (_dim)
+	{
+		delete[] _dim;
+		_dim = nullptr;
+		_capacity = _nDims = 0;
+	}
+
+	constexpr long sz = sizeof(power_dimension::rational_base) + 1;
+	if (size % sz != 0)
+		return false;
+
+	_capacity = _nDims = size / sz;
+	if (!_nDims)
+		return true;
+
+	_dim = new power_dimension[_nDims];
+	for (int i = 0; i < _nDims; ++i)
+	{
+		unsigned char index = _dim[i].deserialize(bytes + sz * i, sz);
+		if (index < vdimsz)
+			_dim[i].dim = vdimension[index];
+		else
+		{
+			delete[] _dim;
+			_dim = nullptr;
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -1199,7 +1554,7 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const _CHAR* str, const 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>::magnitude(const dimension* dim)
-	: _number(1), _unit(dim)
+	: _number(_2TypeValue(1)), _unit(dim)
 {
 }
 
@@ -1472,6 +1827,16 @@ inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
 }
 
 
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
+magnitude<_TYPE, _INT, _CHAR, _SZSTR>::operator*(const magnitude<_TYPE, _INT, _CHAR, _SZSTR>& right) const
+{
+	return magnitude(_number * right._number, _unit * right._unit);
+}
+
+
+
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline magnitude<_TYPE, _INT, _CHAR, _SZSTR>
 	magnitude<_TYPE, _INT, _CHAR, _SZSTR>::operator/(const magnitude<_TYPE, _INT, _CHAR, _SZSTR>& right) const
@@ -1646,10 +2011,28 @@ inline const _TYPE& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_number() const
 
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline _TYPE& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_number()
+{
+	return _number;
+}
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline const typename magnitude<_TYPE, _INT, _CHAR, _SZSTR>::unit& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_unit() const
 {
 	return _unit;
 }
+
+
+
+template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
+inline typename magnitude<_TYPE, _INT, _CHAR, _SZSTR>::unit& magnitude<_TYPE, _INT, _CHAR, _SZSTR>::get_unit()
+{
+	return _unit;
+}
+
+
 
 template<class _TYPE, typename _INT, typename _CHAR, typename _SZSTR>
 inline void magnitude<_TYPE, _INT, _CHAR, _SZSTR>::release_unit()

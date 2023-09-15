@@ -36,7 +36,7 @@ inline number<_TYPE>::number(const char* str, unsigned short len)
 {
 	_number = 0;
 	unsigned short ini = 0;
-	int base = 10;
+	_TypeValue base(10);
 	if (2 < len && str[0] == '0') {
 		ini = 2;
 		switch (str[1]) {
@@ -58,7 +58,7 @@ inline number<_TYPE>::number(const char* str, unsigned short len)
 		}
 	}
 	bool bDecimal = false;
-	_TYPE decimal = 1;
+	_TypeValue decimal(1);
 	for (unsigned short i = ini; i < len; ++i)
 	{
 		if (str[i] == '.')
@@ -68,10 +68,32 @@ inline number<_TYPE>::number(const char* str, unsigned short len)
 			bDecimal = true;
 		}
 		else
-			_number = _number * (bDecimal ? 1 : base) + (10 < base && 'A' <= str[i] ? str[i] < 'a' ? str[i] - 'A' : str[i] - 'a' : str[i] - '0') / decimal;
+		{
+			_TypeValue digit(10 < base && 'A' <= str[i] ? str[i] < 'a' ? str[i] - 'A' : str[i] - 'a' : str[i] - '0');
+			if (bDecimal)
+				_number = _number + digit / decimal;
+			else
+				_number = _number * base + digit;
+		}
 		if (bDecimal)
 			decimal = decimal * base;
 	}
+}
+
+
+
+template<class _TYPE>
+inline std::string number<_TYPE>::serialize() const
+{
+	return _number.serialize();
+}
+
+
+
+template<class _TYPE>
+inline bool number<_TYPE>::deserialize(const char* bytes, unsigned short size)
+{
+	return _number.deserialize(bytes, size);
 }
 
 
@@ -263,7 +285,7 @@ inline number<_TYPE> number<_TYPE>::operator/(const _TypeValue& right) const
 template<class _TYPE>
 inline number<_TYPE> number<_TYPE>::operator%(const _MyT& right) const
 {
-	return _MyT((long)_number % (long)right._number);
+	return _MyT(_TypeValue((long)(_TypeValue)_number % (long)(_TypeValue)right._number));
 }
 
 
@@ -304,7 +326,7 @@ inline void number<_TYPE>::negative(const _MyT& right)
 template<class _TYPE>
 inline number<_TYPE> number<_TYPE>::abs() const
 {
-	return _MyT(_number < 0 ? -_number : _number);
+	return _MyT(_number < _TypeValue(0) ? -_number : _number);
 }
 
 
@@ -312,7 +334,7 @@ inline number<_TYPE> number<_TYPE>::abs() const
 template<class _TYPE>
 inline number<_TYPE> number<_TYPE>::sgn() const
 {
-	return _MyT(_number < 0 ? -1 : 1);
+	return _MyT(_TypeValue(_number < _TypeValue(0) ? -1 : 1));
 }
 
 

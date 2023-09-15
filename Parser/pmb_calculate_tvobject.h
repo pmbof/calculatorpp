@@ -83,12 +83,15 @@ public:
 	void sqrroot(const _MyT& right);
 	void root(const _MyT& left, const _MyT& right);
 
+	// comparision:
 	void equal(const _MyT& left, const _MyT& right);
 	void not_equal(const _MyT& left, const _MyT& right);
 	void less_equal(const _MyT& left, const _MyT& right);
 	void less(const _MyT& left, const _MyT& right);
 	void greater_equal(const _MyT& left, const _MyT& right);
 	void greater(const _MyT& left, const _MyT& right);
+
+	// boolean operators:
 	void not(const _MyT& right);
 	bool and_check(const _MyT& left);
 	void and(const _MyT& left, const _MyT& right);
@@ -131,6 +134,7 @@ public:
 	void fnc_if(const _MyT& bValue, _MyT& trueReturn, _MyT& falseReturn);
 
 	_MyT pow(_TypeInt p) const;
+	_MyT operator*(const _MyT& right) const;
 	_MyT operator/(const _MyT& right) const;
 
 	// check:

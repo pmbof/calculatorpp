@@ -22,6 +22,9 @@ public:
 	explicit number(const _MyT* src);
 	explicit number(const char* str, unsigned short len);
 
+	std::string serialize() const;
+	bool deserialize(const char* bytes, unsigned short size);
+
 	// Assign operators:
 	_MyT& operator=(const _TypeValue& rValue);
 	_MyT& operator*=(const _TypeValue& rValue);
