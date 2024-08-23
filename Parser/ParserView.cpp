@@ -20,6 +20,10 @@
 #endif
 
 
+
+#define ID_TIMER_CARET 12355
+
+
 // CParserView
 
 IMPLEMENT_DYNCREATE(CParserView, CView)
@@ -42,6 +46,7 @@ BEGIN_MESSAGE_MAP(CParserView, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_SETCURSOR()
 	ON_WM_CHAR()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CParserView construction/destruction
@@ -114,6 +119,7 @@ int CParserView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_tooltipId = -1;
 	EnableToolTips(TRUE);
 
+	SetTimer(ID_TIMER_CARET, 5000, nullptr);
 	m_bShowResult = true;
 	return 0;
 }
@@ -851,6 +857,7 @@ void CParserView::OnLButtonDown(UINT nFlags, CPoint point)
 }
 
 
+
 BOOL CParserView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
 	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_IBEAM));
@@ -863,3 +870,18 @@ BOOL CParserView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 
 
+
+
+void CParserView::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == ID_TIMER_CARET)
+	{
+		if (GetFocus() == this)
+		{
+			HideCaret();
+			ShowCaret();
+		}
+
+	}
+	CView::OnTimer(nIDEvent);
+}
