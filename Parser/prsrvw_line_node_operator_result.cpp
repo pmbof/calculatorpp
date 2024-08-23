@@ -123,7 +123,7 @@ void CParserView::line::node_operator_result::draw(sdraw* sd) const
 	CPen pen;
 	pen.CreatePen(PS_SOLID, 1, sd->pline->color(type()));
 	CPen* oldPen = sd->pDC->SelectObject(&pen);
-	if (sd->pstr[get_ini()] == '=')
+	if (sd->pstr[_ini] == '=')
 	{
 		sd->pDC->MoveTo(left + 2, _middle - 2);
 		sd->pDC->LineTo(right - 2, _middle - 2);
