@@ -53,9 +53,9 @@ const operation* CParserDoc::_operation[] = {
 	new CParserView::opr_root(           "\\", 200, true,   true, "root",                  "root",                                                &CParserDoc::opr_root),
 	new CParserView::opr_product(        "*",  110, true,   true, "product",               "multiplication",                                      &CParserDoc::opr_multiplication),
 	new CParserView::opr_division_inline("/.", 110, true,   true, "inline cocient",        "division",                                            &CParserDoc::opr_division),
-	new CParserView::opr_division(       "/",  110, true,   true, "cocient",               "division",                                            &CParserDoc::opr_division),
-	new CParserView::operation(          "/!", 110, true,   true, "com",                   "combinatory",                                         &CParserDoc::opr_division),
-	new CParserView::operation(          "",   100, true,   true, "product implicit",      "multiplication implicit or call function",            &CParserDoc::opr_multiplication,  true),
+	new CParserView::operation(          "",   109, true,   true, "product implicit",      "multiplication implicit or call function",            &CParserDoc::opr_multiplication,  true),
+	new CParserView::opr_division(       "/",  105, true,   true, "cocient",               "division",                                            &CParserDoc::opr_division),
+	new CParserView::operation(          "/!", 105, true,   true, "com",                   "combinatory",                                         &CParserDoc::opr_division),
 	new CParserView::operation(          " ",  100, true,   true, "product space",         "multiplication space or call function",               &CParserDoc::opr_multiplication,  true),
 	new CParserView::operation(          " ",  100, false,  true, "product space inverse", "multiplication space or call function right to left", &CParserDoc::opr_multiplication,  true),
 	new CParserView::operation(          "`",  100, true,   true, "modulo",                "congruence relation",                                 &CParserDoc::opr_modulo),
@@ -1176,7 +1176,7 @@ void CParserDoc::result()
 		if (0 < le)
 			sn += ")";
 		sres.str("");
-		sres << sn << sunit;
+		sres << sn << " " << sunit;
 		m_result = sres.str();
 		m_calculator.parser_result(m_result.c_str());
 	}
