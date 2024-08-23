@@ -156,7 +156,7 @@ bool CParserView::line::node_parentheses::set_caret_pos(sdraw* sd, scaret& caret
 			short nPrnths = nparentheses();
 			if (nPrnths < 0)
 				nPrnths *= -1;
-			cx = Width() / nPrnths * (caret.spos[1] - get_ini());
+			cx = !nPrnths ? 1 : Width() / nPrnths * (caret.spos[1] - get_ini());
 			bOk = true;
 		}
 		else if (!_right && get_end() == caret.spos[1])
