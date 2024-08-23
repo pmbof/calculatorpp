@@ -8,6 +8,8 @@
 #endif
 
 #include "resource.h"       // main symbols
+#include "../pmb_log/pmb_log.h"
+
 
 #define MM_REDRAWTREE				(WM_USER + 1)
 #define MM_CHARGENEWDOC				(WM_USER + 2)
@@ -24,6 +26,7 @@ int get_DeltaTimeMS(const SYSTEMTIME& s0, const SYSTEMTIME& s1);
 
 class CParserApp : public CWinAppEx
 {
+	typedef std::map<std::string, CString> mapscstring;
 public:
 	CParserApp();
 
@@ -41,6 +44,9 @@ public:
 	CString getAppDataPath(const CString& filename) const;
 
 private:
+	void parserCmdline(mapscstring& mapcmd);
+	pmb::log* initLogger(mapscstring& mapcmd);
+
 	void openLastDocumentsOpen(CMultiDocTemplate* pDocTemplate);
 
 	virtual void PreLoadState();

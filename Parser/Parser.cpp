@@ -12,8 +12,6 @@
 #include "ParserDoc.h"
 #include "ParserView.h"
 
-#include "../pmb_log/pmb_log.h"
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,6 +58,106 @@ CParserApp::CParserApp()
 CParserApp theApp;
 
 
+
+void CParserApp::parserCmdline(mapscstring& mapcmd)
+{
+	bool bCmd = false,
+		bValue = false;
+	std::string cmd;
+	CString value;
+	for (LPTSTR lc = m_lpCmdLine; *lc; ++lc)
+	{
+		const char* c = reinterpret_cast<const char*>(lc);
+		if ((c[0] == ' ' || c[0] == '\t') && bCmd && !cmd.empty())
+		{
+			bValue = true;
+		}
+		else if (c[0] == '-' && (m_lpCmdLine == lc || m_lpCmdLine < lc && ((lc - 1)[0] == ' ' || (lc - 1)[0] == '\t')))
+		{
+			if (bCmd && !cmd.empty() && bValue)
+			{
+				bValue = false;
+				mapcmd[cmd] = value.Trim();
+				cmd.clear();
+				value.Empty();
+			}
+			bCmd = true;
+		}
+		else if (bCmd)
+		{
+			if (!bValue)
+				cmd += c[0];
+			else if (!cmd.empty())
+				value += *lc;
+		}
+	}
+	if (bCmd && !cmd.empty())
+		mapcmd[cmd] = value;
+}
+
+
+
+pmb::log* CParserApp::initLogger(mapscstring& mapcmd)
+{
+	bool bColored = false;
+	pmb::log_type loglevel;
+	std::map<std::string, CString>::const_iterator ill = mapcmd.find("logLevel");
+	if (ill == mapcmd.end())
+		loglevel = pmb::logWarning;
+	else
+	{
+		CString sloglevel = ill->second;
+		if (4 < sloglevel.GetLength())
+		{
+			if (bColored = sloglevel.Right(2) == L"-c")
+				sloglevel = sloglevel.Left(sloglevel.GetLength() - 2);
+		}
+		if (sloglevel == L"log-Error")
+			loglevel = pmb::logError;
+		else if (sloglevel == L"log-Warning")
+			loglevel = pmb::logWarning;
+		else if (sloglevel == L"log-Inf")
+			loglevel = pmb::logInf;
+		else if (sloglevel == L"log-Debug")
+			loglevel = pmb::logDebug;
+		else if (sloglevel == L"log-All")
+			loglevel = pmb::logNone;
+		else if (sloglevel == L"log-WTrace")
+			loglevel = pmb::logWTrace;
+		else
+			loglevel = pmb::logWarning;
+	}
+	ill = mapcmd.find("logLevelFunction");
+	bool bLevelFunction = ill != mapcmd.end() && ill->second == L"on";
+	CStringA logfile;
+	if (mapcmd.find("logFile") == mapcmd.end())
+		logfile = "Parser-%YY%%MM%%DD%.log";
+	else
+		logfile = mapcmd["logFile"];
+	if (mapcmd.find("logPath") == mapcmd.end())
+	{
+		WCHAR buffer[512];
+		if (GetEnvironmentVariable(L"APPDATA", buffer, sizeof(buffer)))
+			logfile = CStringA(buffer) + CStringA("\\PMB\\Calculatorpp\\") + logfile;
+	}
+	else
+		logfile = mapcmd["logPath"] + "\\" + logfile;
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	CStringA replace;
+	replace.Format("%04d", st.wYear);
+	logfile.Replace("%YYYY%", replace);
+	replace.Format("%02d", st.wYear % 100);
+	logfile.Replace("%YY%", replace);
+	replace.Format("%02d", st.wMonth % 100);
+	logfile.Replace("%MM%", replace);
+	replace.Format("%02d", st.wDay % 100);
+	logfile.Replace("%DD%", replace);
+	return pmb::log::instance(loglevel, logfile, bColored, bLevelFunction);
+}
+
+
 // CParserApp initialization
 
 BOOL CParserApp::InitInstance()
@@ -68,100 +166,8 @@ BOOL CParserApp::InitInstance()
 	m_pszAppName = _tcsdup(_T("Calculator++"));
 
 	std::map<std::string, CString> mapcmd;
-	{
-		bool bCmd = false,
-			bValue = false;
-		std::string cmd;
-		CString value;
-		for (LPTSTR lc = m_lpCmdLine; *lc; ++lc)
-		{
-			const char* c = reinterpret_cast<const char*>(lc);
-			if ((c[0] == ' ' || c[0] == '\t') && bCmd && !cmd.empty())
-			{
-				bValue = true;
-			}
-			else if (c[0] == '-' && (m_lpCmdLine == lc || m_lpCmdLine < lc && ((lc - 1)[0] == ' ' || (lc - 1)[0] == '\t')))
-			{
-				if (bCmd && !cmd.empty() && bValue)
-				{
-					bValue = false;
-					mapcmd[cmd] = value.Trim();
-					cmd.clear();
-					value.Empty();
-				}
-				bCmd = true;
-			}
-			else if (bCmd)
-			{
-				if (!bValue)
-					cmd += c[0];
-				else if (!cmd.empty())
-					value += *lc;
-			}
-		}
-		if (bCmd && !cmd.empty())
-			mapcmd[cmd] = value;
-	}
-
-	pmb::log* log;
-	{
-		bool bColored = false;
-		pmb::log_type loglevel;
-		std::map<std::string, CString>::const_iterator ill = mapcmd.find("logLevel");
-		if (ill == mapcmd.end())
-			loglevel = pmb::logWarning;
-		else
-		{
-			CString sloglevel = ill->second;
-			if (4 < sloglevel.GetLength())
-			{
-				if (bColored = sloglevel.Right(2) == L"-c")
-					sloglevel = sloglevel.Left(sloglevel.GetLength() - 2);
-			}
-			if (sloglevel == L"log-Error")
-				loglevel = pmb::logError;
-			else if (sloglevel == L"log-Warning")
-				loglevel = pmb::logWarning;
-			else if (sloglevel == L"log-Inf")
-				loglevel = pmb::logInf;
-			else if (sloglevel == L"log-Debug")
-				loglevel = pmb::logDebug;
-			else if (sloglevel == L"log-All")
-				loglevel = pmb::logNone;
-			else if (sloglevel == L"log-WTrace")
-				loglevel = pmb::logWTrace;
-			else
-				loglevel = pmb::logWarning;
-		}
-		ill = mapcmd.find("logLevelFunction");
-		bool bLevelFunction = ill != mapcmd.end() && ill->second == L"on";
-		CStringA logfile;
-		if (mapcmd.find("logFile") == mapcmd.end())
-			logfile = "Parser-%YY%%MM%%DD%.log";
-		else
-			logfile = mapcmd["logFile"];
-		if (mapcmd.find("logPath") == mapcmd.end())
-		{
-			WCHAR buffer[512];
-			if (GetEnvironmentVariable(L"APPDATA", buffer, sizeof(buffer)))
-				logfile = CStringA(buffer) + CStringA("\\PMB\\Calculatorpp\\") + logfile;
-		}
-		else
-			logfile = mapcmd["logPath"] + "\\" + logfile;
-
-		SYSTEMTIME st;
-		GetLocalTime(&st);
-		CStringA replace;
-		replace.Format("%04d", st.wYear);
-		logfile.Replace("%YYYY%", replace);
-		replace.Format("%02d", st.wYear % 100);
-		logfile.Replace("%YY%", replace);
-		replace.Format("%02d", st.wMonth % 100);
-		logfile.Replace("%MM%", replace);
-		replace.Format("%02d", st.wDay % 100);
-		logfile.Replace("%DD%", replace);
-		log = pmb::log::instance(loglevel, logfile, bColored, bLevelFunction);
-	}
+	parserCmdline(mapcmd);
+	pmb::log* log = initLogger(mapcmd);
 
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
